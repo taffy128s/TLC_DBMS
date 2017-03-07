@@ -38,41 +38,41 @@ public class DataCheckerTest {
 
     @Test
     public void isValidInteger() throws Exception {
-        ArrayList<Boolean> excepted = new ArrayList<>();
-        excepted.add(true);
-        excepted.add(false);
-        excepted.add(false);
-        excepted.add(true);
-        excepted.add(false);
-        excepted.add(false);
-        excepted.add(false);
-        excepted.add(true);
-        excepted.add(false);
-        excepted.add(false);
-        excepted.add(false);
-        excepted.add(false);
-        for (int i = 0; i < excepted.size(); ++i) {
-            assertEquals(excepted.get(i), DataChecker.isValidInteger(testSet.get(i)));
+        ArrayList<Boolean> expected = new ArrayList<>();
+        expected.add(true);
+        expected.add(false);
+        expected.add(false);
+        expected.add(true);
+        expected.add(false);
+        expected.add(false);
+        expected.add(false);
+        expected.add(true);
+        expected.add(false);
+        expected.add(false);
+        expected.add(false);
+        expected.add(false);
+        for (int i = 0; i < expected.size(); ++i) {
+            assertEquals(expected.get(i), DataChecker.isValidInteger(testSet.get(i)));
         }
     }
 
     @Test
     public void isValidVarChar() throws Exception {
-        ArrayList<Boolean> excepted = new ArrayList<>();
-        excepted.add(true);
-        excepted.add(true);
-        excepted.add(true);
-        excepted.add(true);
-        excepted.add(true);
-        excepted.add(true);
-        excepted.add(true);
-        excepted.add(true);
-        excepted.add(true);
-        excepted.add(true);
-        excepted.add(true);
-        excepted.add(false);
-        for (int i = 0; i < excepted.size(); ++i) {
-            assertEquals(excepted.get(i), DataChecker.isValidVarChar(testSet.get(i)));
+        ArrayList<Boolean> expected = new ArrayList<>();
+        expected.add(true);
+        expected.add(true);
+        expected.add(true);
+        expected.add(true);
+        expected.add(true);
+        expected.add(true);
+        expected.add(true);
+        expected.add(true);
+        expected.add(true);
+        expected.add(true);
+        expected.add(true);
+        expected.add(false);
+        for (int i = 0; i < expected.size(); ++i) {
+            assertEquals(expected.get(i), DataChecker.isValidVarChar(testSet.get(i)));
         }
     }
 

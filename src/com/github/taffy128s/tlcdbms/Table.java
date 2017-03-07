@@ -28,6 +28,21 @@ public class Table {
     }
 
     /**
+     * Initialize a table with attribute names, types and
+     * primary key (-1 if no primary key).
+     *
+     * @param attributeNames an array list of names
+     * @param attributeTypes an array list of types
+     * @param primaryKey primary key index, -1 if none
+     */
+    public Table(ArrayList<String> attributeNames, ArrayList<DataType> attributeTypes, int primaryKey) {
+        this();
+        mAttributeNames = attributeNames;
+        mAttributeTypes = attributeTypes;
+        mPrimaryKey = primaryKey;
+    }
+
+    /**
      * Insert a data record into table.
      *
      * @param data data record to be inserted

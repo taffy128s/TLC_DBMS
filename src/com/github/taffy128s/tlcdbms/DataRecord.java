@@ -19,6 +19,15 @@ public class DataRecord {
     }
 
     /**
+     * Initialize a new data record with a list of data.
+     *
+     * @param datas an array list of data
+     */
+    public DataRecord(ArrayList<Object> datas) {
+        mDataList = datas;
+    }
+
+    /**
      * Append a new data into data record.<br>
      * ** NEED TO CALL WITH RIGHT ORDER. **<br>
      * For example,<br>
@@ -49,6 +58,13 @@ public class DataRecord {
      */
     public void update(int index, Object data) {
         mDataList.set(index, data);
+    }
+
+    /**
+     * Clear all data stored.
+     */
+    public void clear() {
+        mDataList.clear();
     }
 
     /**
