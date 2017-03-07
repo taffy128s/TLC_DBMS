@@ -55,13 +55,17 @@ public class DataRecord {
         mDataList.set(index, data);
     }
 
+    public Object get(int index) {
+        return mDataList.get(index);
+    }
+
     /**
      * Get all data fields in this data record.
      *
      * @return an array of all data fields
      */
     public Object[] getAllFields() {
-        return (Objects[]) mDataList.toArray();
+        return mDataList.toArray();
     }
 
     /**
