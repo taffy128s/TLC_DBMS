@@ -12,6 +12,9 @@ public class DataChecker {
      */
     public static boolean isValidInteger(String data) {
         try {
+            if (data.length() >= 15)  {
+                return false;
+            }
             long result = Long.parseLong(data);
             return result <= 2147483647 && result >= -2147483648;
         } catch (Exception e) {
