@@ -1,11 +1,10 @@
 package com.github.taffy128s.tlcdbms;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * Class for storing a tuple of data.
- * ex. used to store ('John', 'Male', 20)
+ * Ex. used to store ('John', 'Male', 20)
  *
  * Use append(), update() to maintain data stored.
  */
@@ -20,41 +19,54 @@ public class DataRecord {
     }
 
     /**
-     * Append a new data into data record.
-     * ** NEED TO CALL WITH RIGHT ORDER. **
+     * Append a new data into data record.<br>
+     * ** NEED TO CALL WITH RIGHT ORDER. **<br>
+     * For example,<br>
+     * <code>
+     *     dataRecord.append("John");<br>
+     *     dataRecord.append("Male");<br>
+     *     dataRecord.append(20);<br>
+     * </code>
      *
      * @param data data to be inserted
-     * @return true if succeed, false if failed
-     *
-     * For example,
-     * <code>
-     *     dataRecord.append("John");
-     *     dataRecord.append("Male");
-     *     dataRecord.append(20);
-     * </code>
      */
     public void append(Object data) {
         mDataList.add(data);
     }
 
     /**
-     * Update data with column index given.
+     * Update data with column index given.<br>
+     *
+     * For example,<br>
+     * <code>
+     *     dataRecord.update("John Sena");<br>
+     *     dataRecord.update("Female");<br>
+     *     dataRecord.update(21);<br>
+     * </code>
      *
      * @param index index to update
      * @param data new data to be inserted
-     * @return true if succeed, false if failed
-     *
-     * For example,
-     * <code>
-     *     dataRecord.update("John Sena");
-     *     dataRecord.update("Female");
-     *     dataRecord.update(21);
-     * </code>
      */
     public void update(int index, Object data) {
         mDataList.set(index, data);
     }
 
+    /**
+     * Update data with column index given.<br>
+     *
+     * @param index index to update
+     * @param data new data to be inserted
+     */
+    public void set(int index, Object data) {
+        mDataList.set(index, data);
+    }
+
+    /**
+     * Get data with column index given.
+     *
+     * @param index index to get
+     * @return object with corresponding index
+     */
     public Object get(int index) {
         return mDataList.get(index);
     }
