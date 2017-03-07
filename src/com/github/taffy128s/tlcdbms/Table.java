@@ -40,41 +40,82 @@ public class Table {
             return false;
         } else {
             mTable.add(data);
+            if (mPrimaryKey != -1) {
+                mPrimaryTable.add(data.get(mPrimaryKey));
+            }
             return true;
         }
     }
 
+    /**
+     * Check whether the primary key is already in table.
+     *
+     * @param data data record to be inserted
+     * @return true if the primary key is valid, false if invalid
+     */
     private boolean checkPrimaryKey(DataRecord data) {
-        return mPrimaryTable.contains(data.get(mPrimaryKey));
+        return mPrimaryKey == -1 || mPrimaryTable.contains(data.get(mPrimaryKey));
     }
 
-    public boolean setPrimaryKey(int primaryKey) {
+    /**
+     * Set the index of the primary key.
+     *
+     * @param primaryKey primary key index
+     */
+    public void setPrimaryKey(int primaryKey) {
         mPrimaryKey = primaryKey;
-        return true;
     }
 
+    /**
+     * Get the index of the primary key.
+     *
+     * @return primary key index
+     */
     public int getPrimaryKey() {
         return mPrimaryKey;
     }
 
+    /**
+     * Get all records in the table.
+     *
+     * @return an array of all records
+     */
     public DataRecord[] getAllRecords() {
         return (DataRecord[]) mTable.toArray();
     }
 
-    public boolean setAttributeNames(ArrayList<String> attributeNames) {
+    /**
+     * Set all attribute names of this table.
+     *
+     * @param attributeNames an list of attribute names
+     */
+    public void setAttributeNames(ArrayList<String> attributeNames) {
         mAttributeNames = attributeNames;
-        return true;
     }
 
+    /**
+     * Get all attribute names.
+     *
+     * @return a list of all attribute names
+     */
     public ArrayList<String> getAttributeNames() {
         return mAttributeNames;
     }
 
-    public boolean setAttributeTypes(ArrayList<DataType> attributeTypes) {
+    /**
+     * Set all attribute types of this table.
+     *
+     * @param attributeTypes an list of attribute types
+     */
+    public void setAttributeTypes(ArrayList<DataType> attributeTypes) {
         mAttributeTypes = attributeTypes;
-        return true;
     }
 
+    /**
+     * Get all attribute types.
+     *
+     * @return a list of all attribute types
+     */
     public ArrayList<DataType> getAttributeTypes() {
         return mAttributeTypes;
     }
