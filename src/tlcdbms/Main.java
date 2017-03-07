@@ -1,4 +1,4 @@
-package database;
+package tlcdbms;
 
 public class Main {
 
