@@ -1,4 +1,4 @@
-package tlcdbms;
+package com.github.taffy128s.tlcdbms;
 
 public class Main {
 
