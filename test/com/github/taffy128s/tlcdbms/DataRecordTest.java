@@ -19,7 +19,6 @@ public class DataRecordTest {
         dataRecord.append("Male");
         dataRecord.append(20);
         dataRecord.append("Computer Science");
-
     }
 
     @After
