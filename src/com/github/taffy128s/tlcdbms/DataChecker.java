@@ -22,6 +22,18 @@ public class DataChecker {
         }
     }
 
+    public static boolean isValidVarVharLimitation(String data) {
+        try {
+            if (data.length() >= 15) {
+                return false;
+            }
+            long result = Long.parseLong(data);
+            return result > 0 && result <= 40;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     /**
      * Check whether data is a valid VARCHAR
      *

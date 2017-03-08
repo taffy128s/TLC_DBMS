@@ -4,6 +4,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+
 import static org.junit.Assert.*;
 
 /**
@@ -22,10 +24,21 @@ public class SQLParserTest {
 
     @Test
     public void parse() throws Exception {
+        ArrayList<String> testcases = new ArrayList<>();
+        testcases.add("cReate accc(ss int PRiMArY kEy, scv varchar(-10))");
+        testcases.add("cReate table accc(ss int PRiMArY kEy, scv varchar(40));");
+        testcases.add("cReate table accc(ss int PRiMArY kEy, scv varohar(40))");
+        testcases.add("cReate table (ss int, scv varchar(40))");
+        testcases.add("cReate table as ss int, scv varchar(40))");
+        testcases.add("cREATE table ss(ss INTS, scv VARCHAR(40))");
+        testcases.add("Create table ss(ss INT, VARCHAR(40))");
+        testcases.add("create table ss(ss INT, scv VARCHAR(-1))");
+        testcases.add("create table ss(ss INT PRIMARY KEY, scv INT PRIMARY KEY)");
+        testcases.add("Create table f(_ INT PRIMARY KEY, scv INT,)");
         SQLParser parser = new SQLParser();
-        parser.parse("cReate accc(ss int PRiMArY kEy, scv varchar(-10))");
-        parser.parse("cReate table accc(ss int PRiMArY kEy, scv varchar(40))");
-        parser.parse("cReate table accc(ss int PRiMArY kEy, scv varohar(40))");
+        for (String test : testcases) {
+            ParseResult result = parser.parse(test);
+        }
     }
 
 }

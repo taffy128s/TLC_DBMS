@@ -15,7 +15,7 @@ public class SQLParser {
     private ArrayList<String> mTokens;
     private ArrayList<Integer> mPositions;
     private boolean isValid;
-    private int index;
+    private int mIndex;
 
     public SQLParser() {
 
@@ -25,7 +25,7 @@ public class SQLParser {
         mCommand = command;
         mTokens = new ArrayList<>();
         mPositions = new ArrayList<>();
-        index = -1;
+        mIndex = -1;
         splitTokens();
         if (!isValid) {
             return null;
@@ -49,7 +49,7 @@ public class SQLParser {
         ParseResult result = new ParseResult();
         result.setCommandType(CommandType.CREATE);
         if (!checkTokenIgnoreCase("table", true)) {
-            printErrorMessage("Expected keyword TABLE", 2);
+            printErrorMessage("Expect keyword TABLE", mTokens.get(mIndex).length());
             return null;
         }
         String tablename = getName();
@@ -78,20 +78,15 @@ public class SQLParser {
                 attributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
             } else {
                 String[] elements = attributeType.split(" ");
-                if (elements.length > 1) {
-                    int limit = Integer.parseInt(elements[1]);
-                    if (limit <= 0 || limit > 40) {
-                        printErrorMessage("Invalid varchar length limitation", elements[1].length());
-                        return null;
-                    }
-                    attributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, limit));
-                } else {
-                    return null;
-                }
+                int limit = Integer.parseInt(elements[1]);
+                attributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, limit));
             }
             if (attributeType.contains("PRIMARY")) {
                 if (result.getPrimaryKeyIndex() != -1) {
-                    printErrorMessage("Multiple Primary Key", 7);
+                    printErrorMessage(
+                            "Multiple Primary Key",
+                            mIndex - 1,
+                            11);
                 } else {
                     result.setPrimaryKeyIndex(index);
                 }
@@ -130,8 +125,8 @@ public class SQLParser {
      * @return current token string, "" if failed
      */
     private String currentToken() {
-        if (index >= 0 && index < mTokens.size()) {
-            return mTokens.get(index);
+        if (mIndex >= 0 && mIndex < mTokens.size()) {
+            return mTokens.get(mIndex);
         } else {
             return "";
         }
@@ -140,15 +135,15 @@ public class SQLParser {
     /**
      * Get next token.
      *
-     * @param increment true to increase index
+     * @param increment true to increase mIndex
      * @return next token string, "" if failed
      */
     private String nextToken(boolean increment) {
-        if (index + 1 >= 0 && index + 1 < mTokens.size()) {
+        if (mIndex + 1 >= 0 && mIndex + 1 < mTokens.size()) {
             if (increment) {
-                return mTokens.get(++index);
+                return mTokens.get(++mIndex);
             } else {
-                return mTokens.get(index + 1);
+                return mTokens.get(mIndex + 1);
             }
         } else {
             return "";
@@ -192,7 +187,7 @@ public class SQLParser {
                 return "";
             }
             String limit = nextToken(true);
-            if (!DataChecker.isValidInteger(limit)) {
+            if (!DataChecker.isValidVarVharLimitation(limit)) {
                 printErrorMessage("Invalid limitation", limit.length());
                 return "";
             }
@@ -234,6 +229,12 @@ public class SQLParser {
     }
 
     private void printErrorMessage(String message, int underlineLength) {
+        System.err.println(mCommand);
+        printUnderLine(getPosition(mIndex), underlineLength);
+        System.err.println(message);
+    }
+
+    private void printErrorMessage(String message, int index, int underlineLength) {
         System.err.println(mCommand);
         printUnderLine(getPosition(index), underlineLength);
         System.err.println(message);
