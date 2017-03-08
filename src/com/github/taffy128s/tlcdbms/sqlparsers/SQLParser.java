@@ -1,5 +1,6 @@
 package com.github.taffy128s.tlcdbms.sqlparsers;
 
+import com.github.taffy128s.tlcdbms.CommandType;
 import com.github.taffy128s.tlcdbms.DataChecker;
 import com.github.taffy128s.tlcdbms.DataType;
 import com.github.taffy128s.tlcdbms.DataTypeIdentifier;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 public class SQLParser {
     private String mCommand;
     private ArrayList<String> mTokens;
+    private boolean isValid;
     private int index;
 
     public SQLParser(String command) {
@@ -22,6 +24,9 @@ public class SQLParser {
     }
 
     public ParseResult parse() {
+        if (!isValid) {
+            return null;
+        }
         return parseCommand();
     }
 
@@ -39,8 +44,9 @@ public class SQLParser {
 
     private ParseResult parseCreate() {
         ParseResult result = new ParseResult();
+        result.setCommandType(CommandType.CREATE);
         if (!checkTokenIgnoreCase("table")) {
-            System.err.println("TABLE keyword expected.");
+            System.err.println("Expect TABLE keyword after CREATE.");
             return null;
         }
         String tablename = getName();
@@ -54,6 +60,7 @@ public class SQLParser {
         }
         ArrayList<String> attributeNames = new ArrayList<>();
         ArrayList<DataType> attributeTypes = new ArrayList<>();
+        int index = 0;
         while (true) {
             String attributeName = getName();
             if (attributeName == null) {
@@ -61,18 +68,36 @@ public class SQLParser {
             }
             attributeNames.add(attributeName);
             String attributeType = getAttributeType();
-            if (attributeType == null) {
+            if (attributeType.equals("")) {
                 return null;
             }
             if (attributeType.startsWith("INT")) {
                 attributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
             } else {
-                int limit = Integer.parseInt(attributeType.split(" ")[1]);
-                attributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, limit));
+                String[] elements = attributeType.split(" ");
+                if (elements.length > 1) {
+                    int limit = Integer.parseInt(attributeType.split(" ")[1]);
+                    if (limit <= 0 || limit > 40) {
+                        System.err.println(limit + ": Invalid varchar length limitation");
+                        return null;
+                    }
+                    attributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, limit));
+                } else {
+                    return null;
+                }
+            }
+            if (attributeType.contains("PRIMARY")) {
+                if (result.getPrimaryKeyIndex() != -1) {
+                    System.err.println("Multiple Primary Key.");
+                } else {
+                    result.setPrimaryKeyIndex(index);
+                }
             }
             if (!nextToken(false).equalsIgnoreCase(",")) {
                 break;
             }
+            checkTokenIgnoreCase(",");
+            ++index;
         }
         if (!checkTokenIgnoreCase(")")) {
             System.err.println("Right parenthesis ')' expected after attribute definition.");
@@ -147,7 +172,7 @@ public class SQLParser {
 
     private String getName() {
         String name = nextToken();
-        if (!name.matches("[a-zA-Z]*")) {
+        if (!name.matches("[a-zA-Z_]*")) {
             System.err.println("Invalid name " + name + ".");
             return null;
         } else {
@@ -158,7 +183,15 @@ public class SQLParser {
     private String getAttributeType() {
         String type = nextToken();
         if (type.equalsIgnoreCase("int")) {
-            return "INT";
+            String primaryResult = checkPrimaryKey();
+            switch (primaryResult) {
+                case "PRIMARY":
+                    return "INT PRIMARY";
+                case "":
+                    return "INT";
+                default:
+                    return "";
+            }
         } else if (type.equalsIgnoreCase("varchar")) {
             if (!checkTokenIgnoreCase("(")) {
                 System.err.println("Left parenthesis '(' expected after VARCHAR.");
@@ -173,7 +206,15 @@ public class SQLParser {
                 System.err.println("Right parenthesis ')' expected at end of VARCHAR definition.");
                 return "";
             }
-            return "VARCHAR " + limit;
+            String primaryResult = checkPrimaryKey();
+            switch (primaryResult) {
+                case "PRIMARY":
+                    return "VARCHAR " + limit + " PRIMARY";
+                case "":
+                    return "VARCHAR " + limit;
+                default:
+                    return "";
+            }
         } else {
             System.err.println("Invalid data type " + type);
             return "";
@@ -182,6 +223,24 @@ public class SQLParser {
 
     private boolean checkTokenIgnoreCase(String expected) {
         return nextToken().equalsIgnoreCase(expected);
+    }
+
+    private boolean checkTokenIgnoreCase(String expected, boolean increase) {
+        return nextToken(false).equalsIgnoreCase(expected);
+    }
+
+    private String checkPrimaryKey() {
+        if (checkTokenIgnoreCase("primary", false)) {
+            checkTokenIgnoreCase("primary");
+            if (checkTokenIgnoreCase("key")) {
+                return "PRIMARY";
+            } else {
+                System.err.println("KEY keyword expected after PRIMARY");
+                return "ERROR";
+            }
+        } else {
+            return "";
+        }
     }
 
     private void splitTokens(String command) {
@@ -239,11 +298,16 @@ public class SQLParser {
                     break;
             }
         }
+        if (quoteFlag) {
+            System.err.println("Single quote not matched");
+            isValid = false;
+        }
         String[] splited = preProcessCommand.split("\0");
         for (String token : splited) {
             if (token.length() > 0) {
                 mTokens.add(token);
             }
         }
+        isValid = true;
     }
 }
