@@ -195,7 +195,8 @@ public class SQLParser {
         }
     }
 
-    private String getAttributeName() {String name = nextToken(true);
+    private String getAttributeName() {
+        String name = nextToken(true);
         if (!name.matches("[a-zA-Z_]*")) {
             printErrorMessage("Invalid attribute name " + name, name.length());
             return null;
