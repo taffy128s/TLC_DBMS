@@ -6,7 +6,7 @@ import com.github.taffy128s.tlcdbms.DataTypeIdentifier;
 
 import java.util.ArrayList;
 
-public class ParseResult {
+public class SQLParseResult {
     private CommandType mCommandType;
     private String mTablename;
     private ArrayList<String> mAttributeNames;
@@ -16,9 +16,13 @@ public class ParseResult {
     private int mPrimaryKeyIndex;
     private boolean mCustomOrder;
 
-    public ParseResult() {
+    public SQLParseResult() {
         mCommandType = CommandType.NONE;
         mTablename = "";
+        mAttributeNames = null;
+        mAttributeTypes = null;
+        mBlocks = null;
+        mUpdateOrder = null;
         mPrimaryKeyIndex = -1;
         mCustomOrder = false;
     }
@@ -47,26 +51,26 @@ public class ParseResult {
         return mAttributeNames;
     }
 
-    public void setAttibuteTypes(ArrayList<DataType> attibuteTypes) {
-        mAttributeTypes = attibuteTypes;
+    public void setAttributeTypes(ArrayList<DataType> attributeTypes) {
+        mAttributeTypes = attributeTypes;
     }
 
     public ArrayList<DataType> getAttributeTypes() {
         return mAttributeTypes;
     }
-    
+
     public void setBlocks(ArrayList<String> blocks) {
         mBlocks = blocks;
     }
-    
+
     public ArrayList<String> getBlocks() {
         return mBlocks;
     }
-    
+
     public void setUpdateOrder(ArrayList<String> updateOrder) {
         mUpdateOrder = updateOrder;
     }
-    
+
     public ArrayList<String> getUpdateOrder() {
         return mUpdateOrder;
     }
@@ -78,11 +82,11 @@ public class ParseResult {
     public int getPrimaryKeyIndex() {
         return mPrimaryKeyIndex;
     }
-    
+
     public void setCustomOrder(boolean customOrder) {
         mCustomOrder = customOrder;
     }
-    
+
     public boolean getCustomOrder() {
         return mCustomOrder;
     }
@@ -116,7 +120,7 @@ public class ParseResult {
             stringBuilder.append("Table ").append(mTablename).append("\n");
             stringBuilder.append("Attribute names\n");
             for (String name : mAttributeNames) {
-                stringBuilder.append(name + " ");
+                stringBuilder.append(name).append(" ");
             }
             stringBuilder.append("\n");
             stringBuilder.append("Attribute types\n");
@@ -124,7 +128,7 @@ public class ParseResult {
                 if (type.getType() == DataTypeIdentifier.INT) {
                     stringBuilder.append("INT ");
                 } else {
-                    stringBuilder.append("VARCHAR " + type.getLimit());
+                    stringBuilder.append("VARCHAR ").append(type.getLimit());
                 }
             }
             stringBuilder.append("\n");

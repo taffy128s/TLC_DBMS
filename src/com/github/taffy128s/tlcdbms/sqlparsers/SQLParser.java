@@ -8,7 +8,7 @@ import com.github.taffy128s.tlcdbms.DataTypeIdentifier;
 import java.util.ArrayList;
 
 /**
- * SQL parser
+ * SQL parser.
  */
 public class SQLParser {
     private String mCommand;
@@ -17,11 +17,20 @@ public class SQLParser {
     private boolean isValid;
     private int mIndex;
 
+    /**
+     * Constructor.
+     */
     public SQLParser() {
 
     }
 
-    public ParseResult parse(String command) {
+    /**
+     * Parse given command and return a SQLParseResult.
+     *
+     * @param command command to parse
+     * @return parse result, null if failed
+     */
+    public SQLParseResult parse(String command) {
         mCommand = command;
         mTokens = new ArrayList<>();
         mPositions = new ArrayList<>();
@@ -33,7 +42,13 @@ public class SQLParser {
         return parseCommand();
     }
 
-    private ParseResult parseCommand() {
+    /**
+     * Parse Command (CREATE or INSERT or SELECT) and call
+     * corresponding function for further processing.
+     *
+     * @return parse result, null if failed
+     */
+    private SQLParseResult parseCommand() {
         String command = nextToken(true);
         if (mTokens.size() == 0) return null;
         if (command.equalsIgnoreCase("create")) {
@@ -41,16 +56,21 @@ public class SQLParser {
         } else if (command.equalsIgnoreCase("insert")) {
             return parseInsert();
         } else {
-            printErrorMessage("Unexpected command " + command, command.length());
+            printErrorMessage("Unexpected command " + command);
             return null;
         }
     }
 
-    private ParseResult parseCreate() {
-        ParseResult result = new ParseResult();
+    /**
+     * Parse CREATE.
+     *
+     * @return parse result, null if failed
+     */
+    private SQLParseResult parseCreate() {
+        SQLParseResult result = new SQLParseResult();
         result.setCommandType(CommandType.CREATE);
         if (!checkTokenIgnoreCase("table", true)) {
-            printErrorMessage("Expect keyword TABLE", mTokens.get(mIndex).length());
+            printErrorMessage("Expect keyword TABLE");
             return null;
         }
         String tablename = getTableName();
@@ -59,7 +79,7 @@ public class SQLParser {
         }
         result.setTablename(tablename);
         if (!checkTokenIgnoreCase("(", true)) {
-            printErrorMessage("Left parenthesis '(' expected after table name", 2);
+            printErrorMessage("Left parenthesis '(' expected after table name");
             return null;
         }
         ArrayList<String> attributeNames = new ArrayList<>();
@@ -75,7 +95,7 @@ public class SQLParser {
             }
             attributeNames.add(attributeName);
             String attributeType = getAttributeType();
-            if (attributeType.equals("")) {
+            if (attributeType == null) {
                 return null;
             }
             if (attributeType.startsWith("INT")) {
@@ -102,7 +122,7 @@ public class SQLParser {
             ++index;
         }
         if (!checkTokenIgnoreCase(")", true)) {
-            printErrorMessage("Right parenthesis ')' expected after attribute definition.", 2);
+            printErrorMessage("Right parenthesis ')' expected after attribute definition.");
             return null;
         }
         if (!isEnded()) {
@@ -114,15 +134,20 @@ public class SQLParser {
             return null;
         }
         result.setAttributeNames(attributeNames);
-        result.setAttibuteTypes(attributeTypes);
+        result.setAttributeTypes(attributeTypes);
         return result;
     }
 
-    private ParseResult parseInsert() {
-        ParseResult result = new ParseResult();
+    /**
+     * Parse INSERT.
+     *
+     * @return parse result, null if failed
+     */
+    private SQLParseResult parseInsert() {
+        SQLParseResult result = new SQLParseResult();
         result.setCommandType(CommandType.INSERT);
         if (!checkTokenIgnoreCase("into", true)) {
-            printErrorMessage("Expect keyword INTO", mTokens.get(mIndex).length());
+            printErrorMessage("Expect keyword INTO");
             return null;
         }
         String tablename = getTableName();
@@ -130,10 +155,11 @@ public class SQLParser {
             return null;
         }
         result.setTablename(tablename);
-        ArrayList<String> updateOrder = new ArrayList<>();
+        ArrayList<String> updateOrder = null;
         if (checkTokenIgnoreCase("(", false)) {
             checkTokenIgnoreCase("(", true);
             result.setCustomOrder(true);
+            updateOrder = new ArrayList<>();
             while (true) {
                 String attrName = getAttributeName();
                 if (attrName == null) {
@@ -146,37 +172,35 @@ public class SQLParser {
                 checkTokenIgnoreCase(",", true);
             }
             if (!checkTokenIgnoreCase(")", true)) {
-                printErrorMessage("Right parenthesis ')' expected after attribute definition.", 2);
+                printErrorMessage("Right parenthesis ')' expected after attribute definition.");
                 return null;
             }
             result.setUpdateOrder(updateOrder);
+        } else {
+            result.setCustomOrder(false);
         }
         if (!checkTokenIgnoreCase("values", true)) {
-            printErrorMessage("Expect keyword VALUES", mTokens.get(mIndex).length());
+            printErrorMessage("Expect keyword VALUES");
             return null;
         }
         if (!checkTokenIgnoreCase("(", true)) {
-            printErrorMessage("Left parenthesis '(' expected after table name", 2);
+            printErrorMessage("Left parenthesis '(' expected after table name");
             return null;
         }
         ArrayList<String> blocks = new ArrayList<>();
         while (true) {
-            String block = nextToken(true);
-            if (DataChecker.isValidInteger(block)) {
-                blocks.add(block);
-            } else if (DataChecker.isValidQuotedVarChar(block)) {
-                blocks.add(block.substring(1, block.length() - 1));
-            } else {
-                printErrorMessage("Invalid data format", mTokens.get(mIndex).length());
+            String block = getBlock();
+            if (block == null) {
                 return null;
             }
+            blocks.add(block);
             if (!checkTokenIgnoreCase(",", false)) {
                 break;
             }
             checkTokenIgnoreCase(",", true);
         }
         if (!checkTokenIgnoreCase(")", true)) {
-            printErrorMessage("Right parenthesis ')' expected after attribute definition.", 2);
+            printErrorMessage("Right parenthesis ')' expected after attribute definition.");
             return null;
         }
         if (!isEnded()) {
@@ -184,11 +208,11 @@ public class SQLParser {
             return null;
         }
         if (blocks.isEmpty()) {
-            printErrorMessage("Empty tuple.", 2, mTokens.get(2).length());
+            printErrorMessage("Empty tuple to insert to table.", 2, mTokens.get(2).length());
             return null;
         }
-        if (blocks.size() != updateOrder.size()) {
-            System.out.println("Data numbers not mached.");
+        if (updateOrder != null && blocks.size() != updateOrder.size()) {
+            System.out.println("Data numbers not matched.");
             return null;
         }
         result.setBlocks(blocks);
@@ -226,86 +250,161 @@ public class SQLParser {
         }
     }
 
+    /**
+     * Get position of index-th token in mCommand string.
+     *
+     * @param index index to get
+     * @return position(string index) start from 0
+     */
     private int getPosition(int index) {
         return mPositions.get(index);
     }
 
+    /**
+     * Check whether there is still token not used.
+     * <br>** WILL INCREASE TOKEN INDEX **
+     * <p>
+     * Case 1 return true:<br>
+     *     {";"} // remaining only a semicolon
+     * <p>
+     * Case 2 return true:<br>
+     *     {} // already empty
+     *
+     * @return true if empty, false if not
+     */
     private boolean isEnded() {
         String token = nextToken(true);
         return (token.equals(";") || token.equals("")) && nextToken(true).equals("");
     }
 
+    /**
+     * Get table name from next token.
+     * <br>** WILL INCREASE TOKEN INDEX **
+     *
+     * @return a string with name if valid, null if invalid
+     */
     private String getTableName() {
         String name = nextToken(true);
         if (!name.matches("[a-zA-Z_]*")) {
-            printErrorMessage("Invalid table name " + name, name.length());
+            printErrorMessage("Invalid table name " + name);
             return null;
         } else if (SQLKeyWords.isSQLKeyword(name)) {
-            printErrorMessage("Invalid table name " + name, name.length());
+            printErrorMessage("Invalid table name " + name);
             return null;
         } else {
             return name;
         }
     }
 
+    /**
+     * Get attribute name from next token.
+     * <br>** WILL INCREASE TOKEN INDEX **
+     *
+     * @return a string with name if valid, null if invalid
+     */
     private String getAttributeName() {
         String name = nextToken(true);
         if (!name.matches("[a-zA-Z_]*")) {
-            printErrorMessage("Invalid attribute name " + name, name.length());
+            printErrorMessage("Invalid attribute name " + name);
             return null;
         } else if (SQLKeyWords.isSQLKeyword(name)) {
-            printErrorMessage("Invalid attribute name " + name, name.length());
+            printErrorMessage("Invalid attribute name " + name);
             return null;
         } else {
             return name;
         }
     }
 
+    /**
+     * Get attribute type from next token.
+     * <br>** WILL INCREASE TOKEN INDEX **
+     * <p>
+     *     Return examples:<br>
+     *     <code>null</code><br>
+     *     <code>"INT"</code><br>
+     *     <code>"INT PRIMARY"</code><br>
+     *     <code>"VARCHAR 20"</code><br>
+     *     <code>"VARCHAR 20 PRIMARY"</code><br>
+     *
+     * @return a string of attribute type, null if invalid
+     */
     private String getAttributeType() {
         String type = nextToken(true);
         if (type.equalsIgnoreCase("int")) {
             String primaryResult = checkPrimaryKey();
+            if (primaryResult == null) {
+                return null;
+            }
             switch (primaryResult) {
                 case "PRIMARY":
                     return "INT PRIMARY";
-                case "":
-                    return "INT";
                 default:
-                    return "";
+                    return "INT";
             }
         } else if (type.equalsIgnoreCase("varchar")) {
             if (!checkTokenIgnoreCase("(", true)) {
-                printErrorMessage("Left parenthesis '(' expected after VARCHAR", 2);
-                return "";
+                printErrorMessage("Left parenthesis '(' expected after VARCHAR");
+                return null;
             }
             String limit = nextToken(true);
             if (!DataChecker.isValidVarCharLimitation(limit)) {
-                printErrorMessage("Invalid limitation", limit.length());
-                return "";
+                printErrorMessage("Invalid limitation");
+                return null;
             }
             if (!checkTokenIgnoreCase(")", true)) {
-                printErrorMessage("Right parenthesis ')' expected at end of VARCHAR definition.", 2);
-                return "";
+                printErrorMessage("Right parenthesis ')' expected at end of VARCHAR definition.");
+                return null;
             }
             String primaryResult = checkPrimaryKey();
+            if (primaryResult == null) {
+                return null;
+            }
             switch (primaryResult) {
                 case "PRIMARY":
                     return "VARCHAR " + limit + " PRIMARY";
-                case "":
-                    return "VARCHAR " + limit;
                 default:
-                    return "";
+                    return "VARCHAR " + limit;
             }
         } else {
-            printErrorMessage("Invalid data type " + type, type.length());
-            return "";
+            printErrorMessage("Invalid data type " + type);
+            return null;
         }
     }
 
+    /**
+     * Get a data block.
+     *
+     * @return a string of data block, null if failed
+     */
+    private String getBlock() {
+        String block = nextToken(true);
+        if (DataChecker.isValidInteger(block)) {
+            return block;
+        } else if (DataChecker.isValidQuotedVarChar(block)) {
+            return block.substring(1, block.length() - 1);
+        } else {
+            printErrorMessage("Invalid data format");
+            return null;
+        }
+    }
+
+    /**
+     * Check next token with input string (case insensitive).
+     *
+     * @param expected expect string, string to be compared
+     * @param increase true to increase index
+     * @return true if matched, false if not
+     */
     private boolean checkTokenIgnoreCase(String expected, boolean increase) {
         return nextToken(increase).equalsIgnoreCase(expected);
     }
 
+    /**
+     * Check PRIMARY KEY keywords.
+     * Used in getAttributeType().
+     *
+     * @return "PRIMARY" if primary key, "" if no primary key, null if syntax error
+     */
     private String checkPrimaryKey() {
         if (checkTokenIgnoreCase("primary", false)) {
             checkTokenIgnoreCase("primary", true);
@@ -313,27 +412,46 @@ public class SQLParser {
                 return "PRIMARY";
             } else {
                 System.out.println("KEY keyword expected after PRIMARY");
-                return "ERROR";
+                return null;
             }
         } else {
             return "";
         }
     }
 
-    private void printErrorMessage(String message, int underlineLength) {
+    /**
+     * Print error message. Underline will be drawn under the mIndex-th tokens.
+     *
+     * @param message error message to show
+     */
+    private void printErrorMessage(String message) {
         System.out.println(mCommand);
-        printUnderLine(getPosition(mIndex), underlineLength);
+        printUnderLine(getPosition(mIndex), mTokens.get(mIndex).length());
         System.out.println(message);
     }
 
+    /**
+     * Print error message. Underline will be drawn under the index-th tokens
+     * with length underlineLength specified from parameters.
+     *
+     * @param message error message to show
+     * @param index set token index for start position
+     * @param underlineLength underline length
+     */
     private void printErrorMessage(String message, int index, int underlineLength) {
         System.out.println(mCommand);
         printUnderLine(getPosition(index), underlineLength);
         System.out.println(message);
     }
 
-    private void printUnderLine(int startIndex, int length) {
-        for (int i = 0; i < startIndex; ++i) {
+    /**
+     * Draw underline ^~~~~~~~.
+     *
+     * @param startPosition start position
+     * @param length length, note that length("^~~") == 3
+     */
+    private void printUnderLine(int startPosition, int length) {
+        for (int i = 0; i < startPosition; ++i) {
             System.out.print(" ");
         }
         System.out.print("^");
@@ -343,6 +461,9 @@ public class SQLParser {
         System.out.println("");
     }
 
+    /**
+     * Split tokens.
+     */
     private void splitTokens() {
         mCommand = mCommand.replaceAll("\n", " ");
         mCommand = mCommand.replaceAll("\t", "    ");

@@ -1,13 +1,13 @@
 package com.github.taffy128s.tlcdbms;
 
 import java.io.IOException;
-import java.io.InputStreamReader;    
+import java.io.InputStreamReader;
 import java.io.Reader;
 
-import com.github.taffy128s.tlcdbms.sqlparsers.ParseResult;
-import com.github.taffy128s.tlcdbms.sqlparsers.SQLParser;    
-    
-public class Main {    
+import com.github.taffy128s.tlcdbms.sqlparsers.SQLParseResult;
+import com.github.taffy128s.tlcdbms.sqlparsers.SQLParser;
+
+public class Main {
 
     public static void main(String[] args) throws IOException {
         String singleIns = "";
@@ -18,16 +18,16 @@ public class Main {
             char c = (char) temp;
             if (c == ';') {
                 if (!singleIns.equals("")) {
-                    ParseResult result = parser.parse(singleIns);
+                    SQLParseResult result = parser.parse(singleIns);
                     if (result != null) {
                         System.out.print(result.toString());
                     }
                 }
-                singleIns = ""; 
+                singleIns = "";
             } else {
                 singleIns += c;
             }
         }
     }
-    
+
 }
