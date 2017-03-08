@@ -7,7 +7,7 @@ import java.util.HashSet;
  * Database Table
  *
  * It contains all operations related to the table in DB,
- * including CREATE, INSERT, DELETE...
+ * including CREATE, INSERT, SELECT...
  */
 public class Table {
     private String mTablename;
@@ -47,6 +47,7 @@ public class Table {
 
     /**
      * Insert a data record into table.
+     * Assume that data is with valid type.
      *
      * @param data data record to be inserted
      * @return true if succeed, false if failed

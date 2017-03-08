@@ -7,5 +7,6 @@ package com.github.taffy128s.tlcdbms;
 public enum CommandType {
     NONE,
     CREATE,
-    INSERT
+    INSERT,
+    SELECT
 }

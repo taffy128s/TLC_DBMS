@@ -72,7 +72,7 @@ public class DataCheckerTest {
         expected.add(true);
         expected.add(false);
         for (int i = 0; i < expected.size(); ++i) {
-            assertEquals(expected.get(i), DataChecker.isValidVarChar(testSet.get(i)));
+            assertEquals(expected.get(i), DataChecker.isValidVarChar(testSet.get(i), 40));
         }
     }
 

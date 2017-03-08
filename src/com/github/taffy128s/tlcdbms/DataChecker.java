@@ -26,9 +26,10 @@ public class DataChecker {
      * Check whether data is a valid VARCHAR
      *
      * @param data data to check
+     * @param limit varchar length limitation
      * @return true if valid, false if invalid
      */
-    public static boolean isValidVarChar(String data) {
-        return data.length() <= 40;
+    public static boolean isValidVarChar(String data, int limit) {
+        return data.length() <= limit;
     }
 }
