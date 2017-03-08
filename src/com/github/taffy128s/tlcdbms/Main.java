@@ -16,15 +16,20 @@ public class Main {
         int temp;
         while ((temp = reader.read()) != -1) {
             char c = (char) temp;
-            if (c != ';') singleIns += c;
-            else {
-                if (!singleIns.equals("") && !singleIns.equals("\n") && !singleIns.equals("\r\n")) {
+            if (c == ';') {
+                if (!singleIns.equals("")) {
                     ParseResult result = parser.parse(singleIns);
                     if (result != null) {
                         System.out.print(result.toString());
                     }
                 }
-                singleIns = "";
+                singleIns = ""; 
+            } else if (c == '\r') {
+                singleIns += "";
+            } else if (c == '\n') {
+                singleIns += " ";
+            } else {
+                singleIns += c;
             }
         }
     }
