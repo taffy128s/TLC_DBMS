@@ -187,6 +187,9 @@ public class SQLParser {
         if (!name.matches("[a-zA-Z_]*")) {
             printErrorMessage("Invalid name " + name, name.length());
             return null;
+        } else if (SQLKeyWords.isSQLKeyword(name)) {
+            printErrorMessage("Invalid name " + name, name.length());
+            return null;
         } else {
             return name;
         }
