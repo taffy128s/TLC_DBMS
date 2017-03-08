@@ -192,7 +192,6 @@ public class SQLParser {
             return null;
         }
         result.setBlocks(blocks);
-        System.out.println(result.toString());
         return result;
     }
 
