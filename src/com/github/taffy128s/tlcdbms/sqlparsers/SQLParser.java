@@ -35,6 +35,7 @@ public class SQLParser {
 
     private ParseResult parseCommand() {
         String command = nextToken(true);
+        if (mTokens.size() == 0) return null;
         if (command.equalsIgnoreCase("create")) {
             return parseCreate();
         } else if (command.equalsIgnoreCase("insert")) {
