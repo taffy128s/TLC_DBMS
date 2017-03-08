@@ -13,17 +13,20 @@ import java.util.ArrayList;
 public class SQLParser {
     private String mCommand;
     private ArrayList<String> mTokens;
+    private ArrayList<Integer> mPositions;
     private boolean isValid;
     private int index;
 
-    public SQLParser(String command) {
-        mCommand = command;
-        mTokens = new ArrayList<>();
-        index = -1;
-        splitTokens(mCommand);
+    public SQLParser() {
+
     }
 
-    public ParseResult parse() {
+    public ParseResult parse(String command) {
+        mCommand = command;
+        mTokens = new ArrayList<>();
+        mPositions = new ArrayList<>();
+        index = -1;
+        splitTokens();
         if (!isValid) {
             return null;
         }
@@ -31,12 +34,14 @@ public class SQLParser {
     }
 
     private ParseResult parseCommand() {
-        String command = nextToken();
+        String command = nextToken(true);
         if (command.equalsIgnoreCase("create")) {
             return parseCreate();
         } else if (command.equalsIgnoreCase("insert")) {
             return parseInsert();
         } else {
+            System.err.println(mCommand);
+            printUnderLine(getPosition(index), command.length());
             System.err.println("Unexpected command " + command + ".");
             return null;
         }
@@ -45,7 +50,7 @@ public class SQLParser {
     private ParseResult parseCreate() {
         ParseResult result = new ParseResult();
         result.setCommandType(CommandType.CREATE);
-        if (!checkTokenIgnoreCase("table")) {
+        if (!checkTokenIgnoreCase("table", true)) {
             System.err.println("Expect TABLE keyword after CREATE.");
             return null;
         }
@@ -54,7 +59,7 @@ public class SQLParser {
             return null;
         }
         result.setTablename(tablename);
-        if (!checkTokenIgnoreCase("(")) {
+        if (!checkTokenIgnoreCase("(", true)) {
             System.err.println("Left parenthesis '(' expected after table name");
             return null;
         }
@@ -96,10 +101,10 @@ public class SQLParser {
             if (!nextToken(false).equalsIgnoreCase(",")) {
                 break;
             }
-            checkTokenIgnoreCase(",");
+            checkTokenIgnoreCase(",", true);
             ++index;
         }
-        if (!checkTokenIgnoreCase(")")) {
+        if (!checkTokenIgnoreCase(")", true)) {
             System.err.println("Right parenthesis ')' expected after attribute definition.");
             return null;
         }
@@ -135,19 +140,6 @@ public class SQLParser {
     }
 
     /**
-     * Get next token and INCREASE INDEX BY 1.
-     *
-     * @return next token string, "" if failed
-     */
-    private String nextToken() {
-        if (index + 1 >= 0 && index + 1 < mTokens.size()) {
-            return mTokens.get(++index);
-        } else {
-            return "";
-        }
-    }
-
-    /**
      * Get next token.
      *
      * @param increment true to increase index
@@ -165,13 +157,17 @@ public class SQLParser {
         }
     }
 
+    private int getPosition(int index) {
+        return mPositions.get(index);
+    }
+
     private boolean isEnded() {
-        String token = nextToken();
-        return (token.equals(";") || token.equals("")) && nextToken().equals("");
+        String token = nextToken(true);
+        return (token.equals(";") || token.equals("")) && nextToken(true).equals("");
     }
 
     private String getName() {
-        String name = nextToken();
+        String name = nextToken(true);
         if (!name.matches("[a-zA-Z_]*")) {
             System.err.println("Invalid name " + name + ".");
             return null;
@@ -181,7 +177,7 @@ public class SQLParser {
     }
 
     private String getAttributeType() {
-        String type = nextToken();
+        String type = nextToken(true);
         if (type.equalsIgnoreCase("int")) {
             String primaryResult = checkPrimaryKey();
             switch (primaryResult) {
@@ -193,16 +189,16 @@ public class SQLParser {
                     return "";
             }
         } else if (type.equalsIgnoreCase("varchar")) {
-            if (!checkTokenIgnoreCase("(")) {
+            if (!checkTokenIgnoreCase("(", true)) {
                 System.err.println("Left parenthesis '(' expected after VARCHAR.");
                 return "";
             }
-            String limit = nextToken();
+            String limit = nextToken(true);
             if (!DataChecker.isValidInteger(limit)) {
                 System.err.println(limit + ": not a valid limitation.");
                 return "";
             }
-            if (!checkTokenIgnoreCase(")")) {
+            if (!checkTokenIgnoreCase(")", true)) {
                 System.err.println("Right parenthesis ')' expected at end of VARCHAR definition.");
                 return "";
             }
@@ -221,18 +217,14 @@ public class SQLParser {
         }
     }
 
-    private boolean checkTokenIgnoreCase(String expected) {
-        return nextToken().equalsIgnoreCase(expected);
-    }
-
     private boolean checkTokenIgnoreCase(String expected, boolean increase) {
-        return nextToken(false).equalsIgnoreCase(expected);
+        return nextToken(increase).equalsIgnoreCase(expected);
     }
 
     private String checkPrimaryKey() {
         if (checkTokenIgnoreCase("primary", false)) {
-            checkTokenIgnoreCase("primary");
-            if (checkTokenIgnoreCase("key")) {
+            checkTokenIgnoreCase("primary", true);
+            if (checkTokenIgnoreCase("key", true)) {
                 return "PRIMARY";
             } else {
                 System.err.println("KEY keyword expected after PRIMARY");
@@ -243,11 +235,22 @@ public class SQLParser {
         }
     }
 
-    private void splitTokens(String command) {
+    private void printUnderLine(int startIndex, int length) {
+        for (int i = 0; i < startIndex; ++i) {
+            System.err.print(" ");
+        }
+        System.err.print("^");
+        for (int i = 0; i < length - 1; ++i) {
+            System.err.print("~");
+        }
+        System.err.println("");
+    }
+
+    private void splitTokens() {
         String preProcessCommand = "";
         boolean quoteFlag = false;
-        for (int i = 0; i < command.length(); ++i) {
-            switch (command.charAt(i)) {
+        for (int i = 0; i < mCommand.length(); ++i) {
+            switch (mCommand.charAt(i)) {
                 case '\'':
                     if (quoteFlag) {
                         preProcessCommand += "'\0";
@@ -294,7 +297,7 @@ public class SQLParser {
                     preProcessCommand += "\0;\0";
                     break;
                 default:
-                    preProcessCommand += command.charAt(i);
+                    preProcessCommand += mCommand.charAt(i);
                     break;
             }
         }
@@ -303,9 +306,12 @@ public class SQLParser {
             isValid = false;
         }
         String[] splited = preProcessCommand.split("\0");
+        int startLocation = 0;
         for (String token : splited) {
+            startLocation = mCommand.indexOf(token, startLocation);
             if (token.length() > 0) {
                 mTokens.add(token);
+                mPositions.add(startLocation);
             }
         }
         isValid = true;

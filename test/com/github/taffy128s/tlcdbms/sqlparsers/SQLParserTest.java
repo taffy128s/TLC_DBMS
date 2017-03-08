@@ -22,10 +22,8 @@ public class SQLParserTest {
 
     @Test
     public void parse() throws Exception {
-        SQLParser parser = new SQLParser(
-                "cReate table accc(ss int PRiMArY kEy, scv varchar(-10))"
-        );
-        ParseResult result = parser.parse();
+        SQLParser parser = new SQLParser();
+        ParseResult result = parser.parse("cReates table accc(ss int PRiMArY kEy, scv varchar(-10))");
         System.out.println(result);
     }
 
