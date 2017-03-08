@@ -127,7 +127,6 @@ public class SQLParser {
         	return null;
         }
         result.setTablename(tablename);
-        System.out.println(tablename);
         if (!checkTokenIgnoreCase("values", true)) {
             printErrorMessage("Expect keyword VALUES", mTokens.get(mIndex).length());
             return null;
@@ -137,9 +136,24 @@ public class SQLParser {
         	return null;
         }
         ArrayList<String> blocks = new ArrayList<>();
-        while(true) {
-
+        while (true) {
+            String block = nextToken(true);
+            if (DataChecker.isValidInteger(block)) {
+                blocks.add(block);
+            } else if (DataChecker.isValidQuotedVarChar(block)) {
+                blocks.add(block.substring(1, block.length() - 1));
+            } else {
+                printErrorMessage("Invalid data format", mTokens.get(mIndex).length());
+                return null;
+            }
+            if (!nextToken(false).equalsIgnoreCase(",")) {
+                break;
+            }
+            checkTokenIgnoreCase(",", true);
         }
+        result.setBlocks(blocks);
+        System.out.print(result.toString());
+        return result;
     }
 
     /**

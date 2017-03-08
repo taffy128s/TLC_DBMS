@@ -44,4 +44,12 @@ public class DataChecker {
     public static boolean isValidVarChar(String data, int limit) {
         return data.length() <= limit;
     }
+    
+    public static boolean isValidQuotedVarChar(String data) {
+        if (data.charAt(0) == '\'' && data.charAt(data.length() - 1) == '\'') {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

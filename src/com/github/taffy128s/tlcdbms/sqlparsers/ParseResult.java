@@ -94,25 +94,31 @@ public class ParseResult {
         StringBuilder stringBuilder = new StringBuilder();
         if (mCommandType == CommandType.CREATE) {
             stringBuilder.append("CREATE\n");
+            stringBuilder.append("Table ").append(mTablename).append("\n");
+            stringBuilder.append("Attribute names\n");
+            for (String name : mAttributeNames) {
+                stringBuilder.append(name + " ");
+            }
+            stringBuilder.append("\n");
+            stringBuilder.append("Attribute types\n");
+            for (DataType type : mAttributeTypes) {
+                if (type.getType() == DataTypeIdentifier.INT) {
+                    stringBuilder.append("INT ");
+                } else {
+                    stringBuilder.append("VARCHAR " + type.getLimit());
+                }
+            }
+            stringBuilder.append("\n");
+            stringBuilder.append("PRIMARY KEY INDEX " + mPrimaryKeyIndex + "\n");
         } else {
             stringBuilder.append("INSERT\n");
-        }
-        stringBuilder.append("Table ").append(mTablename).append("\n");
-        stringBuilder.append("Attribute names\n");
-        for (String name : mAttributeNames) {
-            stringBuilder.append(name + " ");
-        }
-        stringBuilder.append("\n");
-        stringBuilder.append("Attribute types\n");
-        for (DataType type : mAttributeTypes) {
-            if (type.getType() == DataTypeIdentifier.INT) {
-                stringBuilder.append("INT ");
-            } else {
-                stringBuilder.append("VARCHAR " + type.getLimit());
+            stringBuilder.append("Table ").append(mTablename).append("\n");
+            stringBuilder.append("Block content\n");
+            for (String block : mBlocks) {
+                stringBuilder.append(block + " ");
             }
+            stringBuilder.append("\n");
         }
-        stringBuilder.append("\n");
-        stringBuilder.append("PRIMARY KEY INDEX " + mPrimaryKeyIndex + "\n");
         return stringBuilder.toString();
     }
 }
