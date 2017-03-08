@@ -276,6 +276,7 @@ public class SQLParser {
 
     private void splitTokens() {
         mCommand = mCommand.replaceAll("\n", " ");
+        mCommand = mCommand.replaceAll("\t", "    ");
         String preProcessCommand = "";
         boolean quoteFlag = false;
         for (int i = 0; i < mCommand.length(); ++i) {
@@ -293,11 +294,7 @@ public class SQLParser {
                     quoteFlag = !quoteFlag;
                     break;
                 case ' ':
-                    if (quoteFlag) {
-                        preProcessCommand += " ";
-                    } else {
-                        preProcessCommand += "\0";
-                    }
+                    preProcessCommand += "\0";
                     break;
                 case '\n':
                     preProcessCommand += "\0";
