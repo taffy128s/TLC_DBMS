@@ -58,3 +58,4 @@ TLC_DBMS.iml
 .idea/
 lib/
 out/
+.DS_STORE
