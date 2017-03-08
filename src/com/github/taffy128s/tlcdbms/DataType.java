@@ -8,11 +8,6 @@ public class DataType {
     private DataTypeIdentifier mType;
     private int mLimit;
 
-    public DataType() {
-        mType = DataTypeIdentifier.INT;
-        mLimit = 0;
-    }
-
     public DataType(DataTypeIdentifier typeIdentifier, int limit) {
         mType = typeIdentifier;
         mLimit = limit;
