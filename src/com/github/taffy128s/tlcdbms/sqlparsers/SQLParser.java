@@ -53,7 +53,7 @@ public class SQLParser {
             printErrorMessage("Expect keyword TABLE", mTokens.get(mIndex).length());
             return null;
         }
-        String tablename = getName();
+        String tablename = getTableName();
         if (tablename == null) {
             return null;
         }
@@ -66,7 +66,7 @@ public class SQLParser {
         ArrayList<DataType> attributeTypes = new ArrayList<>();
         int index = 0;
         while (true) {
-            String attributeName = getName();
+            String attributeName = getAttributeName();
             if (attributeName == null) {
                 return null;
             }
@@ -122,7 +122,7 @@ public class SQLParser {
         	printErrorMessage("Expect keyword INTO", mTokens.get(mIndex).length());
         	return null;
         }
-        String tablename = getName();
+        String tablename = getTableName();
         if (tablename == null) {
         	return null;
         }
@@ -182,13 +182,25 @@ public class SQLParser {
         return (token.equals(";") || token.equals("")) && nextToken(true).equals("");
     }
 
-    private String getName() {
+    private String getTableName() {
         String name = nextToken(true);
         if (!name.matches("[a-zA-Z_]*")) {
-            printErrorMessage("Invalid name " + name, name.length());
+            printErrorMessage("Invalid table name " + name, name.length());
             return null;
         } else if (SQLKeyWords.isSQLKeyword(name)) {
-            printErrorMessage("Invalid name " + name, name.length());
+            printErrorMessage("Invalid table name " + name, name.length());
+            return null;
+        } else {
+            return name;
+        }
+    }
+
+    private String getAttributeName() {String name = nextToken(true);
+        if (!name.matches("[a-zA-Z_]*")) {
+            printErrorMessage("Invalid attribute name " + name, name.length());
+            return null;
+        } else if (SQLKeyWords.isSQLKeyword(name)) {
+            printErrorMessage("Invalid attribute name " + name, name.length());
             return null;
         } else {
             return name;
