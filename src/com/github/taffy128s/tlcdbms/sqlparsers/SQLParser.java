@@ -103,7 +103,7 @@ public class SQLParser {
             return null;
         }
         if (!isEnded()) {
-            System.err.println("Unexpected strings at end of line.");
+            System.out.println("Unexpected strings at end of line.");
             return null;
         }
         if (attributeNames.isEmpty()) {
@@ -119,7 +119,7 @@ public class SQLParser {
         ParseResult result = new ParseResult();
         result.setCommandType(CommandType.INSERT);
         if (!checkTokenIgnoreCase("into", true)) {
-        	printErrorMessage("Expect keyword INSERT", mTokens.get(mIndex).length());
+        	printErrorMessage("Expect keyword INTO", mTokens.get(mIndex).length());
         	return null;
         }
         String tablename = getName();
@@ -127,6 +127,7 @@ public class SQLParser {
         	return null;
         }
         result.setTablename(tablename);
+        System.out.println(tablename);
         if (!checkTokenIgnoreCase("values", true)) {
             printErrorMessage("Expect keyword VALUES", mTokens.get(mIndex).length());
             return null;
@@ -137,7 +138,7 @@ public class SQLParser {
         }
         ArrayList<String> blocks = new ArrayList<>();
         while(true) {
-        	
+
         }
     }
 
@@ -242,7 +243,7 @@ public class SQLParser {
             if (checkTokenIgnoreCase("key", true)) {
                 return "PRIMARY";
             } else {
-                System.err.println("KEY keyword expected after PRIMARY");
+                System.out.println("KEY keyword expected after PRIMARY");
                 return "ERROR";
             }
         } else {
@@ -251,32 +252,37 @@ public class SQLParser {
     }
 
     private void printErrorMessage(String message, int underlineLength) {
-        System.err.println(mCommand);
+        System.out.println(mCommand);
         printUnderLine(getPosition(mIndex), underlineLength);
-        System.err.println(message);
+        System.out.println(message);
     }
 
     private void printErrorMessage(String message, int index, int underlineLength) {
-        System.err.println(mCommand);
+        System.out.println(mCommand);
         printUnderLine(getPosition(index), underlineLength);
-        System.err.println(message);
+        System.out.println(message);
     }
 
     private void printUnderLine(int startIndex, int length) {
         for (int i = 0; i < startIndex; ++i) {
-            System.err.print(" ");
+            System.out.print(" ");
         }
-        System.err.print("^");
+        System.out.print("^");
         for (int i = 0; i < length - 1; ++i) {
-            System.err.print("~");
+            System.out.print("~");
         }
-        System.err.println("");
+        System.out.println("");
     }
 
     private void splitTokens() {
+        mCommand = mCommand.replaceAll("\n", " ");
         String preProcessCommand = "";
         boolean quoteFlag = false;
         for (int i = 0; i < mCommand.length(); ++i) {
+            if (quoteFlag && mCommand.charAt(i) != '\'') {
+                preProcessCommand += mCommand.charAt(i);
+                continue;
+            }
             switch (mCommand.charAt(i)) {
                 case '\'':
                     if (quoteFlag) {
@@ -329,16 +335,17 @@ public class SQLParser {
             }
         }
         if (quoteFlag) {
-            System.err.println("Single quote not matched");
+            System.out.println("Single quote not matched");
             isValid = false;
         }
         String[] splited = preProcessCommand.split("\0");
         int startLocation = 0;
         for (String token : splited) {
-            startLocation = mCommand.indexOf(token, startLocation);
             if (token.length() > 0) {
+                startLocation = mCommand.indexOf(token, startLocation);
                 mTokens.add(token);
                 mPositions.add(startLocation);
+                startLocation += token.length();
             }
         }
         isValid = true;

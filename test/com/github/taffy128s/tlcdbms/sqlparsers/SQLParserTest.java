@@ -40,5 +40,4 @@ public class SQLParserTest {
             ParseResult result = parser.parse(test);
         }
     }
-
 }
