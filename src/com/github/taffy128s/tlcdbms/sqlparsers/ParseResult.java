@@ -12,12 +12,15 @@ public class ParseResult {
     private ArrayList<String> mAttributeNames;
     private ArrayList<DataType> mAttributeTypes;
     private ArrayList<String> mBlocks;
+    private ArrayList<String> mUpdateOrder;
     private int mPrimaryKeyIndex;
+    private boolean mCustomOrder;
 
     public ParseResult() {
         mCommandType = CommandType.NONE;
         mTablename = "";
         mPrimaryKeyIndex = -1;
+        mCustomOrder = false;
     }
 
     public void setCommandType(CommandType commandType) {
@@ -59,6 +62,14 @@ public class ParseResult {
     public ArrayList<String> getBlocks() {
         return mBlocks;
     }
+    
+    public void setUpdateOrder(ArrayList<String> updateOrder) {
+        mUpdateOrder = updateOrder;
+    }
+    
+    public ArrayList<String> getUpdateOrder() {
+        return mUpdateOrder;
+    }
 
     public void setPrimaryKeyIndex(int primaryKeyIndex) {
         mPrimaryKeyIndex = primaryKeyIndex;
@@ -66,6 +77,14 @@ public class ParseResult {
 
     public int getPrimaryKeyIndex() {
         return mPrimaryKeyIndex;
+    }
+    
+    public void setCustomOrder(boolean customOrder) {
+        mCustomOrder = customOrder;
+    }
+    
+    public boolean getCustomOrder() {
+        return mCustomOrder;
     }
 
     /**
@@ -118,6 +137,13 @@ public class ParseResult {
                 stringBuilder.append(block + " ");
             }
             stringBuilder.append("\n");
+            if (mCustomOrder) {
+                stringBuilder.append("Custom order\n");
+                for (String attrName : mUpdateOrder) {
+                    stringBuilder.append(attrName + " ");
+                }
+                stringBuilder.append("\n");
+            }
         }
         return stringBuilder.toString();
     }

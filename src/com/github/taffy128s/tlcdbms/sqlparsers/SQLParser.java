@@ -95,7 +95,7 @@ public class SQLParser {
                     result.setPrimaryKeyIndex(index);
                 }
             }
-            if (!nextToken(false).equalsIgnoreCase(",")) {
+            if (!checkTokenIgnoreCase(",", false)) {
                 break;
             }
             checkTokenIgnoreCase(",", true);
@@ -130,6 +130,27 @@ public class SQLParser {
         	return null;
         }
         result.setTablename(tablename);
+        ArrayList<String> updateOrder = new ArrayList<>();
+        if (checkTokenIgnoreCase("(", false)) {
+            checkTokenIgnoreCase("(", true);
+            result.setCustomOrder(true);
+            while (true) {
+                String attrName = getAttributeName();
+                if (attrName == null) {
+                    return null;
+                }
+                updateOrder.add(attrName);
+                if (!checkTokenIgnoreCase(",", false)) {
+                    break;
+                }
+                checkTokenIgnoreCase(",", true);
+            }
+            if (!checkTokenIgnoreCase(")", true)) {
+                printErrorMessage("Right parenthesis ')' expected after attribute definition.", 2);
+                return null;
+            }
+            result.setUpdateOrder(updateOrder);
+        }
         if (!checkTokenIgnoreCase("values", true)) {
             printErrorMessage("Expect keyword VALUES", mTokens.get(mIndex).length());
             return null;
@@ -149,12 +170,28 @@ public class SQLParser {
                 printErrorMessage("Invalid data format", mTokens.get(mIndex).length());
                 return null;
             }
-            if (!nextToken(false).equalsIgnoreCase(",")) {
+            if (!checkTokenIgnoreCase(",", false)) {
                 break;
             }
             checkTokenIgnoreCase(",", true);
         }
+        if (!checkTokenIgnoreCase(")", true)) {
+            printErrorMessage("Right parenthesis ')' expected after attribute definition.", 2);
+            return null;
+        }
+        if (!isEnded()) {
+            System.out.println("Unexpected strings at end of line.");
+            return null;
+        }
+        if (blocks.isEmpty()) {
+            printErrorMessage("Empty tuple.", 2, mTokens.get(2).length());
+            return null;
+        }
+        if (blocks.size() != updateOrder.size()) {
+            System.out.println("Data numbers not mached.");
+        }
         result.setBlocks(blocks);
+        System.out.println(result.toString());
         return result;
     }
 

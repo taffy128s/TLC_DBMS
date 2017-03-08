@@ -37,7 +37,10 @@ public class SQLParserTest {
         testcases.add("Create table f(_ INT PRIMARY KEY, scv INT,)");
         testcases.add("insert into fuck values(a16546");
         testcases.add("insert into fuck values(123456, 'test')");
+        testcases.add("insert into fuck values(,,,,,,,,,");
+        testcases.add("insert into fuck values(''");
         testcases.add("Create table f();");
+        testcases.add("insert into fuck(fuck, you) values(1,2)");
         SQLParser parser = new SQLParser();
         for (String test : testcases) {
             ParseResult result = parser.parse(test);
