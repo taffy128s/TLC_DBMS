@@ -40,9 +40,7 @@ public class SQLParser {
         } else if (command.equalsIgnoreCase("insert")) {
             return parseInsert();
         } else {
-            System.err.println(mCommand);
-            printUnderLine(getPosition(index), command.length());
-            System.err.println("Unexpected command " + command + ".");
+            printErrorMessage("Unexpected command " + command, command.length());
             return null;
         }
     }
@@ -51,7 +49,7 @@ public class SQLParser {
         ParseResult result = new ParseResult();
         result.setCommandType(CommandType.CREATE);
         if (!checkTokenIgnoreCase("table", true)) {
-            System.err.println("Expect TABLE keyword after CREATE.");
+            printErrorMessage("Expected keyword TABLE", 2);
             return null;
         }
         String tablename = getName();
@@ -60,7 +58,7 @@ public class SQLParser {
         }
         result.setTablename(tablename);
         if (!checkTokenIgnoreCase("(", true)) {
-            System.err.println("Left parenthesis '(' expected after table name");
+            printErrorMessage("Left parenthesis '(' expected after table name", 2);
             return null;
         }
         ArrayList<String> attributeNames = new ArrayList<>();
@@ -81,9 +79,9 @@ public class SQLParser {
             } else {
                 String[] elements = attributeType.split(" ");
                 if (elements.length > 1) {
-                    int limit = Integer.parseInt(attributeType.split(" ")[1]);
+                    int limit = Integer.parseInt(elements[1]);
                     if (limit <= 0 || limit > 40) {
-                        System.err.println(limit + ": Invalid varchar length limitation");
+                        printErrorMessage("Invalid varchar length limitation", elements[1].length());
                         return null;
                     }
                     attributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, limit));
@@ -93,7 +91,7 @@ public class SQLParser {
             }
             if (attributeType.contains("PRIMARY")) {
                 if (result.getPrimaryKeyIndex() != -1) {
-                    System.err.println("Multiple Primary Key.");
+                    printErrorMessage("Multiple Primary Key", 7);
                 } else {
                     result.setPrimaryKeyIndex(index);
                 }
@@ -105,7 +103,7 @@ public class SQLParser {
             ++index;
         }
         if (!checkTokenIgnoreCase(")", true)) {
-            System.err.println("Right parenthesis ')' expected after attribute definition.");
+            printErrorMessage("Right parenthesis ')' expected after attribute definition.", 2);
             return null;
         }
         if (!isEnded()) {
@@ -113,7 +111,7 @@ public class SQLParser {
             return null;
         }
         if (attributeNames.isEmpty()) {
-            System.err.println("No attributes specified for the new table.");
+            printErrorMessage("No attributes specified for this new table.", 2);
             return null;
         }
         result.setAttributeNames(attributeNames);
@@ -169,7 +167,7 @@ public class SQLParser {
     private String getName() {
         String name = nextToken(true);
         if (!name.matches("[a-zA-Z_]*")) {
-            System.err.println("Invalid name " + name + ".");
+            printErrorMessage("Invalid name " + name, name.length());
             return null;
         } else {
             return name;
@@ -190,16 +188,16 @@ public class SQLParser {
             }
         } else if (type.equalsIgnoreCase("varchar")) {
             if (!checkTokenIgnoreCase("(", true)) {
-                System.err.println("Left parenthesis '(' expected after VARCHAR.");
+                printErrorMessage("Left parenthesis '(' expected after VARCHAR", 2);
                 return "";
             }
             String limit = nextToken(true);
             if (!DataChecker.isValidInteger(limit)) {
-                System.err.println(limit + ": not a valid limitation.");
+                printErrorMessage("Invalid limitation", limit.length());
                 return "";
             }
             if (!checkTokenIgnoreCase(")", true)) {
-                System.err.println("Right parenthesis ')' expected at end of VARCHAR definition.");
+                printErrorMessage("Right parenthesis ')' expected at end of VARCHAR definition.", 2);
                 return "";
             }
             String primaryResult = checkPrimaryKey();
@@ -212,7 +210,7 @@ public class SQLParser {
                     return "";
             }
         } else {
-            System.err.println("Invalid data type " + type);
+            printErrorMessage("Invalid data type " + type, type.length());
             return "";
         }
     }
@@ -233,6 +231,12 @@ public class SQLParser {
         } else {
             return "";
         }
+    }
+
+    private void printErrorMessage(String message, int underlineLength) {
+        System.err.println(mCommand);
+        printUnderLine(getPosition(index), underlineLength);
+        System.err.println(message);
     }
 
     private void printUnderLine(int startIndex, int length) {
