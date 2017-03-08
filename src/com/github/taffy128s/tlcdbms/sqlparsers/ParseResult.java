@@ -11,6 +11,7 @@ public class ParseResult {
     private String mTablename;
     private ArrayList<String> mAttributeNames;
     private ArrayList<DataType> mAttributeTypes;
+    private ArrayList<String> mBlocks;
     private int mPrimaryKeyIndex;
 
     public ParseResult() {
@@ -49,6 +50,14 @@ public class ParseResult {
 
     public ArrayList<DataType> getAttributeTypes() {
         return mAttributeTypes;
+    }
+    
+    public void setBlocks(ArrayList<String> blocks) {
+        mBlocks = blocks;
+    }
+    
+    public ArrayList<String> getBlocks() {
+        return mBlocks;
     }
 
     public void setPrimaryKeyIndex(int primaryKeyIndex) {
