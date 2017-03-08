@@ -117,27 +117,26 @@ public class SQLParser {
     private ParseResult parseInsert() {
         ParseResult result = new ParseResult();
         result.setCommandType(CommandType.INSERT);
-        if (!checkTokenIgnoreCase("INTO", true)) {
-        	printErrorMessage("Expect keyword INSERT", 2);
+        if (!checkTokenIgnoreCase("into", true)) {
+        	printErrorMessage("Expect keyword INSERT", mTokens.get(mIndex).length());
         	return null;
         }
         String tablename = getName();
         if (tablename == null) {
         	return null;
         }
-        //get table ??
+        result.setTablename(tablename);
+        if (!checkTokenIgnoreCase("values", true)) {
+            printErrorMessage("Expect keyword VALUES", mTokens.get(mIndex).length());
+            return null;
+        }
         if (!checkTokenIgnoreCase("(", true)) {
-        	printErrorMessage("Left parenthesis '(' expect after table name", 2);
+        	printErrorMessage("Left parenthesis '(' expected after table name", 2);
         	return null;
         }
-        ArrayList<String> attributeNames = new ArrayList<>();
+        // TODO: parsing the values...
         while(true) {
-        	String attributeName = getName();
-        	if(attributeName == null) {
-        		return null;
-        	}
-        	attributeNames.add(attributeName);
-        	// next may be "," ",)" ", attr ..."
+        	
         }
     }
 
