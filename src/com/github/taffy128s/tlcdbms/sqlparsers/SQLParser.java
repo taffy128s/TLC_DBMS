@@ -189,6 +189,7 @@ public class SQLParser {
         }
         if (blocks.size() != updateOrder.size()) {
             System.out.println("Data numbers not mached.");
+            return null;
         }
         result.setBlocks(blocks);
         System.out.println(result.toString());

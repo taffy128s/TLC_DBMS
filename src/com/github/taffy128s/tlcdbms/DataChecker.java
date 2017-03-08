@@ -46,7 +46,9 @@ public class DataChecker {
     }
     
     public static boolean isValidQuotedVarChar(String data) {
-        if (data.charAt(0) == '\'' && data.charAt(data.length() - 1) == '\'') {
+        if (data.length() < 2) {
+            return false;
+        } else if (data.charAt(0) == '\'' && data.charAt(data.length() - 1) == '\'') {
             return true;
         } else {
             return false;
