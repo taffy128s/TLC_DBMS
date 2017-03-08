@@ -309,6 +309,7 @@ public class SQLParser {
     private void splitTokens() {
         mCommand = mCommand.replaceAll("\n", " ");
         mCommand = mCommand.replaceAll("\t", "    ");
+        mCommand = mCommand.replaceAll("\r", "");
         String preProcessCommand = "";
         boolean quoteFlag = false;
         for (int i = 0; i < mCommand.length(); ++i) {

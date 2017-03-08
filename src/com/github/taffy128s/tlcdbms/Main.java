@@ -24,10 +24,6 @@ public class Main {
                     }
                 }
                 singleIns = ""; 
-            } else if (c == '\r') {
-                singleIns += "";
-            } else if (c == '\n') {
-                singleIns += " ";
             } else {
                 singleIns += c;
             }
