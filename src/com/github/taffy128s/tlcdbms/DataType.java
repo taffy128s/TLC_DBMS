@@ -1,12 +1,28 @@
 package com.github.taffy128s.tlcdbms;
 
 /**
- * All Data types.
- *
- * INT: 4-bytes 2's complement integer
- * VARCHAR: string with length up to 40
+ * DataType
+ * INT or VARCHAR with mLimit length
  */
-public enum DataType {
-    INT,
-    VARCHAR
+public class DataType {
+    private DataTypeIdentifier mType;
+    private int mLimit;
+
+    public DataType() {
+        mType = DataTypeIdentifier.INT;
+        mLimit = 0;
+    }
+
+    public DataType(DataTypeIdentifier typeIdentifier, int limit) {
+        mType = typeIdentifier;
+        mLimit = limit;
+    }
+
+    public DataTypeIdentifier getType() {
+        return mType;
+    }
+
+    public int getLimit() {
+        return mLimit;
+    }
 }
