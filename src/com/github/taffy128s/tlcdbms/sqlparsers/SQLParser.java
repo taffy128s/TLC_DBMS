@@ -155,7 +155,6 @@ public class SQLParser {
             checkTokenIgnoreCase(",", true);
         }
         result.setBlocks(blocks);
-        System.out.print(result.toString());
         return result;
     }
 
