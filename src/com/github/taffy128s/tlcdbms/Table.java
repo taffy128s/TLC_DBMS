@@ -10,6 +10,7 @@ import java.util.HashSet;
  * including CREATE, INSERT, DELETE...
  */
 public class Table {
+    private String mTablename;
     private ArrayList<String> mAttributeNames;
     private ArrayList<DataType> mAttributeTypes;
     private HashSet<DataRecord> mTable;
@@ -20,6 +21,7 @@ public class Table {
      * Initialize a Table
      */
     public Table() {
+        mTablename = "";
         mAttributeNames = new ArrayList<>();
         mAttributeTypes = new ArrayList<>();
         mTable = new HashSet<>();
@@ -35,8 +37,9 @@ public class Table {
      * @param attributeTypes an array list of types
      * @param primaryKey primary key index, -1 if none
      */
-    public Table(ArrayList<String> attributeNames, ArrayList<DataType> attributeTypes, int primaryKey) {
+    public Table(String tablename, ArrayList<String> attributeNames, ArrayList<DataType> attributeTypes, int primaryKey) {
         this();
+        mTablename = tablename;
         mAttributeNames = attributeNames;
         mAttributeTypes = attributeTypes;
         mPrimaryKey = primaryKey;
@@ -160,6 +163,7 @@ public class Table {
     public String toString() {
         DataRecord[] records = (DataRecord[]) mTable.toArray();
         StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(mTablename).append("\n");
         for (DataRecord record : records) {
             stringBuilder.append(record.toString());
         }
