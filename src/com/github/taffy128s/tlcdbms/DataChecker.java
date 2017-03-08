@@ -22,7 +22,7 @@ public class DataChecker {
         }
     }
 
-    public static boolean isValidVarVharLimitation(String data) {
+    public static boolean isValidVarCharLimitation(String data) {
         try {
             if (data.length() >= 15) {
                 return false;

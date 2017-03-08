@@ -187,7 +187,7 @@ public class SQLParser {
                 return "";
             }
             String limit = nextToken(true);
-            if (!DataChecker.isValidVarVharLimitation(limit)) {
+            if (!DataChecker.isValidVarCharLimitation(limit)) {
                 printErrorMessage("Invalid limitation", limit.length());
                 return "";
             }
