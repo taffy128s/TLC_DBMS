@@ -7,6 +7,7 @@ package com.github.taffy128s.tlcdbms;
  * VARCHAR: string with length up to 40
  */
 public enum DataTypeIdentifier {
+    UNDEFINED,
     INT,
     VARCHAR
 }
