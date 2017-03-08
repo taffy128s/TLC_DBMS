@@ -66,6 +66,9 @@ public class SQLParser {
         ArrayList<DataType> attributeTypes = new ArrayList<>();
         int index = 0;
         while (true) {
+            if (nextToken(false).equalsIgnoreCase(")")) {
+                break;
+            }
             String attributeName = getAttributeName();
             if (attributeName == null) {
                 return null;
@@ -107,7 +110,7 @@ public class SQLParser {
             return null;
         }
         if (attributeNames.isEmpty()) {
-            printErrorMessage("No attributes specified for this new table.", 2);
+            printErrorMessage("No attributes specified for this new table.", 2, mTokens.get(2).length());
             return null;
         }
         result.setAttributeNames(attributeNames);

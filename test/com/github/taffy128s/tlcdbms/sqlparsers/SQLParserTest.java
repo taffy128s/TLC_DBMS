@@ -35,6 +35,7 @@ public class SQLParserTest {
         testcases.add("create table ss(ss INT, scv VARCHAR(-1))");
         testcases.add("create table ss(ss INT PRIMARY KEY, scv INT PRIMARY KEY)");
         testcases.add("Create table f(_ INT PRIMARY KEY, scv INT,)");
+        testcases.add("Create table f();");
         SQLParser parser = new SQLParser();
         for (String test : testcases) {
             ParseResult result = parser.parse(test);
