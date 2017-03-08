@@ -24,10 +24,10 @@ public class TableTest {
         attributeNames.add("Gender");
         attributeNames.add("Age");
         attributeNames.add("Depart");
-        attributeTypes.add(DataType.VARCHAR);
-        attributeTypes.add(DataType.VARCHAR);
-        attributeTypes.add(DataType.INT);
-        attributeTypes.add(DataType.VARCHAR);
+        attributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
+        attributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
+        attributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
+        attributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
         table = new Table(attributeNames, attributeTypes, -1);
         pTable = new Table(attributeNames, attributeTypes, 0);
         dataRecords = new ArrayList<>();
