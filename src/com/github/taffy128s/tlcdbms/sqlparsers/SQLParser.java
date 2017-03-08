@@ -135,7 +135,7 @@ public class SQLParser {
         	printErrorMessage("Left parenthesis '(' expected after table name", 2);
         	return null;
         }
-        // TODO: parsing the values...
+        ArrayList<String> blocks = new ArrayList<>();
         while(true) {
         	
         }
