@@ -122,12 +122,12 @@ public class SQLParser {
         ParseResult result = new ParseResult();
         result.setCommandType(CommandType.INSERT);
         if (!checkTokenIgnoreCase("into", true)) {
-        	printErrorMessage("Expect keyword INTO", mTokens.get(mIndex).length());
-        	return null;
+            printErrorMessage("Expect keyword INTO", mTokens.get(mIndex).length());
+            return null;
         }
         String tablename = getTableName();
         if (tablename == null) {
-        	return null;
+            return null;
         }
         result.setTablename(tablename);
         ArrayList<String> updateOrder = new ArrayList<>();
@@ -156,8 +156,8 @@ public class SQLParser {
             return null;
         }
         if (!checkTokenIgnoreCase("(", true)) {
-        	printErrorMessage("Left parenthesis '(' expected after table name", 2);
-        	return null;
+            printErrorMessage("Left parenthesis '(' expected after table name", 2);
+            return null;
         }
         ArrayList<String> blocks = new ArrayList<>();
         while (true) {
