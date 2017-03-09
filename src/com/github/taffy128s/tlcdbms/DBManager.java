@@ -150,6 +150,12 @@ public class DBManager {
         ArrayList<String> attributeNames = table.getAttributeNames();
         ArrayList<DataType> attributeTypes = table.getAttributeTypes();
         ArrayList<Integer> orderIndex = new ArrayList<>();
+        if (!parameter.isCustomOrder() && parameter.getBlocks().size() != attributeNames.size()) {
+            System.out.println("Input data size not match.");
+            System.out.println("  Expected: " + attributeNames.size() + ".");
+            System.out.println("     Found: " + parameter.getBlocks().size() + ".");
+            return null;
+        }
         if (parameter.isCustomOrder()) {
             for (String attrName : attributeNames) {
                 int index = parameter.getUpdateOrder().indexOf(attrName);
