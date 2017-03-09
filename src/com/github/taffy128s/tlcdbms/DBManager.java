@@ -30,12 +30,12 @@ public class DBManager {
         ArrayList<DataType> attributeTypes = parameter.getAttributeTypes();
         int primaryKey = parameter.getPrimaryKeyIndex();
         if (mTables.containsKey(tablename)) {
-            System.out.println("Table " + tablename + " already exists");
+            System.out.println("Table '" + tablename + "' already exists.");
             return;
         }
         Table newTable = new Table(tablename, attributeNames, attributeTypes, primaryKey);
         mTables.put(tablename, newTable);
-        System.out.println("Table " + tablename + " created");
+        System.out.println("Table '" + tablename + "' created successfully.");
     }
 
     /**
@@ -46,7 +46,7 @@ public class DBManager {
     public void insert(SQLParseResult parameter) {
         String tablename = parameter.getTablename();
         if (!mTables.containsKey(tablename)) {
-            System.out.println("Table " + tablename + " not exists");
+            System.out.println("Table '" + tablename + "' not exists.");
             return;
         }
         DataRecord dataRecord = generateDataRecord(parameter);
@@ -54,7 +54,7 @@ public class DBManager {
             return;
         }
         mTables.get(tablename).insert(dataRecord);
-        System.out.println("Table " + tablename + ": 1 row added");
+        System.out.println("Table '" + tablename + "': 1 row added.");
     }
 
     /**
@@ -74,7 +74,7 @@ public class DBManager {
     public void show(SQLParseResult parameter) {
         String tablename = parameter.getTablename();
         if (!mTables.containsKey(tablename)) {
-            System.out.println("Table " + tablename + " not exists");
+            System.out.println("Table '" + tablename + "' not exists.");
             return;
         }
         ArrayList<String> attributeNames = mTables.get(tablename).getAttributeNames();
@@ -91,7 +91,7 @@ public class DBManager {
     public void desc(SQLParseResult parameter) {
         String tablename = parameter.getTablename();
         if (!mTables.containsKey(tablename)) {
-            System.out.println("Table " + tablename + " not exists");
+            System.out.println("Table '" + tablename + "' not exists.");
             return;
         }
         ArrayList<String> attributeNames = mTables.get(tablename).getAttributeNames();
@@ -123,16 +123,16 @@ public class DBManager {
         ArrayList<DataType> attributeTypes = table.getAttributeTypes();
         ArrayList<Integer> orderIndex = new ArrayList<>();
         if (parameter.getBlocks().size() != attributeNames.size()) {
-            System.out.println("Input data size not match!");
-            System.out.println("Found " + parameter.getBlocks().size());
-            System.out.println("Expect " + attributeNames.size());
+            System.out.println("Input data size not match.");
+            System.out.println("  Expected: " + attributeNames.size() + ".");
+            System.out.println("     Found: " + parameter.getBlocks().size() + ".");
             return null;
         }
         if (parameter.isCustomOrder()) {
             for (String attrName : attributeNames) {
                 int index = parameter.getUpdateOrder().indexOf(attrName);
                 if (index == -1) {
-                    System.out.println("Attribute " + attrName + " not found in input data");
+                    System.out.println("Attribute '" + attrName + "' not found in input data.");
                     return null;
                 }
                 orderIndex.add(index);
@@ -148,19 +148,19 @@ public class DBManager {
             String block = parameter.getBlocks().get(index);
             if (attributeTypes.get(tableAttrIndex).getType() == DataTypeIdentifier.INT) {
                 if (!DataChecker.isValidInteger(block)) {
-                    System.out.println("Error input type (INT expected): " + block);
+                    System.out.println("Wrong input type (INT expected): '" + block + "'.");
                     return null;
                 }
                 dataRecord.append(block);
             } else {
                 int lengthLimit = attributeTypes.get(tableAttrIndex).getLimit();
                 if (!DataChecker.isValidQuotedVarChar(block)) {
-                    System.out.println("Error input type (VARCHAR(" + lengthLimit + ") expected):" + block);
+                    System.out.println("Wrong input type (VARCHAR(" + lengthLimit + ") expected): '" + block + "'.");
                     return null;
                 }
                 String varcharPart = block.substring(1, block.length() - 1);
                 if (!DataChecker.isValidVarChar(varcharPart, lengthLimit)) {
-                    System.out.println("Error input type (VARCHAR(" + lengthLimit + ") expected):" + varcharPart);
+                    System.out.println("Wrong input type (VARCHAR(" + lengthLimit + ") expected): '" + varcharPart + "'.");
                     return null;
                 }
                 dataRecord.append(block);

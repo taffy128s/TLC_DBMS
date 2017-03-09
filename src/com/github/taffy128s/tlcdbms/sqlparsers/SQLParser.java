@@ -67,7 +67,7 @@ public class SQLParser {
         } else if (command.equalsIgnoreCase("exit")) {
             return parseExit();
         } else {
-            printErrorMessage("Unexpected command " + command);
+            printErrorMessage("Unexpected command '" + command + "'.");
             return null;
         }
     }
@@ -81,7 +81,7 @@ public class SQLParser {
         SQLParseResult result = new SQLParseResult();
         result.setCommandType(CommandType.CREATE);
         if (!checkTokenIgnoreCase("table", true)) {
-            printErrorMessage("Expect keyword TABLE");
+            printErrorMessage("Expect keyword TABLE after CREATE.");
             return null;
         }
         String tablename = getTableName();
@@ -90,7 +90,7 @@ public class SQLParser {
         }
         result.setTablename(tablename);
         if (!checkTokenIgnoreCase("(", true)) {
-            printErrorMessage("Left parenthesis '(' expected after table name");
+            printErrorMessage("Left parenthesis '(' expected after table name.");
             return null;
         }
         ArrayList<String> attributeNames = new ArrayList<>();
@@ -107,7 +107,7 @@ public class SQLParser {
                 return null;
             }
             if (attrNameSet.contains(attributeName)) {
-                printErrorMessage("Duplicated attribute name");
+                printErrorMessage("Duplicated attribute name.");
                 return null;
             }
             attrNameSet.add(attributeName);
@@ -126,7 +126,7 @@ public class SQLParser {
             if (attributeType.contains("PRIMARY")) {
                 if (result.getPrimaryKeyIndex() != -1) {
                     printErrorMessage(
-                            "Multiple Primary Key",
+                            "Multiple Primary Key.",
                             mIndex - 1,
                             11);
                     return null;
@@ -167,7 +167,7 @@ public class SQLParser {
         SQLParseResult result = new SQLParseResult();
         result.setCommandType(CommandType.INSERT);
         if (!checkTokenIgnoreCase("into", true)) {
-            printErrorMessage("Expect keyword INTO");
+            printErrorMessage("Expect keyword INTO after INSERT.");
             return null;
         }
         String tablename = getTableName();
@@ -187,7 +187,7 @@ public class SQLParser {
                     return null;
                 }
                 if (attrNameSet.contains(attrName)) {
-                    printErrorMessage("Duplicated attribute name");
+                    printErrorMessage("Duplicated attribute name.");
                     return null;
                 }
                 attrNameSet.add(attrName);
@@ -206,11 +206,11 @@ public class SQLParser {
             result.setCustomOrder(false);
         }
         if (!checkTokenIgnoreCase("values", true)) {
-            printErrorMessage("Expect keyword VALUES");
+            printErrorMessage("Expect keyword VALUES.");
             return null;
         }
         if (!checkTokenIgnoreCase("(", true)) {
-            printErrorMessage("Left parenthesis '(' expected after table name");
+            printErrorMessage("Left parenthesis '(' expected after table name.");
             return null;
         }
         ArrayList<String> blocks = new ArrayList<>();
@@ -252,7 +252,7 @@ public class SQLParser {
      */
     private SQLParseResult parseShow() {
         if (!checkTokenIgnoreCase("TABLE", true)) {
-            printErrorMessage("Expect Keyword TABLE after SHOW");
+            printErrorMessage("Expect Keyword TABLE after SHOW.");
             return null;
         }
         String tablename = getTableName();
@@ -391,10 +391,10 @@ public class SQLParser {
     private String getTableName() {
         String name = nextToken(true);
         if (!name.matches("[a-zA-Z_]+")) {
-            printErrorMessage("Invalid table name " + name);
+            printErrorMessage("Invalid table name '" + name + "'.");
             return null;
         } else if (SQLKeyWords.isSQLKeyword(name)) {
-            printErrorMessage("Invalid table name " + name);
+            printErrorMessage("Invalid table name '" + name + "'.");
             return null;
         } else {
             return name;
@@ -410,10 +410,10 @@ public class SQLParser {
     private String getAttributeName() {
         String name = nextToken(true);
         if (!name.matches("[a-zA-Z_]+")) {
-            printErrorMessage("Invalid attribute name " + name);
+            printErrorMessage("Invalid attribute name '" + name + "'.");
             return null;
         } else if (SQLKeyWords.isSQLKeyword(name)) {
-            printErrorMessage("Invalid attribute name " + name);
+            printErrorMessage("Invalid attribute name '" + name + "'.");
             return null;
         } else {
             return name;
@@ -448,12 +448,12 @@ public class SQLParser {
             }
         } else if (type.equalsIgnoreCase("varchar")) {
             if (!checkTokenIgnoreCase("(", true)) {
-                printErrorMessage("Left parenthesis '(' expected after VARCHAR");
+                printErrorMessage("Left parenthesis '(' expected after VARCHAR.");
                 return null;
             }
             String limit = nextToken(true);
             if (!DataChecker.isValidVarCharLimitation(limit)) {
-                printErrorMessage("Invalid limitation");
+                printErrorMessage("Invalid limitation.");
                 return null;
             }
             if (!checkTokenIgnoreCase(")", true)) {
@@ -471,7 +471,7 @@ public class SQLParser {
                     return "VARCHAR " + limit;
             }
         } else {
-            printErrorMessage("Invalid data type " + type);
+            printErrorMessage("Invalid data type '" + type + "'.");
             return null;
         }
     }
@@ -488,7 +488,7 @@ public class SQLParser {
         } else if (DataChecker.isValidQuotedVarChar(block)) {
             return block;
         } else {
-            printErrorMessage("Invalid data format");
+            printErrorMessage("Invalid data format.");
             return null;
         }
     }
@@ -516,7 +516,7 @@ public class SQLParser {
             if (checkTokenIgnoreCase("key", true)) {
                 return "PRIMARY";
             } else {
-                System.out.println("KEY keyword expected after PRIMARY");
+                System.out.println("Expect keyword KEY after PRIMARY.");
                 return null;
             }
         } else {
@@ -629,7 +629,7 @@ public class SQLParser {
             }
         }
         if (quoteFlag) {
-            System.out.println("Single quote not matched");
+            System.out.println("Single quote not matched.");
             mIsValid = false;
         }
         String[] splited = preProcessCommand.split("\0");

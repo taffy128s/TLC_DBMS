@@ -43,7 +43,7 @@ public class Interpreter {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Exit! Goodbye...");
+            System.out.println("Goodbye...");
         }
     }
 
@@ -59,7 +59,7 @@ public class Interpreter {
         }
         if (sqlParseResult.getCommandType() == CommandType.QUIT ||
                 sqlParseResult.getCommandType() == CommandType.EXIT) {
-            System.out.println("Exit! Goodbye...");
+            System.out.println("Goodbye...");
             System.exit(0);
         }
         switch (sqlParseResult.getCommandType()) {
@@ -79,7 +79,6 @@ public class Interpreter {
                 manager.desc(sqlParseResult);
                 break;
             default:
-                System.out.println("YOU SHALL NOT GO HERE!!! GO BACK AND DEBUG!!!");
                 break;
         }
     }
