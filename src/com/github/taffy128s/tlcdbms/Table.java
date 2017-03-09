@@ -54,10 +54,10 @@ public class Table {
      */
     public boolean insert(DataRecord data) {
         if (mTable.contains(data)) {
-            System.out.println("Already exists in table");
+            System.out.println("Already exists in table.");
             return false;
         } else if (mPrimaryKey != -1 && checkPrimaryKey(data)) {
-            System.out.println("Primary key already exists in table");
+            System.out.println("Primary key already exists in table.");
             return false;
         } else {
             mTable.add(data);
