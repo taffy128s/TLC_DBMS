@@ -208,7 +208,7 @@ public class DBManager {
         }
         for (Object data : datas) {
             DataRecord record = (DataRecord) data;
-            Object[] blocks = record.getAllFields();
+            Object[] blocks = record.getAllFieldsForOutput();
             for (int i = 0; i < blocks.length; ++i) {
                 columnMaxLength.set(i, Math.max(columnMaxLength.get(i), blocks[i].toString().length() + 1));
             }
@@ -227,7 +227,7 @@ public class DBManager {
         printSeparateLine(attrOutput);
         for (Object data : datas) {
             DataRecord record = (DataRecord) data;
-            Object[] blocks = record.getAllFields();
+            Object[] blocks = record.getAllFieldsForOutput();
             for (int i = 0; i < blocks.length; ++i) {
                 System.out.print(" |");
                 if (type.get(i).getType() == DataTypeIdentifier.INT) {

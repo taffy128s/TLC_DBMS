@@ -4,6 +4,12 @@ package com.github.taffy128s.tlcdbms;
  * Check whether the data is valid or not.
  */
 public class DataChecker {
+    /**
+     * Check whether data is a "null" string.
+     *
+     * @param data string to check.
+     * @return true if equalsIgnoreCase("null"), false otherwise.
+     */
     public static boolean isStringNull(String data) {
         return data.equalsIgnoreCase("null");
     }

@@ -88,11 +88,22 @@ public class DataRecord {
     }
 
     /**
-     * Get all data fields in this data record.
+     * Get all data fields in this data record.<br>
+     * ** MAY HAVE NULL **
      *
      * @return an array of all data fields.
      */
     public Object[] getAllFields() {
+        return mDataList.toArray();
+    }
+
+    /**
+     * Get all data fields in this data record.
+     * Replace all null items with varchar "null" to display.
+     *
+     * @return an array of all data fields.
+     */
+    public Object[] getAllFieldsForOutput() {
         Object[] result = mDataList.toArray();
         for (int i = 0; i < result.length; ++i) {
             if (result[i] == null) {

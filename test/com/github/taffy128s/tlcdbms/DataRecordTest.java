@@ -52,7 +52,7 @@ public class DataRecordTest {
 
     @Test
     public void getAllFields() throws Exception {
-        Object[] datas = dataRecord.getAllFields();
+        Object[] datas = dataRecord.getAllFieldsForOutput();
         assertEquals(4, datas.length);
         assertEquals("Bird", datas[0]);
         assertEquals("Male", datas[1]);
