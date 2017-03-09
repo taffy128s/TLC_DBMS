@@ -29,6 +29,7 @@ public class Interpreter {
         String singleIns = "";
         Reader reader = new InputStreamReader(System.in);
         int temp;
+        System.out.print(">> ");
         try {
             while ((temp = reader.read()) != -1) {
                 char c = (char) temp;
@@ -38,13 +39,17 @@ public class Interpreter {
                         execute(singleIns);
                     }
                     singleIns = "";
-                } else {
+                } else if (c == '\n') {
                     singleIns += c;
-                }
+                    System.out.print(">> ");
+                } else singleIns += c;
             }
         } catch (IOException e) {
             System.out.println("Goodbye...");
+            System.exit(0);
         }
+        System.out.println("Goodbye...");
+        System.exit(0);
     }
 
     /**
