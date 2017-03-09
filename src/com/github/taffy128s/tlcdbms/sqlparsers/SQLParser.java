@@ -85,8 +85,9 @@ public class SQLParser {
         ArrayList<String> attributeNames = new ArrayList<>();
         ArrayList<DataType> attributeTypes = new ArrayList<>();
         int index = 0;
+        boolean hasComma = false;
         while (true) {
-            if (nextToken(false).equalsIgnoreCase(")") && attributeNames.isEmpty()) {
+            if (nextToken(false).equalsIgnoreCase(")") && !hasComma) {
                 break;
             }
             String attributeName = getAttributeName();
@@ -120,6 +121,7 @@ public class SQLParser {
                 break;
             }
             checkTokenIgnoreCase(",", true);
+            hasComma = true;
             ++index;
         }
         if (!checkTokenIgnoreCase(")", true)) {

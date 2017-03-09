@@ -34,6 +34,7 @@ public class SQLParserTest {
         testcases.add("create table ss(ss INT PRIMARY KEY, scv INT PRIMARY KEY)");
         testcases.add("Create table f(_ INT PRIMARY KEY, scv INT,)");
         testcases.add("Create table f();");
+        testcases.add("Create table F(a int,)");
         testcases.add("insert into fuck values(a16546");
         testcases.add("insert into fuck values(123456, 'test')");
         testcases.add("insert into fuck values(,,,,,,,,,");
