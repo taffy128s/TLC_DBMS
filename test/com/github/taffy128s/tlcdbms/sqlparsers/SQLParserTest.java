@@ -41,7 +41,12 @@ public class SQLParserTest {
         testcases.add("insert into fuck(fuck, you) values(1,2)");
         SQLParser parser = new SQLParser();
         for (String test : testcases) {
+            System.out.println("-----------------------------------");
+            System.out.println("'" + test + "'");
             SQLParseResult result = parser.parse(test);
+            if (result != null)
+                System.out.print(result.toString());
         }
+        System.out.println("-----------------------------------");
     }
 }

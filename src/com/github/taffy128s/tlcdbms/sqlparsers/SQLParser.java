@@ -86,7 +86,7 @@ public class SQLParser {
         ArrayList<DataType> attributeTypes = new ArrayList<>();
         int index = 0;
         while (true) {
-            if (nextToken(false).equalsIgnoreCase(")")) {
+            if (nextToken(false).equalsIgnoreCase(")") && attributeNames.isEmpty()) {
                 break;
             }
             String attributeName = getAttributeName();
@@ -111,6 +111,7 @@ public class SQLParser {
                             "Multiple Primary Key",
                             mIndex - 1,
                             11);
+                    return null;
                 } else {
                     result.setPrimaryKeyIndex(index);
                 }

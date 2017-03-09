@@ -138,13 +138,13 @@ public class SQLParseResult {
             stringBuilder.append("Table ").append(mTablename).append("\n");
             stringBuilder.append("Block content\n");
             for (String block : mBlocks) {
-                stringBuilder.append(block + " ");
+                stringBuilder.append(block).append(" ");
             }
             stringBuilder.append("\n");
             if (mCustomOrder) {
                 stringBuilder.append("Custom order\n");
                 for (String attrName : mUpdateOrder) {
-                    stringBuilder.append(attrName + " ");
+                    stringBuilder.append(attrName).append(" ");
                 }
                 stringBuilder.append("\n");
             }
