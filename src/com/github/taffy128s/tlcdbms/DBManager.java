@@ -46,13 +46,13 @@ public class DBManager {
         ArrayList<Integer> orderIndex = new ArrayList<>();
         if (parameter.getBlocks().size() != attributeNames.size()) {
             System.out.println("Input data size not match!");
-            System.out.println("Found " + parameter.getAttributeNames().size());
+            System.out.println("Found " + parameter.getBlocks().size());
             System.out.println("Expect " + attributeNames.size());
             return null;
         }
         if (parameter.getCustomOrder()) {
             for (String attrName : attributeNames) {
-                int index = parameter.getAttributeNames().indexOf(attrName);
+                int index = parameter.getUpdateOrder().indexOf(attrName);
                 if (index == -1) {
                     System.out.println("Attribute " + attrName + " not found in input data");
                     return null;
