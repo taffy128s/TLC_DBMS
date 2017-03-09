@@ -121,13 +121,20 @@ public class DBManager {
         ArrayList<DataType> showType = new ArrayList<>();
         showAttr.add("Name");
         showAttr.add("Type");
+        showAttr.add("Key");
         showType.add(new DataType(DataTypeIdentifier.INT, -1));
+        showType.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
         showType.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
         DataRecord[] datas = new DataRecord[attributeNames.size()];
         for (int i = 0; i < attributeNames.size(); ++i) {
             datas[i] = new DataRecord();
             datas[i].append(attributeNames.get(i));
             datas[i].append(attributeTypes.get(i));
+            if (i == mTables.get(tablename).getPrimaryKey()) {
+                datas[i].append("PRI");
+            } else {
+                datas[i].append("");
+            }
         }
         printTable(showAttr, showType, datas);
     }
