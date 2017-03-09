@@ -384,7 +384,7 @@ public class SQLParser {
         if (DataChecker.isValidInteger(block)) {
             return block;
         } else if (DataChecker.isValidQuotedVarChar(block)) {
-            return block.substring(1, block.length() - 1);
+            return block;
         } else {
             printErrorMessage("Invalid data format");
             return null;

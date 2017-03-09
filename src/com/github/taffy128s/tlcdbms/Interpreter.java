@@ -44,9 +44,10 @@ public class Interpreter {
         // make call to manager(private member)
         switch (sqlParseResult.getCommandType()) {
             case CREATE:
-                manager.createTable(sqlParseResult);
+                manager.create(sqlParseResult);
                 break;
             case INSERT:
+                manager.insert(sqlParseResult);
                 break;
             case SELECT:
                 break;
