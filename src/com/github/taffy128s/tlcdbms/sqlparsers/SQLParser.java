@@ -288,7 +288,7 @@ public class SQLParser {
      */
     private String getTableName() {
         String name = nextToken(true);
-        if (!name.matches("[a-zA-Z_]*")) {
+        if (!name.matches("[a-zA-Z_]+")) {
             printErrorMessage("Invalid table name " + name);
             return null;
         } else if (SQLKeyWords.isSQLKeyword(name)) {
@@ -307,7 +307,7 @@ public class SQLParser {
      */
     private String getAttributeName() {
         String name = nextToken(true);
-        if (!name.matches("[a-zA-Z_]*")) {
+        if (!name.matches("[a-zA-Z_]+")) {
             printErrorMessage("Invalid attribute name " + name);
             return null;
         } else if (SQLKeyWords.isSQLKeyword(name)) {
