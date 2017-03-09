@@ -122,7 +122,7 @@ public class DBManager {
         showAttr.add("Name");
         showAttr.add("Type");
         showAttr.add("Key");
-        showType.add(new DataType(DataTypeIdentifier.INT, -1));
+        showType.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
         showType.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
         showType.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
         DataRecord[] datas = new DataRecord[attributeNames.size()];
