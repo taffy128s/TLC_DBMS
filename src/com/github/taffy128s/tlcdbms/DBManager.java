@@ -23,6 +23,7 @@ public class DBManager {
         }
         Table newTable = new Table(tablename, attributeNames, attributeTypes, primaryKey);
         mTables.put(tablename, newTable);
+        System.out.println("Table " + tablename + " created");
     }
 
     public void insert(SQLParseResult parameter) {
@@ -36,6 +37,7 @@ public class DBManager {
             return;
         }
         mTables.get(tablename).insert(dataRecord);
+        System.out.println("Table " + tablename + ": 1 row added");
     }
 
     public void show(SQLParseResult parameter) {
@@ -47,7 +49,7 @@ public class DBManager {
         ArrayList<String> attributeNames = mTables.get(tablename).getAttributeNames();
         ArrayList<DataType> attributeTypes = mTables.get(tablename).getAttributeTypes();
         Object[] allRecords = mTables.get(tablename).getAllRecords();
-        printTable(attributeNames, allRecords);
+        printTable(attributeNames, attributeTypes, allRecords);
     }
 
     public void desc(SQLParseResult parameter) {
@@ -59,15 +61,18 @@ public class DBManager {
         ArrayList<String> attributeNames = mTables.get(tablename).getAttributeNames();
         ArrayList<DataType> attributeTypes = mTables.get(tablename).getAttributeTypes();
         ArrayList<String> showAttr = new ArrayList<>();
+        ArrayList<DataType> showType = new ArrayList<>();
         showAttr.add("Name");
         showAttr.add("Type");
+        showType.add(new DataType(DataTypeIdentifier.INT, -1));
+        showType.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
         DataRecord[] datas = new DataRecord[attributeNames.size()];
         for (int i = 0; i < attributeNames.size(); ++i) {
             datas[i] = new DataRecord();
             datas[i].append(attributeNames.get(i));
             datas[i].append(attributeTypes.get(i));
         }
-        printTable(showAttr, datas);
+        printTable(showAttr, showType, datas);
     }
 
     private DataRecord generateDataRecord(SQLParseResult parameter) {
@@ -123,7 +128,8 @@ public class DBManager {
         return dataRecord;
     }
 
-    private void printTable(ArrayList<String> attribute, Object[] datas) {
+    private void printTable(ArrayList<String> attribute, ArrayList<DataType> type, Object[] datas) {
+        System.out.println();
         ArrayList<Integer> columnMaxLength = new ArrayList<>();
         for (String anAttribute : attribute) {
             columnMaxLength.add(anAttribute.length() + 2);
@@ -149,13 +155,15 @@ public class DBManager {
         }
         System.out.println(attrOutput);
         for (int i = 0; i < attrOutput.length(); ++i) {
-            if (attrOutput.charAt(i) == '|') {
+            if (i < 2) {
+                System.out.print(" ");
+            } else if (attrOutput.charAt(i) == '|') {
                 System.out.print("+");
             } else {
                 System.out.print("-");
             }
         }
-        System.out.println();
+        System.out.println("-");
         for (Object data : datas) {
             DataRecord record = (DataRecord) data;
             Object[] blocks = record.getAllFields();
@@ -165,10 +173,19 @@ public class DBManager {
                 } else {
                     System.out.print("  ");
                 }
-                for (int j = 0; j < columnMaxLength.get(i) - blocks[i].toString().length(); ++j) {
+                if (type.get(i).getType() == DataTypeIdentifier.INT) {
+                    for (int j = 0; j < columnMaxLength.get(i) - blocks[i].toString().length(); ++j) {
+                        System.out.print(" ");
+                    }
+                } else {
                     System.out.print(" ");
                 }
                 System.out.print(blocks[i]);
+                if (type.get(i).getType() == DataTypeIdentifier.VARCHAR) {
+                    for (int j = 0; j < columnMaxLength.get(i) - blocks[i].toString().length() - 1; ++j) {
+                        System.out.print(" ");
+                    }
+                }
             }
             System.out.println();
         }
