@@ -89,6 +89,7 @@ public class Interpreter {
             default:
                 break;
         }
+        System.out.println();
     }
 
     /**

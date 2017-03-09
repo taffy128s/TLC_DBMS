@@ -181,19 +181,19 @@ public class DBManager {
                 dataRecord.append(null);
             } else if (attributeTypes.get(tableAttrIndex).getType() == DataTypeIdentifier.INT) {
                 if (!DataChecker.isValidInteger(block)) {
-                    System.out.println("Wrong input type (INT expected): '" + block + "'.");
+                    System.out.println("Wrong input type (INT expected): " + block + ".");
                     return null;
                 }
                 dataRecord.append(block);
             } else {
                 int lengthLimit = attributeTypes.get(tableAttrIndex).getLimit();
                 if (!DataChecker.isValidQuotedVarChar(block)) {
-                    System.out.println("Wrong input type (VARCHAR(" + lengthLimit + ") expected): '" + block + "'.");
+                    System.out.println("Wrong input type (VARCHAR(" + lengthLimit + ") expected): " + block + ".");
                     return null;
                 }
                 String varcharPart = block.substring(1, block.length() - 1);
                 if (!DataChecker.isValidVarChar(varcharPart, lengthLimit)) {
-                    System.out.println("Wrong input type (VARCHAR(" + lengthLimit + ") expected): '" + varcharPart + "'.");
+                    System.out.println("Wrong input type (VARCHAR(" + lengthLimit + ") expected): " + varcharPart + ".");
                     return null;
                 }
                 dataRecord.append(block);
@@ -258,7 +258,6 @@ public class DBManager {
             System.out.println();
         }
         printSeparateLine(attrOutput);
-        System.out.println();
     }
 
     /**
