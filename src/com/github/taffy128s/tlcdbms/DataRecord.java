@@ -106,6 +106,25 @@ public class DataRecord {
         return mDataList.size();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        DataRecord that = (DataRecord) o;
+
+        return mDataList != null ? mDataList.equals(that.mDataList) : that.mDataList == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return mDataList != null ? mDataList.hashCode() : 0;
+    }
+
     /**
      * Returns a string representation of the object. In general, the
      * {@code toString} method returns a string that
