@@ -7,15 +7,24 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+/**
+ * Interpreter, read command from stdin and pass it to DBManager.
+ */
 public class Interpreter {
     private SQLParser parser;
     private DBManager manager;
 
+    /**
+     * Initialize.
+     */
     public Interpreter() {
         parser = new SQLParser();
         manager = new DBManager();
     }
 
+    /**
+     * Start reading command (block IO).
+     */
     public void start() {
         String singleIns = "";
         Reader reader = new InputStreamReader(System.in);
@@ -38,7 +47,12 @@ public class Interpreter {
         }
     }
 
-    public void execute(String singleInstruction) {
+    /**
+     * Execute a command (pass it to Parser and DBManager).
+     *
+     * @param singleInstruction a command read from stdin.
+     */
+    private void execute(String singleInstruction) {
         SQLParseResult sqlParseResult = parser.parse(singleInstruction);
         if (sqlParseResult == null) {
             return;
@@ -48,7 +62,6 @@ public class Interpreter {
             System.out.println("Exit! Goodbye...");
             System.exit(0);
         }
-        // make call to manager(private member)
         switch (sqlParseResult.getCommandType()) {
             case CREATE:
                 manager.create(sqlParseResult);
@@ -57,6 +70,7 @@ public class Interpreter {
                 manager.insert(sqlParseResult);
                 break;
             case SELECT:
+                manager.select(sqlParseResult);
                 break;
             case SHOW:
                 manager.show(sqlParseResult);
@@ -70,6 +84,12 @@ public class Interpreter {
         }
     }
 
+    /**
+     * Remove all non-visible characters from beginning of string.
+     *
+     * @param input string to process.
+     * @return a string processed.
+     */
     private String noSpaceAtBeginning(String input) {
         boolean firstValidEncountered = false;
         String temp = "";

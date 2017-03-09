@@ -7,8 +7,8 @@ public class DataChecker {
     /**
      * Check whether data is a valid INT.
      *
-     * @param data data to check
-     * @return true if valid, false if invalid
+     * @param data data to check.
+     * @return true if valid, false if invalid.
      */
     public static boolean isValidInteger(String data) {
         try {
@@ -22,6 +22,12 @@ public class DataChecker {
         }
     }
 
+    /**
+     * Checker varchar limitation validation.
+     *
+     * @param data data to check.
+     * @return true if valid, false if invalid.
+     */
     public static boolean isValidVarCharLimitation(String data) {
         try {
             if (data.length() >= 15) {
@@ -35,16 +41,22 @@ public class DataChecker {
     }
 
     /**
-     * Check whether data is a valid VARCHAR
+     * Check whether data is a valid VARCHAR.
      *
-     * @param data data to check
-     * @param limit varchar length limitation
-     * @return true if valid, false if invalid
+     * @param data data to check.
+     * @param limit varchar length limitation.
+     * @return true if valid, false if invalid.
      */
     public static boolean isValidVarChar(String data, int limit) {
         return data.length() <= limit;
     }
-    
+
+    /**
+     * Check whether data is a valid quoted varchar (ex. 'hello').
+     *
+     * @param data data to check.
+     * @return true if valid, false if invalid.
+     */
     public static boolean isValidQuotedVarChar(String data) {
         if (data.length() < 2) {
             return false;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 /**
  * Class for storing a tuple of data.
- * Ex. used to store ('John', 'Male', 20)
+ * Ex. used to store ('John', 'Male', 20).
  *
  * Use append(), update() to maintain data stored.
  */
@@ -21,7 +21,7 @@ public class DataRecord {
     /**
      * Initialize a new data record with a list of data.
      *
-     * @param datas an array list of data
+     * @param datas an array list of data.
      */
     public DataRecord(ArrayList<Object> datas) {
         mDataList = datas;
@@ -37,7 +37,7 @@ public class DataRecord {
      *     dataRecord.append(20);<br>
      * </code>
      *
-     * @param data data to be inserted
+     * @param data data to be inserted.
      */
     public void append(Object data) {
         mDataList.add(data);
@@ -53,8 +53,8 @@ public class DataRecord {
      *     dataRecord.update(21);<br>
      * </code>
      *
-     * @param index index to update
-     * @param data new data to be inserted
+     * @param index index to update.
+     * @param data new data to update.
      */
     public void update(int index, Object data) {
         mDataList.set(index, data);
@@ -70,8 +70,8 @@ public class DataRecord {
     /**
      * Update data with column index given.<br>
      *
-     * @param index index to update
-     * @param data new data to be inserted
+     * @param index index to update.
+     * @param data new data to be inserted.
      */
     public void set(int index, Object data) {
         mDataList.set(index, data);
@@ -80,8 +80,8 @@ public class DataRecord {
     /**
      * Get data with column index given.
      *
-     * @param index index to get
-     * @return object with corresponding index
+     * @param index index to get.
+     * @return data with corresponding index.
      */
     public Object get(int index) {
         return mDataList.get(index);
@@ -90,7 +90,7 @@ public class DataRecord {
     /**
      * Get all data fields in this data record.
      *
-     * @return an array of all data fields
+     * @return an array of all data fields.
      */
     public Object[] getAllFields() {
         return mDataList.toArray();
@@ -100,12 +100,18 @@ public class DataRecord {
      * Get the length of this data record.
      * i.e. How many columns in the data record.
      *
-     * @return length of this data record
+     * @return length of this data record.
      */
     public int length() {
         return mDataList.size();
     }
 
+    /**
+     * Equals.
+     *
+     * @param o that.
+     * @return true if equal, false if not.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -120,6 +126,11 @@ public class DataRecord {
         return mDataList != null ? mDataList.equals(that.mDataList) : that.mDataList == null;
     }
 
+    /**
+     * Hashcode.
+     *
+     * @return hashcode.
+     */
     @Override
     public int hashCode() {
         return mDataList != null ? mDataList.hashCode() : 0;
@@ -151,9 +162,10 @@ public class DataRecord {
         StringBuilder stringBuilder = new StringBuilder();
         for (Object item : mDataList) {
             stringBuilder.append(item);
-            stringBuilder.append(" ");
+            stringBuilder.append(", ");
         }
         if (stringBuilder.length() > 0) {
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
         stringBuilder.append("\n");

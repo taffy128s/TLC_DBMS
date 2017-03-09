@@ -1,8 +1,8 @@
 package com.github.taffy128s.tlcdbms;
 
 /**
- * DataType
- * INT or VARCHAR with limited length
+ * DataType, such as
+ * INT or VARCHAR with limited length (up to 40).
  */
 public class DataType {
     private DataTypeIdentifier mType;
@@ -12,8 +12,8 @@ public class DataType {
      * Initialize with type and limitation.
      * limit: any value is ok if type is INT.
      *
-     * @param typeIdentifier type, INT or VARCHAR
-     * @param limit varchar length limit
+     * @param typeIdentifier type, INT or VARCHAR.
+     * @param limit varchar length limit.
      */
     public DataType(DataTypeIdentifier typeIdentifier, int limit) {
         mType = typeIdentifier;
@@ -21,17 +21,18 @@ public class DataType {
     }
 
     /**
-     * Get type
+     * Get type.
      *
-     * @return data type
+     * @return data type.
      */
     public DataTypeIdentifier getType() {
         return mType;
     }
 
     /**
-     * Get varchar length limitation
-     * @return varchar length limitation
+     * Get varchar length limitation.
+     *
+     * @return varchar length limitation.
      */
     public int getLimit() {
         return mLimit;

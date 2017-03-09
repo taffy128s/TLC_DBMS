@@ -1,9 +1,15 @@
 package com.github.taffy128s.tlcdbms;
 
-import java.io.IOException;
-
+/**
+ * Main class.
+ */
 public class Main {
-    public static void main(String[] args) throws IOException {
+    /**
+     * Program entry.
+     *
+     * @param args commandline arguments
+     */
+    public static void main(String[] args) {
         Interpreter interpreter = new Interpreter();
         interpreter.start();
     }

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
- * SQL parser.
+ * SQL parser for this project.
  */
 public class SQLParser {
     private String mCommand;
@@ -29,8 +29,8 @@ public class SQLParser {
     /**
      * Parse given command and return a SQLParseResult.
      *
-     * @param command command to parse
-     * @return parse result, null if failed
+     * @param command command to parse.
+     * @return parse result, null if failed.
      */
     public SQLParseResult parse(String command) {
         mCommand = command;
@@ -49,7 +49,7 @@ public class SQLParser {
      * Parse Command (CREATE or INSERT or SELECT) and call
      * corresponding function for further processing.
      *
-     * @return parse result, null if failed
+     * @return parse result, null if failed.
      */
     private SQLParseResult parseCommand() {
         String command = nextToken(true);
@@ -75,7 +75,7 @@ public class SQLParser {
     /**
      * Parse CREATE.
      *
-     * @return parse result, null if failed
+     * @return parse result, null if failed.
      */
     private SQLParseResult parseCreate() {
         SQLParseResult result = new SQLParseResult();
@@ -161,7 +161,7 @@ public class SQLParser {
     /**
      * Parse INSERT.
      *
-     * @return parse result, null if failed
+     * @return parse result, null if failed.
      */
     private SQLParseResult parseInsert() {
         SQLParseResult result = new SQLParseResult();
@@ -245,6 +245,11 @@ public class SQLParser {
         return result;
     }
 
+    /**
+     * Parse SHOW.
+     *
+     * @return parse result, null if failed.
+     */
     private SQLParseResult parseShow() {
         if (!checkTokenIgnoreCase("TABLE", true)) {
             printErrorMessage("Expect Keyword TABLE after SHOW");
@@ -264,6 +269,11 @@ public class SQLParser {
         return result;
     }
 
+    /**
+     * Parse DESC.
+     *
+     * @return parse result, null if failed.
+     */
     private SQLParseResult parseDesc() {
         String tablename = getTableName();
         if (tablename == null) {
@@ -279,6 +289,11 @@ public class SQLParser {
         return result;
     }
 
+    /**
+     * Parse QUIT.
+     *
+     * @return parse result, null if failed.
+     */
     private SQLParseResult parseQuit() {
         if (!isEnded()) {
             System.out.println("Unexpected strings at end of line.");
@@ -289,6 +304,11 @@ public class SQLParser {
         return result;
     }
 
+    /**
+     * Parse EXIT.
+     *
+     * @return parse result, null if failed.
+     */
     private SQLParseResult parseExit() {
         if (!isEnded()) {
             System.out.println("Unexpected strings at end of line.");
@@ -302,7 +322,7 @@ public class SQLParser {
     /**
      * Get current token.
      *
-     * @return current token string, "" if failed
+     * @return current token string, "" if failed.
      */
     private String currentToken() {
         if (mIndex >= 0 && mIndex < mTokens.size()) {
@@ -315,8 +335,8 @@ public class SQLParser {
     /**
      * Get next token.
      *
-     * @param increment true to increase mIndex
-     * @return next token string, "" if failed
+     * @param increment true to increase mIndex.
+     * @return next token string, "" if failed.
      */
     private String nextToken(boolean increment) {
         if (mIndex + 1 >= 0 && mIndex + 1 < mTokens.size()) {
@@ -334,8 +354,8 @@ public class SQLParser {
     /**
      * Get position of index-th token in mCommand string.
      *
-     * @param index index to get
-     * @return position(string index) start from 0
+     * @param index index to get.
+     * @return position(string index) start from 0.
      */
     private int getPosition(int index) {
         if (!mTokenEnded) {
@@ -355,7 +375,7 @@ public class SQLParser {
      * Case 2 return true:<br>
      *     {} // already empty
      *
-     * @return true if empty, false if not
+     * @return true if empty, false if not.
      */
     private boolean isEnded() {
         String token = nextToken(true);
@@ -366,7 +386,7 @@ public class SQLParser {
      * Get table name from next token.
      * <br>** WILL INCREASE TOKEN INDEX **
      *
-     * @return a string with name if valid, null if invalid
+     * @return a string with name if valid, null if invalid.
      */
     private String getTableName() {
         String name = nextToken(true);
@@ -385,7 +405,7 @@ public class SQLParser {
      * Get attribute name from next token.
      * <br>** WILL INCREASE TOKEN INDEX **
      *
-     * @return a string with name if valid, null if invalid
+     * @return a string with name if valid, null if invalid.
      */
     private String getAttributeName() {
         String name = nextToken(true);
@@ -411,7 +431,7 @@ public class SQLParser {
      *     <code>"VARCHAR 20"</code><br>
      *     <code>"VARCHAR 20 PRIMARY"</code><br>
      *
-     * @return a string of attribute type, null if invalid
+     * @return a string of attribute type, null if invalid.
      */
     private String getAttributeType() {
         String type = nextToken(true);
@@ -459,7 +479,7 @@ public class SQLParser {
     /**
      * Get a data block.
      *
-     * @return a string of data block, null if failed
+     * @return a string of data block, null if failed.
      */
     private String getBlock() {
         String block = nextToken(true);
@@ -476,9 +496,9 @@ public class SQLParser {
     /**
      * Check next token with input string (case insensitive).
      *
-     * @param expected expect string, string to be compared
-     * @param increase true to increase index
-     * @return true if matched, false if not
+     * @param expected expect string, string to be compared.
+     * @param increase true to increase index.
+     * @return true if matched, false if not.
      */
     private boolean checkTokenIgnoreCase(String expected, boolean increase) {
         return nextToken(increase).equalsIgnoreCase(expected);
@@ -488,7 +508,7 @@ public class SQLParser {
      * Check PRIMARY KEY keywords.
      * Used in getAttributeType().
      *
-     * @return "PRIMARY" if primary key, "" if no primary key, null if syntax error
+     * @return "PRIMARY" if primary key, "" if no primary key, null if syntax error.
      */
     private String checkPrimaryKey() {
         if (checkTokenIgnoreCase("primary", false)) {
@@ -507,7 +527,7 @@ public class SQLParser {
     /**
      * Print error message. Underline will be drawn under the mIndex-th tokens.
      *
-     * @param message error message to show
+     * @param message error message to show.
      */
     private void printErrorMessage(String message) {
         System.out.println(mCommand);
@@ -520,9 +540,9 @@ public class SQLParser {
      * Print error message. Underline will be drawn under the index-th tokens
      * with length underlineLength specified from parameters.
      *
-     * @param message error message to show
-     * @param index set token index for start position
-     * @param underlineLength underline length
+     * @param message error message to show.
+     * @param index set token index for start position.
+     * @param underlineLength underline length.
      */
     private void printErrorMessage(String message, int index, int underlineLength) {
         System.out.println(mCommand);
@@ -533,8 +553,8 @@ public class SQLParser {
     /**
      * Draw underline ^~~~~~~~.
      *
-     * @param startPosition start position
-     * @param length length, note that length("^~~") == 3
+     * @param startPosition start position.
+     * @param length length, note that length("^~~") == 3.
      */
     private void printUnderLine(int startPosition, int length) {
         for (int i = 0; i < startPosition; ++i) {
@@ -588,6 +608,9 @@ public class SQLParser {
                 case '=':
                     preProcessCommand += "\0=\0";
                     break;
+                case '*':
+                    preProcessCommand += "\0*\0";
+                    break;
                 case '(':
                     preProcessCommand += "\0(\0";
                     break;
@@ -596,9 +619,6 @@ public class SQLParser {
                     break;
                 case ',':
                     preProcessCommand += "\0,\0";
-                    break;
-                case '*':
-                    preProcessCommand += "\0*\0";
                     break;
                 case ';':
                     preProcessCommand += "\0;\0";
