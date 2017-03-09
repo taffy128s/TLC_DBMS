@@ -4,19 +4,21 @@ import com.github.taffy128s.tlcdbms.sqlparsers.DBManager;
 import com.github.taffy128s.tlcdbms.sqlparsers.SQLParseResult;
 import com.github.taffy128s.tlcdbms.sqlparsers.SQLParser;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
 public class Interpreter {
+    public SQLParser parser;
     public DBManager manager;
 
     public Interpreter() {
+        parser = new SQLParser();
         manager = new DBManager();
     }
 
     public void start() {
         String singleIns = "";
-        SQLParser parser = new SQLParser();
         Reader reader = new InputStreamReader(System.in);
         int temp;
         try {
@@ -24,23 +26,25 @@ public class Interpreter {
                 char c = (char) temp;
                 if (c == ';') {
                     if (!singleIns.equals("")) {
-                        SQLParseResult result = parser.parse(singleIns);
-                        if (result != null) {
-                            System.out.print(result.toString());
-                        }
-                        execute(result);
+
+                        execute(singleIns);
                     }
                     singleIns = "";
                 } else {
                     singleIns += c;
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
+            e.printStackTrace();
             System.out.println("Exit");
         }
     }
 
-    public void execute(SQLParseResult sqlParseResult) {
+    public void execute(String singleInstruction) {
+        SQLParseResult sqlParseResult = parser.parse(singleInstruction);
+        if (sqlParseResult == null) {
+            return;
+        }
         // make call to manager(private member)
         switch (sqlParseResult.getCommandType()) {
             case CREATE:
