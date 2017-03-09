@@ -54,6 +54,9 @@ local.properties
 .scala_dependencies
 .worksheet
 
+# Java Runnable File (JAR)
+*.jar
+
 TLC_DBMS.iml
 .idea/
 lib/
