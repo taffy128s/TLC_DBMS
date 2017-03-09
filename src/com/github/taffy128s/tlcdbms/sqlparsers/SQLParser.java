@@ -58,6 +58,10 @@ public class SQLParser {
             return parseCreate();
         } else if (command.equalsIgnoreCase("insert")) {
             return parseInsert();
+        } else if (command.equalsIgnoreCase("quit")) {
+            return parseQuit();
+        } else if (command.equalsIgnoreCase("exit")) {
+            return parseExit();
         } else {
             printErrorMessage("Unexpected command " + command);
             return null;
@@ -234,6 +238,26 @@ public class SQLParser {
             return null;
         }
         result.setBlocks(blocks);
+        return result;
+    }
+
+    private SQLParseResult parseQuit() {
+        if (!isEnded()) {
+            System.out.println("Unexpected strings at end of line.");
+            return null;
+        }
+        SQLParseResult result = new SQLParseResult();
+        result.setCommandType(CommandType.QUIT);
+        return result;
+    }
+
+    private SQLParseResult parseExit() {
+        if (!isEnded()) {
+            System.out.println("Unexpected strings at end of line.");
+            return null;
+        }
+        SQLParseResult result = new SQLParseResult();
+        result.setCommandType(CommandType.EXIT);
         return result;
     }
 

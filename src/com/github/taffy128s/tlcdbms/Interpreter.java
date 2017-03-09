@@ -25,11 +25,6 @@ public class Interpreter {
                 char c = (char) temp;
                 if (c == ';') {
                     singleIns = noSpaceAtBeginning(singleIns);
-                    if (singleIns.equalsIgnoreCase("exit") ||
-                                singleIns.equalsIgnoreCase("quit")) {
-                        System.out.println("Exit! Goodbye...");
-                        return;
-                    }
                     if (!singleIns.equals("")) {
                         execute(singleIns);
                     }
@@ -47,6 +42,11 @@ public class Interpreter {
         SQLParseResult sqlParseResult = parser.parse(singleInstruction);
         if (sqlParseResult == null) {
             return;
+        }
+        if (sqlParseResult.getCommandType() == CommandType.QUIT ||
+                sqlParseResult.getCommandType() == CommandType.EXIT) {
+            System.out.println("Exit! Goodbye...");
+            System.exit(0);
         }
         // make call to manager(private member)
         switch (sqlParseResult.getCommandType()) {
