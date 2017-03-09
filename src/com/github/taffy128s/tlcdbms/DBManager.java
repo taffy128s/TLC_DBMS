@@ -65,16 +65,17 @@ public class DBManager {
             }
         }
         DataRecord dataRecord = new DataRecord();
+        int tableAttrIndex = 0;
         for (int index : orderIndex) {
             String block = parameter.getBlocks().get(index);
-            if (attributeTypes.get(index).getType() == DataTypeIdentifier.INT) {
+            if (attributeTypes.get(tableAttrIndex).getType() == DataTypeIdentifier.INT) {
                 if (!DataChecker.isValidInteger(block)) {
                     System.out.println("Error input type (INT expected): " + block);
                     return null;
                 }
                 dataRecord.append(block);
             } else {
-                int lengthLimit = attributeTypes.get(index).getLimit();
+                int lengthLimit = attributeTypes.get(tableAttrIndex).getLimit();
                 if (!DataChecker.isValidQuotedVarChar(block)) {
                     System.out.println("Error input type (VARCHAR(" + lengthLimit + ") expected):" + block);
                     return null;
@@ -86,6 +87,7 @@ public class DBManager {
                 }
                 dataRecord.append(block);
             }
+            ++tableAttrIndex;
         }
         return dataRecord;
     }
