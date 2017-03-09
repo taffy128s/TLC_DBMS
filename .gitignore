@@ -61,4 +61,5 @@ TLC_DBMS.iml
 .idea/
 lib/
 out/
+src/META-INF/
 .DS_STORE
