@@ -74,10 +74,14 @@ public class DBManager {
                 }
                 dataRecord.append(block);
             } else {
-                String varcharPart = block.substring(1, block.length() - 1);
                 int lengthLimit = attributeTypes.get(index).getLimit();
+                if (!DataChecker.isValidQuotedVarChar(block)) {
+                    System.out.println("Error input type (VARCHAR(" + lengthLimit + ") expected):" + block);
+                    return null;
+                }
+                String varcharPart = block.substring(1, block.length() - 1);
                 if (!DataChecker.isValidVarChar(varcharPart, lengthLimit)) {
-                    System.out.println("Error input type (VARCHAR(" + lengthLimit + ") expected)" + varcharPart);
+                    System.out.println("Error input type (VARCHAR(" + lengthLimit + ") expected):" + varcharPart);
                     return null;
                 }
                 dataRecord.append(block);
