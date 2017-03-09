@@ -8,5 +8,6 @@ public enum CommandType {
     NONE,
     CREATE,
     INSERT,
-    SELECT
+    SELECT,
+    SHOW
 }

@@ -44,7 +44,7 @@ public class DBManager {
         ArrayList<String> attributeNames = table.getAttributeNames();
         ArrayList<DataType> attributeTypes = table.getAttributeTypes();
         ArrayList<Integer> orderIndex = new ArrayList<>();
-        if (parameter.getAttributeNames().size() != attributeNames.size()) {
+        if (parameter.getBlocks().size() != attributeNames.size()) {
             System.out.println("Input data size not match!");
             System.out.println("Found " + parameter.getAttributeNames().size());
             System.out.println("Expect " + attributeNames.size());

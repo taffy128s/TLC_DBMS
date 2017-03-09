@@ -162,10 +162,10 @@ public class Table {
      */
     @Override
     public String toString() {
-        DataRecord[] records = (DataRecord[]) mTable.toArray();
+        Object[] records = mTable.toArray();
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(mTablename).append("\n");
-        for (DataRecord record : records) {
+        for (Object record : records) {
             stringBuilder.append(record.toString());
         }
         return stringBuilder.toString();
