@@ -143,20 +143,17 @@ public class DBManager {
         ArrayList<String> attributeNames = table.getAttributeNames();
         ArrayList<DataType> attributeTypes = table.getAttributeTypes();
         ArrayList<Integer> orderIndex = new ArrayList<>();
-        if (parameter.getBlocks().size() != attributeNames.size()) {
-            System.out.println("Input data size not match.");
-            System.out.println("  Expected: " + attributeNames.size() + ".");
-            System.out.println("     Found: " + parameter.getBlocks().size() + ".");
-            return null;
-        }
         if (parameter.isCustomOrder()) {
             for (String attrName : attributeNames) {
                 int index = parameter.getUpdateOrder().indexOf(attrName);
+                orderIndex.add(index);
+            }
+            for (String attrName : parameter.getUpdateOrder()) {
+                int index = attributeNames.indexOf(attrName);
                 if (index == -1) {
-                    System.out.println("Attribute '" + attrName + "' not found in input data.");
+                    System.out.println("Attribute '" + attrName + "' not found in table '" + parameter.getTablename() + "'.");
                     return null;
                 }
-                orderIndex.add(index);
             }
         } else {
             for (int i = 0; i < attributeNames.size(); ++i) {
@@ -166,7 +163,7 @@ public class DBManager {
         DataRecord dataRecord = new DataRecord();
         int tableAttrIndex = 0;
         for (int index : orderIndex) {
-            String block = parameter.getBlocks().get(index);
+            String block = (index != -1) ? parameter.getBlocks().get(index) : null;
             if (block == null) {
                 dataRecord.append(null);
             } else if (attributeTypes.get(tableAttrIndex).getType() == DataTypeIdentifier.INT) {
