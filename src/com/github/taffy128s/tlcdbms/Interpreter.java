@@ -8,8 +8,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 public class Interpreter {
-    public SQLParser parser;
-    public DBManager manager;
+    private SQLParser parser;
+    private DBManager manager;
 
     public Interpreter() {
         parser = new SQLParser();
@@ -25,6 +25,11 @@ public class Interpreter {
                 char c = (char) temp;
                 if (c == ';') {
                     singleIns = noSpaceAtBeginning(singleIns);
+                    if (singleIns.equalsIgnoreCase("exit") ||
+                                singleIns.equalsIgnoreCase("quit")) {
+                        System.out.println("Exit! Goodbye...");
+                        return;
+                    }
                     if (!singleIns.equals("")) {
                         execute(singleIns);
                     }
@@ -34,7 +39,6 @@ public class Interpreter {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
             System.out.println("Exit");
         }
     }
@@ -59,15 +63,15 @@ public class Interpreter {
                 break;
         }
     }
-    
+
     private String noSpaceAtBeginning(String input) {
         boolean firstValidEncountered = false;
         String temp = "";
         for (int i = 0; i < input.length(); i++) {
-            if (!firstValidEncountered 
-                    && input.charAt(i) != ' ' 
+            if (!firstValidEncountered
+                    && input.charAt(i) != ' '
                     && input.charAt(i) != '\r'
-                    && input.charAt(i) != '\n' 
+                    && input.charAt(i) != '\n'
                     && input.charAt(i) != '\t') {
                 firstValidEncountered = true;
             }
@@ -75,5 +79,5 @@ public class Interpreter {
         }
         return temp;
     }
-    
+
 }
