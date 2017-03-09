@@ -35,7 +35,7 @@ public class DBManager {
         }
         Table newTable = new Table(tablename, attributeNames, attributeTypes, primaryKey);
         mTables.put(tablename, newTable);
-        System.out.println("Table '" + tablename + "' created successfully.");
+        System.out.println("Query OK, table '" + tablename + "' created successfully.");
     }
 
     /**
@@ -55,7 +55,7 @@ public class DBManager {
         }
         boolean result = mTables.get(tablename).insert(dataRecord);
         if (result) {
-            System.out.println("Table '" + tablename + "': 1 row added.");
+            System.out.println("Query OK, table '" + tablename + "': 1 row added.");
         }
     }
 
