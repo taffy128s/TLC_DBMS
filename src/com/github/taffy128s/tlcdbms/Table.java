@@ -101,8 +101,8 @@ public class Table {
      *
      * @return an array of all records
      */
-    public DataRecord[] getAllRecords() {
-        return (DataRecord[]) mTable.toArray();
+    public Object[] getAllRecords() {
+        return mTable.toArray();
     }
 
     /**

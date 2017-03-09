@@ -58,6 +58,10 @@ public class SQLParser {
             return parseCreate();
         } else if (command.equalsIgnoreCase("insert")) {
             return parseInsert();
+        } else if (command.equalsIgnoreCase("show")) {
+            return parseShow();
+        } else if (command.equalsIgnoreCase("desc")) {
+            return parseDesc();
         } else if (command.equalsIgnoreCase("quit")) {
             return parseQuit();
         } else if (command.equalsIgnoreCase("exit")) {
@@ -238,6 +242,40 @@ public class SQLParser {
             return null;
         }
         result.setBlocks(blocks);
+        return result;
+    }
+
+    private SQLParseResult parseShow() {
+        if (!checkTokenIgnoreCase("TABLE", true)) {
+            printErrorMessage("Expect Keyword TABLE after SHOW");
+            return null;
+        }
+        String tablename = getTableName();
+        if (tablename == null) {
+            return null;
+        }
+        if (!isEnded()) {
+            System.out.println("Unexpected strings at end of line.");
+            return null;
+        }
+        SQLParseResult result = new SQLParseResult();
+        result.setCommandType(CommandType.SHOW);
+        result.setTablename(tablename);
+        return result;
+    }
+
+    private SQLParseResult parseDesc() {
+        String tablename = getTableName();
+        if (tablename == null) {
+            return null;
+        }
+        if (!isEnded()) {
+            System.out.println("Unexpected strings at end of line.");
+            return null;
+        }
+        SQLParseResult result = new SQLParseResult();
+        result.setCommandType(CommandType.DESC);
+        result.setTablename(tablename);
         return result;
     }
 

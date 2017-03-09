@@ -34,7 +34,7 @@ public class Interpreter {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Exit");
+            System.out.println("Exit! Goodbye...");
         }
     }
 
@@ -57,6 +57,12 @@ public class Interpreter {
                 manager.insert(sqlParseResult);
                 break;
             case SELECT:
+                break;
+            case SHOW:
+                manager.show(sqlParseResult);
+                break;
+            case DESC:
+                manager.desc(sqlParseResult);
                 break;
             default:
                 System.out.println("YOU SHALL NOT GO HERE!!! GO BACK AND DEBUG!!!");

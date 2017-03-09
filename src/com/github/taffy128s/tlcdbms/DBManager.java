@@ -36,7 +36,38 @@ public class DBManager {
             return;
         }
         mTables.get(tablename).insert(dataRecord);
-        System.out.println(mTables.get(tablename).toString());
+    }
+
+    public void show(SQLParseResult parameter) {
+        String tablename = parameter.getTablename();
+        if (!mTables.containsKey(tablename)) {
+            System.out.println("Table " + tablename + " not exists");
+            return;
+        }
+        ArrayList<String> attributeNames = mTables.get(tablename).getAttributeNames();
+        ArrayList<DataType> attributeTypes = mTables.get(tablename).getAttributeTypes();
+        Object[] allRecords = mTables.get(tablename).getAllRecords();
+        printTable(attributeNames, allRecords);
+    }
+
+    public void desc(SQLParseResult parameter) {
+        String tablename = parameter.getTablename();
+        if (!mTables.containsKey(tablename)) {
+            System.out.println("Table " + tablename + " not exists");
+            return;
+        }
+        ArrayList<String> attributeNames = mTables.get(tablename).getAttributeNames();
+        ArrayList<DataType> attributeTypes = mTables.get(tablename).getAttributeTypes();
+        ArrayList<String> showAttr = new ArrayList<>();
+        showAttr.add("Name");
+        showAttr.add("Type");
+        DataRecord[] datas = new DataRecord[attributeNames.size()];
+        for (int i = 0; i < attributeNames.size(); ++i) {
+            datas[i] = new DataRecord();
+            datas[i].append(attributeNames.get(i));
+            datas[i].append(attributeTypes.get(i));
+        }
+        printTable(showAttr, datas);
     }
 
     private DataRecord generateDataRecord(SQLParseResult parameter) {
@@ -90,5 +121,56 @@ public class DBManager {
             ++tableAttrIndex;
         }
         return dataRecord;
+    }
+
+    private void printTable(ArrayList<String> attribute, Object[] datas) {
+        ArrayList<Integer> columnMaxLength = new ArrayList<>();
+        for (String anAttribute : attribute) {
+            columnMaxLength.add(anAttribute.length() + 2);
+        }
+        for (Object data : datas) {
+            DataRecord record = (DataRecord) data;
+            Object[] blocks = record.getAllFields();
+            for (int i = 0; i < blocks.length; ++i) {
+                columnMaxLength.set(i, Math.max(columnMaxLength.get(i), blocks[i].toString().length() + 2));
+            }
+        }
+        String attrOutput = "";
+        for (int i = 0; i < attribute.size(); ++i) {
+            if (i > 0) {
+                attrOutput += " |";
+            } else {
+                attrOutput += "  ";
+            }
+            for (int j = 0; j < columnMaxLength.get(i) - attribute.get(i).length(); ++j) {
+                attrOutput += " ";
+            }
+            attrOutput += attribute.get(i);
+        }
+        System.out.println(attrOutput);
+        for (int i = 0; i < attrOutput.length(); ++i) {
+            if (attrOutput.charAt(i) == '|') {
+                System.out.print("+");
+            } else {
+                System.out.print("-");
+            }
+        }
+        System.out.println();
+        for (Object data : datas) {
+            DataRecord record = (DataRecord) data;
+            Object[] blocks = record.getAllFields();
+            for (int i = 0; i < blocks.length; ++i) {
+                if (i > 0) {
+                    System.out.print(" |");
+                } else {
+                    System.out.print("  ");
+                }
+                for (int j = 0; j < columnMaxLength.get(i) - blocks[i].toString().length(); ++j) {
+                    System.out.print(" ");
+                }
+                System.out.print(blocks[i]);
+            }
+            System.out.println();
+        }
     }
 }
