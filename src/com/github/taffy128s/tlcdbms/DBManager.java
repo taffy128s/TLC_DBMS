@@ -53,8 +53,10 @@ public class DBManager {
         if (dataRecord == null) {
             return;
         }
-        mTables.get(tablename).insert(dataRecord);
-        System.out.println("Table '" + tablename + "': 1 row added.");
+        boolean result = mTables.get(tablename).insert(dataRecord);
+        if (result) {
+            System.out.println("Table '" + tablename + "': 1 row added.");
+        }
     }
 
     /**
