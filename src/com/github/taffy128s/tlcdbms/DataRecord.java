@@ -93,7 +93,13 @@ public class DataRecord {
      * @return an array of all data fields.
      */
     public Object[] getAllFields() {
-        return mDataList.toArray();
+        Object[] result = mDataList.toArray();
+        for (int i = 0; i < result.length; ++i) {
+            if (result[i] == null) {
+                result[i] = "null";
+            }
+        }
+        return result;
     }
 
     /**

@@ -56,6 +56,9 @@ public class Table {
         if (mTable.contains(data)) {
             System.out.println("Already exists in table.");
             return false;
+        } else if (mPrimaryKey != -1 && data.get(mPrimaryKey) == null) {
+            System.out.println("Primary key cannot be null.");
+            return false;
         } else if (mPrimaryKey != -1 && checkPrimaryKey(data)) {
             System.out.println("Primary key already exists in table.");
             return false;

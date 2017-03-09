@@ -167,7 +167,9 @@ public class DBManager {
         int tableAttrIndex = 0;
         for (int index : orderIndex) {
             String block = parameter.getBlocks().get(index);
-            if (attributeTypes.get(tableAttrIndex).getType() == DataTypeIdentifier.INT) {
+            if (block == null) {
+                dataRecord.append(null);
+            } else if (attributeTypes.get(tableAttrIndex).getType() == DataTypeIdentifier.INT) {
                 if (!DataChecker.isValidInteger(block)) {
                     System.out.println("Wrong input type (INT expected): '" + block + "'.");
                     return null;

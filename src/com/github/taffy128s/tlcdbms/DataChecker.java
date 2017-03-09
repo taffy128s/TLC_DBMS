@@ -4,6 +4,10 @@ package com.github.taffy128s.tlcdbms;
  * Check whether the data is valid or not.
  */
 public class DataChecker {
+    public static boolean isStringNull(String data) {
+        return data.equalsIgnoreCase("null");
+    }
+
     /**
      * Check whether data is a valid INT.
      *
@@ -11,6 +15,9 @@ public class DataChecker {
      * @return true if valid, false if invalid.
      */
     public static boolean isValidInteger(String data) {
+        if (data == null) {
+            return true;
+        }
         try {
             if (data.length() >= 15)  {
                 return false;
@@ -48,7 +55,7 @@ public class DataChecker {
      * @return true if valid, false if invalid.
      */
     public static boolean isValidVarChar(String data, int limit) {
-        return data.length() <= limit;
+        return data == null || data.length() <= limit;
     }
 
     /**
@@ -58,6 +65,9 @@ public class DataChecker {
      * @return true if valid, false if invalid.
      */
     public static boolean isValidQuotedVarChar(String data) {
+        if (data == null) {
+            return true;
+        }
         if (data.length() < 2) {
             return false;
         } else if (data.charAt(0) == '\'' && data.charAt(data.length() - 1) == '\'') {

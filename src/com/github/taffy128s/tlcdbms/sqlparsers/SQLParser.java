@@ -215,11 +215,11 @@ public class SQLParser {
         }
         ArrayList<String> blocks = new ArrayList<>();
         while (true) {
-            String block = getBlock();
-            if (block == null) {
+            SQLBlock block = getBlock();
+            if (block == null || !block.isValid()) {
                 return null;
             }
-            blocks.add(block);
+            blocks.add(block.getValue());
             if (!checkTokenIgnoreCase(",", false)) {
                 break;
             }
@@ -492,15 +492,17 @@ public class SQLParser {
      *
      * @return a string of data block, null if failed.
      */
-    private String getBlock() {
+    private SQLBlock getBlock() {
         String block = nextToken(true);
-        if (DataChecker.isValidInteger(block)) {
-            return block;
+        if (DataChecker.isStringNull(block)) {
+            return new SQLBlock(null, true);
+        } else if (DataChecker.isValidInteger(block)) {
+            return new SQLBlock(block, true);
         } else if (DataChecker.isValidQuotedVarChar(block)) {
-            return block;
+            return new SQLBlock(block, true);
         } else {
             printErrorMessage("Invalid data format.");
-            return null;
+            return new SQLBlock(null, false);
         }
     }
 
