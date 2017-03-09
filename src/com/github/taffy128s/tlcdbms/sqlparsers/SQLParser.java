@@ -6,6 +6,7 @@ import com.github.taffy128s.tlcdbms.DataType;
 import com.github.taffy128s.tlcdbms.DataTypeIdentifier;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * SQL parser.
@@ -86,6 +87,7 @@ public class SQLParser {
         ArrayList<DataType> attributeTypes = new ArrayList<>();
         int index = 0;
         boolean hasComma = false;
+        HashSet<String> attrNameSet = new HashSet<>();
         while (true) {
             if (nextToken(false).equalsIgnoreCase(")") && !hasComma) {
                 break;
@@ -94,6 +96,11 @@ public class SQLParser {
             if (attributeName == null) {
                 return null;
             }
+            if (attrNameSet.contains(attributeName)) {
+                printErrorMessage("Duplicated attribute name");
+                return null;
+            }
+            attrNameSet.add(attributeName);
             attributeNames.add(attributeName);
             String attributeType = getAttributeType();
             if (attributeType == null) {
@@ -159,6 +166,7 @@ public class SQLParser {
         }
         result.setTablename(tablename);
         ArrayList<String> updateOrder = null;
+        HashSet<String> attrNameSet = new HashSet<>();
         if (checkTokenIgnoreCase("(", false)) {
             checkTokenIgnoreCase("(", true);
             result.setCustomOrder(true);
@@ -168,6 +176,11 @@ public class SQLParser {
                 if (attrName == null) {
                     return null;
                 }
+                if (attrNameSet.contains(attrName)) {
+                    printErrorMessage("Duplicated attribute name");
+                    return null;
+                }
+                attrNameSet.add(attrName);
                 updateOrder.add(attrName);
                 if (!checkTokenIgnoreCase(",", false)) {
                     break;
