@@ -251,22 +251,33 @@ public class SQLParser {
      * @return parse result, null if failed.
      */
     private SQLParseResult parseShow() {
-        if (!checkTokenIgnoreCase("TABLE", true)) {
-            printErrorMessage("Expect Keyword TABLE after SHOW.");
+        if (checkTokenIgnoreCase("table", false)) {
+            checkTokenIgnoreCase("table", true);
+            String tablename = getTableName();
+            if (tablename == null) {
+                return null;
+            }
+            if (!isEnded()) {
+                System.out.println("Unexpected strings at end of line.");
+                return null;
+            }
+            SQLParseResult result = new SQLParseResult();
+            result.setCommandType(CommandType.SHOW_TABLE_CONTENT);
+            result.setTablename(tablename);
+            return result;
+        } else if (checkTokenIgnoreCase("tables", false)) {
+            checkTokenIgnoreCase("tables", true);
+            if (!isEnded()) {
+                System.out.println("Unexpected strings at end of line.");
+                return null;
+            }
+            SQLParseResult result = new SQLParseResult();
+            result.setCommandType(CommandType.SHOW_TABLE_LIST);
+            return result;
+        } else {
+            printErrorMessage("Expect Keyword TABLE or TABLES after SHOW.");
             return null;
         }
-        String tablename = getTableName();
-        if (tablename == null) {
-            return null;
-        }
-        if (!isEnded()) {
-            System.out.println("Unexpected strings at end of line.");
-            return null;
-        }
-        SQLParseResult result = new SQLParseResult();
-        result.setCommandType(CommandType.SHOW);
-        result.setTablename(tablename);
-        return result;
     }
 
     /**

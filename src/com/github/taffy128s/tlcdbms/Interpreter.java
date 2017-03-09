@@ -72,8 +72,11 @@ public class Interpreter {
             case SELECT:
                 manager.select(sqlParseResult);
                 break;
-            case SHOW:
-                manager.show(sqlParseResult);
+            case SHOW_TABLE_LIST:
+                manager.showTableList(sqlParseResult);
+                break;
+            case SHOW_TABLE_CONTENT:
+                manager.showTableContent(sqlParseResult);
                 break;
             case DESC:
                 manager.desc(sqlParseResult);

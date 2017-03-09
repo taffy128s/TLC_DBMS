@@ -9,7 +9,8 @@ public enum CommandType {
     CREATE,
     INSERT,
     SELECT,
-    SHOW,
+    SHOW_TABLE_LIST,
+    SHOW_TABLE_CONTENT,
     DESC,
     EXIT,
     QUIT

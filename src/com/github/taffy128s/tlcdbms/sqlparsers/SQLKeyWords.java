@@ -9,9 +9,12 @@ public class SQLKeyWords {
             "INSERT",
             "SELECT",
             "TABLE",
+            "TABLES",
             "INTO",
             "VALUES",
+            "FROM",
             "WHERE",
+            "AS",
             "INT",
             "VARCHAR"
     };
