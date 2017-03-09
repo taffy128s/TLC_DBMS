@@ -143,7 +143,7 @@ public class DBManager {
         }
         String attrOutput = "";
         for (int i = 0; i < attribute.size(); ++i) {
-                attrOutput += " |";
+            attrOutput += " |";
             for (int j = 0; j < columnMaxLength.get(i) - attribute.get(i).length(); ++j) {
                 attrOutput += " ";
             }
@@ -157,11 +157,7 @@ public class DBManager {
             DataRecord record = (DataRecord) data;
             Object[] blocks = record.getAllFields();
             for (int i = 0; i < blocks.length; ++i) {
-                if (i > 0) {
-                    System.out.print(" |");
-                } else {
-                    System.out.print(" |");
-                }
+                System.out.print(" |");
                 if (type.get(i).getType() == DataTypeIdentifier.INT) {
                     for (int j = 0; j < columnMaxLength.get(i) - blocks[i].toString().length(); ++j) {
                         System.out.print(" ");
