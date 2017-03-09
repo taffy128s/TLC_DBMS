@@ -20,6 +20,43 @@ public class SQLParser {
     private int mIndex;
 
     /**
+     * SQL Block. Return type of getBlock().
+     */
+    private class SQLBlock {
+        private boolean mValid;
+        private String mData;
+
+        /**
+         * Initialize.
+         *
+         * @param data data content, null-able.
+         * @param valid true if this block is valid, false otherwise.
+         */
+        SQLBlock(String data, boolean valid) {
+            mData = data;
+            mValid = valid;
+        }
+
+        /**
+         * Data getter.
+         *
+         * @return data.
+         */
+        String getData() {
+            return mData;
+        }
+
+        /**
+         * Check validation of this block.
+         *
+         * @return true if valid, false otherwise.
+         */
+        boolean isValid() {
+            return mValid;
+        }
+    }
+
+    /**
      * Constructor.
      */
     public SQLParser() {
@@ -219,7 +256,7 @@ public class SQLParser {
             if (block == null || !block.isValid()) {
                 return null;
             }
-            blocks.add(block.getValue());
+            blocks.add(block.getData());
             if (!checkTokenIgnoreCase(",", false)) {
                 break;
             }
