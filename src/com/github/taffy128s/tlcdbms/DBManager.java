@@ -143,27 +143,16 @@ public class DBManager {
         }
         String attrOutput = "";
         for (int i = 0; i < attribute.size(); ++i) {
-            if (i > 0) {
                 attrOutput += " |";
-            } else {
-                attrOutput += "  ";
-            }
             for (int j = 0; j < columnMaxLength.get(i) - attribute.get(i).length(); ++j) {
                 attrOutput += " ";
             }
             attrOutput += attribute.get(i);
         }
+        attrOutput += " |";
+        printSeparateLine(attrOutput);
         System.out.println(attrOutput);
-        for (int i = 0; i < attrOutput.length(); ++i) {
-            if (i < 2) {
-                System.out.print(" ");
-            } else if (attrOutput.charAt(i) == '|') {
-                System.out.print("+");
-            } else {
-                System.out.print("-");
-            }
-        }
-        System.out.println("-");
+        printSeparateLine(attrOutput);
         for (Object data : datas) {
             DataRecord record = (DataRecord) data;
             Object[] blocks = record.getAllFields();
@@ -171,7 +160,7 @@ public class DBManager {
                 if (i > 0) {
                     System.out.print(" |");
                 } else {
-                    System.out.print("  ");
+                    System.out.print(" |");
                 }
                 if (type.get(i).getType() == DataTypeIdentifier.INT) {
                     for (int j = 0; j < columnMaxLength.get(i) - blocks[i].toString().length(); ++j) {
@@ -187,7 +176,22 @@ public class DBManager {
                     }
                 }
             }
+            System.out.print(" |");
             System.out.println();
         }
+        printSeparateLine(attrOutput);
+    }
+
+    private void printSeparateLine(String attrOutput) {
+        for (int i = 0; i < attrOutput.length(); ++i) {
+            if (i < 1) {
+                System.out.print(" ");
+            } else if (attrOutput.charAt(i) == '|') {
+                System.out.print("+");
+            } else {
+                System.out.print("-");
+            }
+        }
+        System.out.println();
     }
 }
