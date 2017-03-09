@@ -1,6 +1,5 @@
 package com.github.taffy128s.tlcdbms;
 
-import com.github.taffy128s.tlcdbms.sqlparsers.DBManager;
 import com.github.taffy128s.tlcdbms.sqlparsers.SQLParseResult;
 import com.github.taffy128s.tlcdbms.sqlparsers.SQLParser;
 

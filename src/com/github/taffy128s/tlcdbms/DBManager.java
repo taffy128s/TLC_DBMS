@@ -1,6 +1,6 @@
-package com.github.taffy128s.tlcdbms.sqlparsers;
+package com.github.taffy128s.tlcdbms;
 
-import com.github.taffy128s.tlcdbms.*;
+import com.github.taffy128s.tlcdbms.sqlparsers.SQLParseResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
