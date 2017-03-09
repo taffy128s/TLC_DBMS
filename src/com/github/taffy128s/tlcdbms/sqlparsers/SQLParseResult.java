@@ -87,7 +87,7 @@ public class SQLParseResult {
         mCustomOrder = customOrder;
     }
 
-    public boolean getCustomOrder() {
+    public boolean isCustomOrder() {
         return mCustomOrder;
     }
 

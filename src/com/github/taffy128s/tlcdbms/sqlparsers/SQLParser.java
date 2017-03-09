@@ -15,7 +15,8 @@ public class SQLParser {
     private String mCommand;
     private ArrayList<String> mTokens;
     private ArrayList<Integer> mPositions;
-    private boolean isValid;
+    private boolean mIsValid;
+    private boolean mTokenEnded;
     private int mIndex;
 
     /**
@@ -36,8 +37,9 @@ public class SQLParser {
         mTokens = new ArrayList<>();
         mPositions = new ArrayList<>();
         mIndex = -1;
+        mTokenEnded = false;
         splitTokens();
-        if (!isValid) {
+        if (!mIsValid) {
             return null;
         }
         return parseCommand();
@@ -262,6 +264,7 @@ public class SQLParser {
                 return mTokens.get(mIndex + 1);
             }
         } else {
+            mTokenEnded = true;
             return "";
         }
     }
@@ -273,7 +276,11 @@ public class SQLParser {
      * @return position(string index) start from 0
      */
     private int getPosition(int index) {
-        return mPositions.get(index);
+        if (!mTokenEnded) {
+            return mPositions.get(index);
+        } else {
+            return mPositions.get(index) + mTokens.get(index).length() + 1;
+        }
     }
 
     /**
@@ -442,7 +449,8 @@ public class SQLParser {
      */
     private void printErrorMessage(String message) {
         System.out.println(mCommand);
-        printUnderLine(getPosition(mIndex), mTokens.get(mIndex).length());
+        int underlineLength = (mTokenEnded) ? 3 : mTokens.get(mIndex).length();
+        printUnderLine(getPosition(mIndex), underlineLength);
         System.out.println(message);
     }
 
@@ -540,7 +548,7 @@ public class SQLParser {
         }
         if (quoteFlag) {
             System.out.println("Single quote not matched");
-            isValid = false;
+            mIsValid = false;
         }
         String[] splited = preProcessCommand.split("\0");
         int startLocation = 0;
@@ -552,6 +560,6 @@ public class SQLParser {
                 startLocation += token.length();
             }
         }
-        isValid = true;
+        mIsValid = true;
     }
 }

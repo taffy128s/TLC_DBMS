@@ -50,7 +50,7 @@ public class DBManager {
             System.out.println("Expect " + attributeNames.size());
             return null;
         }
-        if (parameter.getCustomOrder()) {
+        if (parameter.isCustomOrder()) {
             for (String attrName : attributeNames) {
                 int index = parameter.getUpdateOrder().indexOf(attrName);
                 if (index == -1) {
