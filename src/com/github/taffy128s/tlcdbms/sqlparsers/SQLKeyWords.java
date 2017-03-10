@@ -27,7 +27,7 @@ public class SQLKeyWords {
      */
     public static boolean isSQLKeyword(String string) {
         for (String str : KEYWORD_STRINGS) {
-            if (str.equals(string)) {
+            if (str.equalsIgnoreCase(string)) {
                 return true;
             }
         }
