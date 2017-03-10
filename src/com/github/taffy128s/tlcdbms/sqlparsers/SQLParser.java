@@ -253,7 +253,7 @@ public class SQLParser {
         ArrayList<String> blocks = new ArrayList<>();
         while (true) {
             SQLBlock block = getBlock();
-            if (block == null || !block.isValid()) {
+            if (!block.isValid()) {
                 return null;
             }
             blocks.add(block.getData());
