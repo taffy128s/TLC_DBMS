@@ -137,7 +137,7 @@ public class DBManager {
             if (i == mTables.get(tablename).getPrimaryKey()) {
                 record.append("PRI");
             } else if (attributeNames.get(i).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
-                record.append("AUTOPRI");
+                record.append("AUTO_PRI");
             } else {
                 record.append("");
             }
@@ -162,7 +162,11 @@ public class DBManager {
             if (attributeNames.get(i).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
                 continue;
             }
-            attributeStrings.add(attributeNames.get(i) + " " + attributeTypes.get(i));
+            if (i == table.getPrimaryKey()) {
+                attributeStrings.add(attributeNames.get(i) + " " + attributeTypes.get(i) + " PRI");
+            } else {
+                attributeStrings.add(attributeNames.get(i) + " " + attributeTypes.get(i));
+            }
         }
         if (table.getPrimaryKey() == -1) {
             parameter.getBlocks().add("-1");
@@ -201,7 +205,7 @@ public class DBManager {
                 dataRecord.append(null);
             } else if (attributeTypes.get(tableAttrIndex).getType() == DataTypeIdentifier.INT) {
                 if (!DataChecker.isValidInteger(block)) {
-                    System.out.println("For attribute '" + attributeNames.get(index) + "' in table '" + parameter.getTablename() + "':");
+                    System.out.println("For attribute '" + attributeNames.get(tableAttrIndex) + "' in table '" + parameter.getTablename() + "':");
                     System.out.println("Wrong input type (INT expected): " + block + ".");
                     return null;
                 }
@@ -209,14 +213,15 @@ public class DBManager {
             } else {
                 int lengthLimit = attributeTypes.get(tableAttrIndex).getLimit();
                 if (!DataChecker.isValidQuotedVarChar(block)) {
-                    System.out.println("For attribute '" + attributeNames.get(index) + "' in table '" + parameter.getTablename() + "':");
+                    System.out.println("For attribute '" + attributeNames.get(tableAttrIndex) + "' in table '" + parameter.getTablename() + "':");
                     System.out.println("Wrong input type (VARCHAR(" + lengthLimit + ") expected): " + block + ".");
                     return null;
                 }
                 String varcharPart = block.substring(1, block.length() - 1);
                 if (!DataChecker.isValidVarChar(varcharPart, lengthLimit)) {
-                    System.out.println("For attribute '" + attributeNames.get(index) + "' in table '" + parameter.getTablename() + "':");
-                    System.out.println("Wrong input type (VARCHAR(" + lengthLimit + ") expected): " + block + ".");
+                    System.out.println("For attribute '" + attributeNames.get(tableAttrIndex) + "' in table '" + parameter.getTablename() + "':");
+                    System.out.print("Wrong input type (VARCHAR(" + lengthLimit + ") expected): " + block);
+                    System.out.println(" with length " + varcharPart.length() + ".");
                     return null;
                 }
                 dataRecord.append(block);
@@ -273,11 +278,11 @@ public class DBManager {
             if (hideAutoPrimaryKey && attribute.get(i).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
                 continue;
             }
-            attrOutput += " |";
-            for (int j = 0; j < columnMaxLength.get(i) - attribute.get(i).length(); ++j) {
+            attrOutput += " | ";
+            attrOutput += attribute.get(i);
+            for (int j = 0; j < columnMaxLength.get(i) - attribute.get(i).length() - 1; ++j) {
                 attrOutput += " ";
             }
-            attrOutput += attribute.get(i);
         }
         attrOutput += " |";
         printSeparateLine(attrOutput);

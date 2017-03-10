@@ -276,6 +276,8 @@ public class SQLParser {
         }
         if (updateOrder != null && blocks.size() != updateOrder.size()) {
             System.out.println("Data numbers not matched.");
+            System.out.println("Specified: " + updateOrder.size() + ".");
+            System.out.println("Given: " + blocks.size() + ".");
             return null;
         }
         result.setBlocks(blocks);
@@ -578,7 +580,7 @@ public class SQLParser {
             if (checkTokenIgnoreCase("key", true)) {
                 return "PRIMARY";
             } else {
-                System.out.println("Expect keyword KEY after PRIMARY.");
+                printErrorMessage("Expect keyword KEY after PRIMARY.");
                 return null;
             }
         } else {
