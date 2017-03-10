@@ -581,7 +581,7 @@ public class SQLParser {
      */
     private void printErrorMessage(String message) {
         System.out.println(mCommand);
-        int underlineLength = (mTokenEnded) ? 3 : mTokens.get(mIndex).length();
+        int underlineLength = (mTokenEnded) ? 1 : mTokens.get(mIndex).length();
         printUnderLine(getPosition(mIndex), underlineLength);
         System.out.println(message);
     }
@@ -681,6 +681,7 @@ public class SQLParser {
         if (quoteFlag) {
             System.out.println("Single quote not matched.");
             mIsValid = false;
+            return;
         }
         String[] splited = preProcessCommand.split("\0");
         int startLocation = 0;

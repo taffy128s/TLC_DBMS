@@ -203,7 +203,7 @@ public class DBManager {
                 String varcharPart = block.substring(1, block.length() - 1);
                 if (!DataChecker.isValidVarChar(varcharPart, lengthLimit)) {
                     System.out.println("For attribute '" + attributeNames.get(index) + "' in table '" + parameter.getTablename() + "':");
-                    System.out.println("Wrong input type (VARCHAR(" + lengthLimit + ") expected): " + varcharPart + ".");
+                    System.out.println("Wrong input type (VARCHAR(" + lengthLimit + ") expected): " + block + ".");
                     return null;
                 }
                 dataRecord.append(block);

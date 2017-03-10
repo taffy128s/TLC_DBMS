@@ -60,6 +60,7 @@ public class Interpreter {
     private void execute(String singleInstruction) {
         SQLParseResult sqlParseResult = parser.parse(singleInstruction);
         if (sqlParseResult == null) {
+            System.out.println();
             return;
         }
         if (sqlParseResult.getCommandType() == CommandType.QUIT ||
