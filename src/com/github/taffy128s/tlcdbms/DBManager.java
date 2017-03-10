@@ -33,7 +33,7 @@ public class DBManager {
             System.out.println("Table '" + tablename + "' already exists.");
             return;
         }
-        Table newTable = new Table(tablename, attributeNames, attributeTypes, primaryKey);
+        Table newTable = new SetTable(tablename, attributeNames, attributeTypes, primaryKey);
         mTables.put(tablename, newTable);
         System.out.println("Query OK, table '" + tablename + "' created successfully.");
     }

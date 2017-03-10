@@ -28,8 +28,8 @@ public class TableTest {
         attributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
         attributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
         attributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
-        table = new Table("FUCK1", attributeNames, attributeTypes, -1);
-        pTable = new Table("FUCK2", attributeNames, attributeTypes, 0);
+        table = new SetTable("FUCK1", attributeNames, attributeTypes, -1);
+        pTable = new SetTable("FUCK2", attributeNames, attributeTypes, 0);
         dataRecords = new ArrayList<>();
         DataRecord record = new DataRecord();
         record.append("ADAS");
