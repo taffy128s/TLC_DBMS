@@ -10,12 +10,15 @@ import java.util.HashSet;
  * including CREATE, INSERT, SELECT...
  */
 public class Table {
+    public static final String AUTO_PRIMARY_KEY_NAME = "$__AUTO_PRIMARY_KEY__";
+
     private String mTablename;
     private ArrayList<String> mAttributeNames;
     private ArrayList<DataType> mAttributeTypes;
     private HashSet<DataRecord> mTable;
     private HashSet<Object> mPrimaryTable;
     private int mPrimaryKey;
+    private int mPrimaryKeyCounter;
 
     /**
      * Initialize a Table.
@@ -27,6 +30,7 @@ public class Table {
         mTable = new HashSet<>();
         mPrimaryTable = new HashSet<>();
         mPrimaryKey = -1;
+        mPrimaryKeyCounter = 0;
     }
 
     /**
@@ -43,6 +47,10 @@ public class Table {
         mAttributeNames = attributeNames;
         mAttributeTypes = attributeTypes;
         mPrimaryKey = primaryKey;
+        if (mPrimaryKey == -1) {
+            attributeNames.add(Table.AUTO_PRIMARY_KEY_NAME);
+            attributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
+        }
     }
 
     /**
@@ -63,9 +71,16 @@ public class Table {
             System.out.println("Primary key " + data.get(mPrimaryKey) + " already exists in table.");
             return false;
         } else {
-            mTable.add(data);
             if (mPrimaryKey != -1) {
+                mTable.add(data);
                 mPrimaryTable.add(data.get(mPrimaryKey));
+            } else {
+                while (mPrimaryTable.contains(mPrimaryKeyCounter)) {
+                    ++mPrimaryKeyCounter;
+                }
+                data.set(data.length() - 1, mPrimaryKeyCounter);
+                mTable.add(data);
+                mPrimaryTable.add(mPrimaryKeyCounter);
             }
             return true;
         }

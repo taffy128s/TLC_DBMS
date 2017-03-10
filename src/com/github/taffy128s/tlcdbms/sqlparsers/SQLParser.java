@@ -290,6 +290,13 @@ public class SQLParser {
     private SQLParseResult parseShow() {
         if (checkTokenIgnoreCase("table", false)) {
             checkTokenIgnoreCase("table", true);
+            SQLParseResult result = new SQLParseResult();
+            if (checkTokenIgnoreCase("full", false)) {
+                checkTokenIgnoreCase("full", true);
+                result.setShowFullInfo(true);
+            } else {
+                result.setShowFullInfo(false);
+            }
             String tablename = getTableName();
             if (tablename == null) {
                 return null;
@@ -298,7 +305,6 @@ public class SQLParser {
                 System.out.println("Unexpected strings at end of line.");
                 return null;
             }
-            SQLParseResult result = new SQLParseResult();
             result.setCommandType(CommandType.SHOW_TABLE_CONTENT);
             result.setTablename(tablename);
             return result;
@@ -323,6 +329,13 @@ public class SQLParser {
      * @return parse result, null if failed.
      */
     private SQLParseResult parseDesc() {
+        SQLParseResult result = new SQLParseResult();
+        if (checkTokenIgnoreCase("full", false)) {
+            checkTokenIgnoreCase("full", true);
+            result.setShowFullInfo(true);
+        } else {
+            result.setShowFullInfo(false);
+        }
         String tablename = getTableName();
         if (tablename == null) {
             return null;
@@ -331,7 +344,6 @@ public class SQLParser {
             System.out.println("Unexpected strings at end of line.");
             return null;
         }
-        SQLParseResult result = new SQLParseResult();
         result.setCommandType(CommandType.DESC);
         result.setTablename(tablename);
         return result;

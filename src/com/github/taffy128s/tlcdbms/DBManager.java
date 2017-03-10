@@ -102,7 +102,7 @@ public class DBManager {
         ArrayList<String> attributeNames = mTables.get(tablename).getAttributeNames();
         ArrayList<DataType> attributeTypes = mTables.get(tablename).getAttributeTypes();
         ArrayList<DataRecord> allRecords = mTables.get(tablename).getAllRecords();
-        printTable(attributeNames, attributeTypes, allRecords);
+        printTable(attributeNames, attributeTypes, allRecords, !parameter.getShowFullInfo());
     }
 
     /**
@@ -128,11 +128,16 @@ public class DBManager {
         showType.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
         ArrayList<DataRecord> records = new ArrayList<>();
         for (int i = 0; i < attributeNames.size(); ++i) {
+            if (!parameter.getShowFullInfo() && attributeNames.get(i).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
+                continue;
+            }
             DataRecord record = new DataRecord();
             record.append(attributeNames.get(i));
             record.append(attributeTypes.get(i));
             if (i == mTables.get(tablename).getPrimaryKey()) {
                 record.append("PRI");
+            } else if (attributeNames.get(i).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
+                record.append("AUTOPRI");
             } else {
                 record.append("");
             }
@@ -154,13 +159,21 @@ public class DBManager {
         ArrayList<String> attributeStrings = new ArrayList<>();
         ArrayList<Integer> orderIndex = new ArrayList<>();
         for (int i = 0; i < attributeNames.size(); ++i) {
+            if (attributeNames.get(i).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
+                continue;
+            }
             attributeStrings.add(attributeNames.get(i) + " " + attributeTypes.get(i));
         }
-        if (!parameter.isCustomOrder() && parameter.getBlocks().size() != attributeNames.size()) {
+        if (table.getPrimaryKey() == -1) {
+            parameter.getBlocks().add("-1");
+        }
+        int expectedSize = (table.getPrimaryKey() == -1) ? attributeNames.size() - 1 : attributeNames.size();
+        int gotSize = (table.getPrimaryKey() == -1) ? parameter.getBlocks().size() - 1 : parameter.getBlocks().size();
+        if (!parameter.isCustomOrder() && expectedSize != gotSize) {
             System.out.println("Input data tuple size doesn't match table attributes.");
             System.out.println("Table '" + parameter.getTablename() + "' attributes: " + String.join(", ", attributeStrings));
-            System.out.println("Expected: " + attributeNames.size() + ".");
-            System.out.println("Found: " + parameter.getBlocks().size() + ".");
+            System.out.println("Expected: " + expectedSize + ".");
+            System.out.println("Found: " + gotSize + ".");
             return null;
         }
         if (parameter.isCustomOrder()) {
@@ -215,28 +228,51 @@ public class DBManager {
 
     /**
      * Print a table (output related).
+     * Hide any attribute related to AUTO_PRIMARY_KEY.
      *
      * @param attribute attribute names.
      * @param type attribute types.
      * @param records data to print.
      */
     private void printTable(ArrayList<String> attribute, ArrayList<DataType> type, ArrayList<DataRecord> records) {
+        printTable(attribute, type, records, true);
+    }
+
+    /**
+     * Print a table (output related).
+     *
+     * @param attribute attribute names.
+     * @param type attribute types.
+     * @param records data to print.
+     * @param hideAutoPrimaryKey true to hide auto generated primary key, false otherwise
+     */
+    private void printTable(ArrayList<String> attribute, ArrayList<DataType> type, ArrayList<DataRecord> records, boolean hideAutoPrimaryKey) {
         if (records.isEmpty()) {
             System.out.println(" (empty set.)");
             return;
         }
+        boolean containAutoPrimaryKey = attribute.get(attribute.size() - 1).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME);
         ArrayList<Integer> columnMaxLength = new ArrayList<>();
         for (String anAttribute : attribute) {
+            if (hideAutoPrimaryKey && anAttribute.equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
+                continue;
+            }
             columnMaxLength.add(anAttribute.length() + 1);
         }
         for (DataRecord record : records) {
             ArrayList<Object> blocks = record.getAllFieldsForOutput();
             for (int i = 0; i < blocks.size(); ++i) {
+                if (containAutoPrimaryKey && hideAutoPrimaryKey && i == blocks.size() - 1) {
+                    continue;
+                }
                 columnMaxLength.set(i, Math.max(columnMaxLength.get(i), blocks.get(i).toString().length() + 1));
             }
         }
         String attrOutput = "";
         for (int i = 0; i < attribute.size(); ++i) {
+            if (hideAutoPrimaryKey && attribute.get(i).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
+                continue;
+            }
             attrOutput += " |";
             for (int j = 0; j < columnMaxLength.get(i) - attribute.get(i).length(); ++j) {
                 attrOutput += " ";
@@ -250,6 +286,9 @@ public class DBManager {
         for (DataRecord record : records) {
             ArrayList<Object> blocks = record.getAllFieldsForOutput();
             for (int i = 0; i < blocks.size(); ++i) {
+                if (containAutoPrimaryKey && hideAutoPrimaryKey && i == blocks.size() - 1) {
+                    continue;
+                }
                 System.out.print(" |");
                 if (type.get(i).getType() == DataTypeIdentifier.INT) {
                     for (int j = 0; j < columnMaxLength.get(i) - blocks.get(i).toString().length(); ++j) {

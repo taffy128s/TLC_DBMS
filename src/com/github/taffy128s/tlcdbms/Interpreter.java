@@ -26,6 +26,8 @@ public class Interpreter {
      * Start reading command (block IO).
      */
     public void start() {
+        System.out.println("Welcome!");
+        System.out.println();
         String singleIns = "";
         Reader reader = new InputStreamReader(System.in);
         int temp;

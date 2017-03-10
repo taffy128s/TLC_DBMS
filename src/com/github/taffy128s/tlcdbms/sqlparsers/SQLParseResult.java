@@ -18,6 +18,7 @@ public class SQLParseResult {
     private ArrayList<String> mUpdateOrder;
     private int mPrimaryKeyIndex;
     private boolean mCustomOrder;
+    private boolean mShowFullInfo;
 
     /**
      * Constructor. Initialize all members.
@@ -31,6 +32,7 @@ public class SQLParseResult {
         mUpdateOrder = null;
         mPrimaryKeyIndex = -1;
         mCustomOrder = false;
+        mShowFullInfo = false;
     }
 
     /**
@@ -175,6 +177,24 @@ public class SQLParseResult {
      */
     public boolean isCustomOrder() {
         return mCustomOrder;
+    }
+
+    /**
+     * ShowFullInfo setter.
+     *
+     * @param showFullInfo value to set.
+     */
+    public void setShowFullInfo(boolean showFullInfo) {
+        mShowFullInfo = showFullInfo;
+    }
+
+    /**
+     * ShowFullInfo getter.
+     *
+     * @return true if show, false otherwise.
+     */
+    public boolean getShowFullInfo() {
+        return mShowFullInfo;
     }
 
     /**
