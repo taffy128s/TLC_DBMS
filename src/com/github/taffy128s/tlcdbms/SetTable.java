@@ -77,8 +77,7 @@ public class SetTable extends Table {
      * @param data data record to be inserted.
      * @return true if the primary key is valid, false if invalid.
      */
-    @Override
-    protected boolean checkPrimaryKey(DataRecord data) {
+    private boolean checkPrimaryKey(DataRecord data) {
         return mPrimaryKey == -1 || mPrimaryTable.contains(data.get(mPrimaryKey));
     }
 

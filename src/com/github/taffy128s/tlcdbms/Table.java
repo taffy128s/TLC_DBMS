@@ -127,13 +127,4 @@ public abstract class Table {
      * @return an array list of all records.
      */
     public abstract ArrayList<DataRecord> getAllRecords();
-
-
-    /**
-     * Check whether the primary key is already in table.
-     *
-     * @param data data record to be inserted.
-     * @return true if the primary key is valid, false if invalid.
-     */
-    protected abstract boolean checkPrimaryKey(DataRecord data);
 }
