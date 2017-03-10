@@ -54,13 +54,13 @@ public class Table {
      */
     public boolean insert(DataRecord data) {
         if (mTable.contains(data)) {
-            System.out.println("Already exists in table.");
+            System.out.println("Data tuple already exists in table.");
             return false;
         } else if (mPrimaryKey != -1 && data.get(mPrimaryKey) == null) {
             System.out.println("Primary key cannot be null.");
             return false;
         } else if (mPrimaryKey != -1 && checkPrimaryKey(data)) {
-            System.out.println("Primary key already exists in table.");
+            System.out.println("Primary key " + data.get(mPrimaryKey) + " already exists in table.");
             return false;
         } else {
             mTable.add(data);
@@ -102,10 +102,14 @@ public class Table {
     /**
      * Get all records in the table.
      *
-     * @return an array of all records.
+     * @return an array list of all records.
      */
-    public Object[] getAllRecords() {
-        return mTable.toArray();
+    public ArrayList<DataRecord> getAllRecords() {
+        ArrayList<DataRecord> result = new ArrayList<>();
+        for (DataRecord records : mTable) {
+            result.add(records);
+        }
+        return result;
     }
 
     /**

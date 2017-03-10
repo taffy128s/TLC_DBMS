@@ -5,6 +5,7 @@ import java.util.ArrayList;
 /**
  * Class for storing a tuple of data.
  * Ex. used to store ('John', 'Male', 20).
+ * <bold>Note that data can be null.</bold>
  *
  * Use append(), update() to maintain data stored.
  */
@@ -89,25 +90,27 @@ public class DataRecord {
 
     /**
      * Get all data fields in this data record.<br>
-     * ** MAY HAVE NULL **
+     * ** MAY HAVE NULL INSIDE **
      *
-     * @return an array of all data fields.
+     * @return an array list of all data fields.
      */
-    public Object[] getAllFields() {
-        return mDataList.toArray();
+    public ArrayList<Object> getAllFields() {
+        return mDataList;
     }
 
     /**
      * Get all data fields in this data record.
      * Replace all null items with varchar "null" to display.
      *
-     * @return an array of all data fields.
+     * @return an array list of all data fields.
      */
-    public Object[] getAllFieldsForOutput() {
-        Object[] result = mDataList.toArray();
-        for (int i = 0; i < result.length; ++i) {
-            if (result[i] == null) {
-                result[i] = "null";
+    public ArrayList<Object> getAllFieldsForOutput() {
+        ArrayList<Object> result = new ArrayList<>();
+        for (Object data : mDataList) {
+            if (data != null) {
+                result.add(data);
+            } else {
+                result.add("null");
             }
         }
         return result;

@@ -79,10 +79,11 @@ public class DBManager {
         showAttr.add("Tablename");
         showType.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
         Object[] tablenames = mTables.keySet().toArray();
-        DataRecord[] records = new DataRecord[mTables.size()];
-        for (int i = 0; i < records.length; ++i) {
-            records[i] = new DataRecord();
-            records[i].append(tablenames[i].toString());
+        ArrayList<DataRecord> records = new ArrayList<>();
+        for (int i = 0; i < tablenames.length; ++i) {
+            DataRecord record = new DataRecord();
+            record.append(tablenames[i].toString());
+            records.add(record);
         }
         printTable(showAttr, showType, records);
     }
@@ -100,7 +101,7 @@ public class DBManager {
         }
         ArrayList<String> attributeNames = mTables.get(tablename).getAttributeNames();
         ArrayList<DataType> attributeTypes = mTables.get(tablename).getAttributeTypes();
-        Object[] allRecords = mTables.get(tablename).getAllRecords();
+        ArrayList<DataRecord> allRecords = mTables.get(tablename).getAllRecords();
         printTable(attributeNames, attributeTypes, allRecords);
     }
 
@@ -125,18 +126,19 @@ public class DBManager {
         showType.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
         showType.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
         showType.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
-        DataRecord[] datas = new DataRecord[attributeNames.size()];
+        ArrayList<DataRecord> records = new ArrayList<>();
         for (int i = 0; i < attributeNames.size(); ++i) {
-            datas[i] = new DataRecord();
-            datas[i].append(attributeNames.get(i));
-            datas[i].append(attributeTypes.get(i));
+            DataRecord record = new DataRecord();
+            record.append(attributeNames.get(i));
+            record.append(attributeTypes.get(i));
             if (i == mTables.get(tablename).getPrimaryKey()) {
-                datas[i].append("PRI");
+                record.append("PRI");
             } else {
-                datas[i].append("");
+                record.append("");
             }
+            records.add(record);
         }
-        printTable(showAttr, showType, datas);
+        printTable(showAttr, showType, records);
     }
 
     /**
@@ -149,11 +151,16 @@ public class DBManager {
         Table table = mTables.get(parameter.getTablename());
         ArrayList<String> attributeNames = table.getAttributeNames();
         ArrayList<DataType> attributeTypes = table.getAttributeTypes();
+        ArrayList<String> attributeStrings = new ArrayList<>();
         ArrayList<Integer> orderIndex = new ArrayList<>();
+        for (int i = 0; i < attributeNames.size(); ++i) {
+            attributeStrings.add(attributeNames.get(i) + " " + attributeTypes.get(i));
+        }
         if (!parameter.isCustomOrder() && parameter.getBlocks().size() != attributeNames.size()) {
-            System.out.println("Input data size not match.");
-            System.out.println("  Expected: " + attributeNames.size() + ".");
-            System.out.println("     Found: " + parameter.getBlocks().size() + ".");
+            System.out.println("Input data tuple size doesn't match table attributes.");
+            System.out.println("Table '" + parameter.getTablename() + "' attributes: " + String.join(", ", attributeStrings));
+            System.out.println("Expected: " + attributeNames.size() + ".");
+            System.out.println("Found: " + parameter.getBlocks().size() + ".");
             return null;
         }
         if (parameter.isCustomOrder()) {
@@ -181,6 +188,7 @@ public class DBManager {
                 dataRecord.append(null);
             } else if (attributeTypes.get(tableAttrIndex).getType() == DataTypeIdentifier.INT) {
                 if (!DataChecker.isValidInteger(block)) {
+                    System.out.println("For attribute '" + attributeNames.get(index) + "' in table '" + parameter.getTablename() + "':");
                     System.out.println("Wrong input type (INT expected): " + block + ".");
                     return null;
                 }
@@ -188,11 +196,13 @@ public class DBManager {
             } else {
                 int lengthLimit = attributeTypes.get(tableAttrIndex).getLimit();
                 if (!DataChecker.isValidQuotedVarChar(block)) {
+                    System.out.println("For attribute '" + attributeNames.get(index) + "' in table '" + parameter.getTablename() + "':");
                     System.out.println("Wrong input type (VARCHAR(" + lengthLimit + ") expected): " + block + ".");
                     return null;
                 }
                 String varcharPart = block.substring(1, block.length() - 1);
                 if (!DataChecker.isValidVarChar(varcharPart, lengthLimit)) {
+                    System.out.println("For attribute '" + attributeNames.get(index) + "' in table '" + parameter.getTablename() + "':");
                     System.out.println("Wrong input type (VARCHAR(" + lengthLimit + ") expected): " + varcharPart + ".");
                     return null;
                 }
@@ -208,19 +218,21 @@ public class DBManager {
      *
      * @param attribute attribute names.
      * @param type attribute types.
-     * @param datas data to print.
+     * @param records data to print.
      */
-    private void printTable(ArrayList<String> attribute, ArrayList<DataType> type, Object[] datas) {
-        System.out.println();
+    private void printTable(ArrayList<String> attribute, ArrayList<DataType> type, ArrayList<DataRecord> records) {
+        if (records.isEmpty()) {
+            System.out.println(" (empty set.)");
+            return;
+        }
         ArrayList<Integer> columnMaxLength = new ArrayList<>();
         for (String anAttribute : attribute) {
             columnMaxLength.add(anAttribute.length() + 1);
         }
-        for (Object data : datas) {
-            DataRecord record = (DataRecord) data;
-            Object[] blocks = record.getAllFieldsForOutput();
-            for (int i = 0; i < blocks.length; ++i) {
-                columnMaxLength.set(i, Math.max(columnMaxLength.get(i), blocks[i].toString().length() + 1));
+        for (DataRecord record : records) {
+            ArrayList<Object> blocks = record.getAllFieldsForOutput();
+            for (int i = 0; i < blocks.size(); ++i) {
+                columnMaxLength.set(i, Math.max(columnMaxLength.get(i), blocks.get(i).toString().length() + 1));
             }
         }
         String attrOutput = "";
@@ -235,21 +247,20 @@ public class DBManager {
         printSeparateLine(attrOutput);
         System.out.println(attrOutput);
         printSeparateLine(attrOutput);
-        for (Object data : datas) {
-            DataRecord record = (DataRecord) data;
-            Object[] blocks = record.getAllFieldsForOutput();
-            for (int i = 0; i < blocks.length; ++i) {
+        for (DataRecord record : records) {
+            ArrayList<Object> blocks = record.getAllFieldsForOutput();
+            for (int i = 0; i < blocks.size(); ++i) {
                 System.out.print(" |");
                 if (type.get(i).getType() == DataTypeIdentifier.INT) {
-                    for (int j = 0; j < columnMaxLength.get(i) - blocks[i].toString().length(); ++j) {
+                    for (int j = 0; j < columnMaxLength.get(i) - blocks.get(i).toString().length(); ++j) {
                         System.out.print(" ");
                     }
                 } else {
                     System.out.print(" ");
                 }
-                System.out.print(blocks[i]);
+                System.out.print(blocks.get(i));
                 if (type.get(i).getType() == DataTypeIdentifier.VARCHAR) {
-                    for (int j = 0; j < columnMaxLength.get(i) - blocks[i].toString().length() - 1; ++j) {
+                    for (int j = 0; j < columnMaxLength.get(i) - blocks.get(i).toString().length() - 1; ++j) {
                         System.out.print(" ");
                     }
                 }
