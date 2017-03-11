@@ -168,16 +168,14 @@ public class DBManager {
                 attributeStrings.add(attributeNames.get(i) + " " + attributeTypes.get(i));
             }
         }
-        if (table.getPrimaryKey() == -1) {
-            parameter.getBlocks().add("-1");
-        }
-        int expectedSize = (table.getPrimaryKey() == -1) ? attributeNames.size() - 1 : attributeNames.size();
-        int gotSize = (table.getPrimaryKey() == -1) ? parameter.getBlocks().size() - 1 : parameter.getBlocks().size();
+        parameter.getBlocks().add("-1");
+        int expectedSize = attributeNames.size() - 1;
+        int gotSize = parameter.getBlocks().size() - 1;
         if (!parameter.isCustomOrder() && expectedSize != gotSize) {
             System.out.println("Input data tuple size doesn't match table attributes.");
             System.out.println("Table '" + parameter.getTablename() + "' attributes: " + String.join(", ", attributeStrings));
             System.out.println("Expected: " + expectedSize + ".");
-            System.out.println("Found: " + gotSize + ".");
+            System.out.println("Given: " + gotSize + ".");
             return null;
         }
         if (parameter.isCustomOrder()) {

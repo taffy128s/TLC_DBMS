@@ -40,6 +40,7 @@ public class SetTable extends Table {
     /**
      * Insert a data record into table.
      * Assume that data is with valid type.
+     * ** NEED TO CALL setAutoPrimaryKey() BEFORE INSERT INTO TABLE. **
      *
      * @param data data record to be inserted.
      * @return true if succeed, false if failed.
@@ -56,16 +57,10 @@ public class SetTable extends Table {
             System.out.println("Primary key " + data.get(mPrimaryKey) + " already exists in table.");
             return false;
         } else {
+            setAutoPrimaryKey(data);
+            mTable.add(data);
             if (mPrimaryKey != -1) {
-                mTable.add(data);
                 mPrimaryTable.add(data.get(mPrimaryKey));
-            } else {
-                while (mPrimaryTable.contains(mPrimaryKeyCounter)) {
-                    ++mPrimaryKeyCounter;
-                }
-                data.set(data.length() - 1, mPrimaryKeyCounter);
-                mTable.add(data);
-                mPrimaryTable.add(mPrimaryKeyCounter);
             }
             return true;
         }

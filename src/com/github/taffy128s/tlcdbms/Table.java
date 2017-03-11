@@ -1,6 +1,7 @@
 package com.github.taffy128s.tlcdbms;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Database Table.
@@ -14,8 +15,9 @@ public abstract class Table {
     protected String mTablename;
     protected ArrayList<String> mAttributeNames;
     protected ArrayList<DataType> mAttributeTypes;
+    protected HashSet<Integer> mAutoPrimaryKeyTable;
     protected int mPrimaryKey;
-    protected int mPrimaryKeyCounter;
+    protected int mAutoPrimaryKeyCounter;
 
     /**
      * Initialize a Table.
@@ -24,8 +26,9 @@ public abstract class Table {
         mTablename = "";
         mAttributeNames = new ArrayList<>();
         mAttributeTypes = new ArrayList<>();
+        mAutoPrimaryKeyTable = new HashSet<>();
         mPrimaryKey = -1;
-        mPrimaryKeyCounter = 0;
+        mAutoPrimaryKeyCounter = 0;
     }
 
     /**
@@ -42,10 +45,22 @@ public abstract class Table {
         mAttributeNames = attributeNames;
         mAttributeTypes = attributeTypes;
         mPrimaryKey = primaryKey;
-        if (mPrimaryKey == -1) {
-            attributeNames.add(Table.AUTO_PRIMARY_KEY_NAME);
-            attributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
+        attributeNames.add(Table.AUTO_PRIMARY_KEY_NAME);
+        attributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
+    }
+
+    /**
+     * Set auto primary key value.
+     * Index = dataRecord.length() - 1, i.e. the last one.
+     *
+     * @param dataRecord data record to set.
+     */
+    protected void setAutoPrimaryKey(DataRecord dataRecord) {
+        while (mAutoPrimaryKeyTable.contains(mAutoPrimaryKeyCounter)) {
+            ++mAutoPrimaryKeyCounter;
         }
+        mAutoPrimaryKeyTable.add(mAutoPrimaryKeyCounter);
+        dataRecord.set(dataRecord.length() - 1, mAutoPrimaryKeyCounter);
     }
 
     /**
@@ -115,6 +130,7 @@ public abstract class Table {
     /**
      * Insert a data record into table.
      * Assume that data is with valid type.
+     * ** NEED TO CALL setAutoPrimaryKey() BEFORE INSERT INTO TABLE. **
      *
      * @param data data record to be inserted.
      * @return true if succeed, false if failed.
