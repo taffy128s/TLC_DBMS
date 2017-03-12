@@ -43,7 +43,7 @@ public class BTree<K extends Comparable<K>, V> {
          *
          * @param key key data.
          * @param value value data.
-         * @param next next object(null-able).
+         * @param next next object, null if not exists.
          */
         public void add(K key, V value, BTreeNode next) {
             int index = Collections.binarySearch(mKeys, key);
@@ -57,8 +57,8 @@ public class BTree<K extends Comparable<K>, V> {
         }
 
         /**
-         * Split the node into two part. This node is p, the node returned
-         * by function is q. Note that p got all elements < medium value, q
+         * Split the node into two part. This node becomes p, the node returned
+         * by function becomes q. Note that p got all elements < medium value, q
          * got all elements > medium value. This function will change the data
          * size stored inside, so remember to store the medium value to another
          * place.
@@ -100,10 +100,10 @@ public class BTree<K extends Comparable<K>, V> {
          * @param keys a list of keys to set.
          * @param values a list of values to set.
          */
-        public void setKeyAndValue(List<K> keys, List<V> values) {
+        public void setKeysAndValues(List<K> keys, List<V> values) {
             mKeys = new ArrayList<>();
-            mValues = new ArrayList<>();
             mKeys.addAll(keys);
+            mValues = new ArrayList<>();
             mValues.addAll(values);
         }
 
@@ -171,7 +171,7 @@ public class BTree<K extends Comparable<K>, V> {
          * @param values a list of value to set.
          */
         public void setNext(List<BTreeNode> values) {
-            mNext.clear();
+            mNext = new ArrayList<>();
             mNext.addAll(values);
         }
 
@@ -234,7 +234,7 @@ public class BTree<K extends Comparable<K>, V> {
         private BTreeNode splitRight() {
             int midIndex = mKeys.size() / 2;
             BTreeNode result = new BTreeNode(mOrder);
-            result.setKeyAndValue(mKeys.subList(midIndex + 1, mKeys.size()), mValues.subList(midIndex + 1, mValues.size()));
+            result.setKeysAndValues(mKeys.subList(midIndex + 1, mKeys.size()), mValues.subList(midIndex + 1, mValues.size()));
             result.setNext(mNext.subList(midIndex + 1, mNext.size()));
             return result;
         }
@@ -246,7 +246,7 @@ public class BTree<K extends Comparable<K>, V> {
          */
         @Override
         public String toString() {
-            return "{Keys " + mKeys + "}";
+            return "BTreeNode{Keys " + mKeys + "}";
         }
     }
 

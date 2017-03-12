@@ -48,8 +48,8 @@ public class BTreeTest {
     public void tableCorrectness() throws Exception {
         ArrayList<Integer> testcase = new ArrayList<>();
         Random random = new Random();
-        for (int i = 0; i < 50000; ++i) {
-            testcase.add(random.nextInt() % 2000);
+        for (int i = 0; i < 5000000; ++i) {
+            testcase.add(random.nextInt() % 100000);
         }
         for (int data : testcase) {
             int datain = random.nextInt() % 100;
@@ -66,7 +66,7 @@ public class BTreeTest {
                 trees.get(data).add(datain);
             }
         }
-        for (int i = 0; i < 2000; ++i) {
+        for (int i = 0; i < 100000; ++i) {
             ArrayList<Integer> result = tree.get(i);
             ArrayList<Integer> correct = trees.get(i);
             if (result == null) {
