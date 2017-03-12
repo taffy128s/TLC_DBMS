@@ -39,13 +39,13 @@ public class BTree<K extends Comparable<K>, V> {
         }
 
         /**
-         * Add a pair ((key, value), nextTreeNode) into this tree node.
+         * Put a pair ((key, value), nextTreeNode) into this tree node.
          *
          * @param key key data.
          * @param value value data.
          * @param next next object, null if not exists.
          */
-        public void add(K key, V value, BTreeNode next) {
+        public void put(K key, V value, BTreeNode next) {
             int index = Collections.binarySearch(mKeys, key);
             if (index >= 0) {
                 mValues.set(index, value);
@@ -356,6 +356,15 @@ public class BTree<K extends Comparable<K>, V> {
     }
 
     /**
+     * Check whether this tree is empty.
+     *
+     * @return true if empty, false otherwise.
+     */
+    public boolean isEmpty() {
+        return mRoot.isEmpty();
+    }
+
+    /**
      * Find Tree Node with key value given.
      *
      * @param root root tree node(this.mRoot if first call).
@@ -388,7 +397,7 @@ public class BTree<K extends Comparable<K>, V> {
      */
     private void insertTreeNode(BTreeNode root, BTreeNode parent, K key, V value) {
         if (root == null) {
-            parent.add(key, value, null);
+            parent.put(key, value, null);
             return;
         }
         int index = Collections.binarySearch(root.getKeys(), key);
@@ -403,10 +412,10 @@ public class BTree<K extends Comparable<K>, V> {
                 if (parent == null) {
                     parent = new BTreeNode(mOrder);
                     parent.setNext(0, root);
-                    parent.add(keyElement, valueElement, q);
+                    parent.put(keyElement, valueElement, q);
                     mRoot = parent;
                 } else {
-                    parent.add(keyElement, valueElement, q);
+                    parent.put(keyElement, valueElement, q);
                 }
             }
         }
