@@ -1,4 +1,4 @@
-package com.github.taffy128s.btree;
+package com.github.taffy128s.btrees;
 
 import java.util.ArrayList;
 import java.util.Collections;

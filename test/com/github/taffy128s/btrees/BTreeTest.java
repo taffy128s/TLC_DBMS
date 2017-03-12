@@ -1,4 +1,4 @@
-package com.github.taffy128s.btree;
+package com.github.taffy128s.btrees;
 
 import org.junit.After;
 import org.junit.Before;
