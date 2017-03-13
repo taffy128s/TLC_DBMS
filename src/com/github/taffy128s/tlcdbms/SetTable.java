@@ -57,7 +57,8 @@ public class SetTable extends Table {
             System.out.println("Primary key " + data.get(mPrimaryKey) + " already exists in table.");
             return false;
         } else {
-            setAutoPrimaryKey(data);
+            // WHAT THE SPEC.
+            // setAutoPrimaryKey(data);
             mTable.add(data);
             if (mPrimaryKey != -1) {
                 mPrimaryTable.add(data.get(mPrimaryKey));
