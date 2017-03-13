@@ -59,7 +59,7 @@ public class Interpreter {
      *
      * @param singleInstruction a command read from stdin.
      */
-    private void execute(String singleInstruction) {
+    protected void execute(String singleInstruction) {
         SQLParseResult sqlParseResult = parser.parse(singleInstruction);
         if (sqlParseResult == null) {
             System.out.println();
@@ -101,7 +101,7 @@ public class Interpreter {
      * @param input string to process.
      * @return a string processed.
      */
-    private String noSpaceAtBeginning(String input) {
+    protected String noSpaceAtBeginning(String input) {
         boolean firstValidEncountered = false;
         String temp = "";
         for (int i = 0; i < input.length(); i++) {
