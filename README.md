@@ -2,23 +2,24 @@
 A mini database management system for CS4710 in National Tsing Hua University. <br />
 
 ## Getting Started <br />
-Clone the whole repo and add it into a new Java project. <br />
+Clone the entire repository and add it into a new Java project. <br />
 
 ### Prerequisites <br />
 Any computer with Java IDE and JDK 1.7 or higher installed. <br />
 
 ## Running the tests <br />
 Now we ONLY support CREATE, INSERT, SHOW, DESC, QUIT, EXIT commands. <br />
-Tests can be done through two ways... <br />
-(1) Add testcases like the format in any file under directory "test". Then, runs them using JUnit Test. <br />
-(2) Straightforwardly run SQL commands in the console. <br />
+Tests can be done through three ways: <br />
+(1) Create a text file filled with SQL commands, and pass the file name to the exported jar by argument. <br />
+(2) Add testcases like the format in any file under directory "test". Then, execute them using JUnit Test. <br />
+(3) Straightforwardly run SQL commands in the console. <br />
 
 ### Testing example <br />
 In the file "SQLParserTest.java", we have "Create table f();". <br />
-Just like any SQL language, we should reject it because an empty table is not allowed. <br />
+Just like any SQL language, we should reject this command because a table without columns is not allowed. <br />
 
 ## Deployment <br />
-Export a jar file in any IDE, and run it on any machine that supports Java Runtime Environment. <br />
+Export a jar executable in any Java IDE, and run it on any machine that supports Java Runtime Environment. <br />
 
 ## Built With <br />
 [Eclipse](https://www.eclipse.org/downloads/) - The most widely used Java IDE. <br />

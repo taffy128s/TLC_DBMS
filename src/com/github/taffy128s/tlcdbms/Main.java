@@ -14,8 +14,8 @@ public class Main {
             Interpreter interpreter = new Interpreter();
             interpreter.start();
         } else if (args.length == 1) {
-            FileInterpreter fileHandler = new FileInterpreter(args[0]);
-            fileHandler.start();
+            FileInterpreter fileInterpreter = new FileInterpreter(args[0]);
+            fileInterpreter.start();
         } else {
             System.out.println("usage: executable [file]");
         }
