@@ -57,6 +57,21 @@ public class BTree<K extends Comparable<K>, V> {
         }
 
         /**
+         * Get value with corresponding key in this node.
+         *
+         * @param key key to get.
+         * @return value with corresponding key.
+         */
+        public V get(K key) {
+            int index = Collections.binarySearch(mKeys, key);
+            if (index >= 0) {
+                return mValues.get(index);
+            } else {
+                return null;
+            }
+        }
+
+        /**
          * Split the node into two part. This node becomes p, the node returned
          * by function becomes q. Note that p got all elements < medium value, q
          * got all elements > medium value. This function will change the data
