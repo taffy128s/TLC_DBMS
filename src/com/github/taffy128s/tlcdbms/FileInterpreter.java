@@ -35,7 +35,7 @@ public class FileInterpreter extends Interpreter {
                 }
                 if (c == ';') {
                     singleIns = noSpaceAtBeginning(singleIns);
-                    System.out.println(singleIns);
+                    System.out.println(">> " + singleIns);
                     if (!singleIns.equals("")) {
                         execute(singleIns);
                     }
