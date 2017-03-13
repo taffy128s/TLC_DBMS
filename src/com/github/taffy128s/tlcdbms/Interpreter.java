@@ -40,17 +40,15 @@ public class Interpreter {
                     singleIns = noSpaceAtBeginning(singleIns);
                     if (!singleIns.equals("")) {
                         execute(singleIns);
+                        singleIns = "";
                     }
-                    singleIns = "";
                     printOnce = true;
                 } else if (c == '\n') {
                     singleIns += c;
                     if (printOnce) {
                         System.out.print(">> ");
                         printOnce = false;
-                    } else {
-                        System.out.print("-> ");
-                    }
+                    } else System.out.print("-> ");
                 } else singleIns += c;
             }
         } catch (IOException e) {
