@@ -38,8 +38,8 @@ public class FileInterpreter extends Interpreter {
                     System.out.println(singleIns);
                     if (!singleIns.equals("")) {
                         execute(singleIns);
+                        singleIns = "";
                     }
-                    singleIns = "";
                 } else singleIns += c;
             }
         } catch (Exception e) {
@@ -51,10 +51,9 @@ public class FileInterpreter extends Interpreter {
     private void ignoreTillNewLine() {
         try {
             int temp;
-            while ((temp = inputStream.read()) != -1) {
-                char c = (char) temp;
-                if (c == '\n') break;
-            }
+            while ((temp = inputStream.read()) != -1)
+                if (temp == '\n') 
+                    break;
         } catch (Exception e) {
             System.out.println(mFilename + ": read file error.");
             System.exit(0);

@@ -40,8 +40,8 @@ public class Interpreter {
                     singleIns = noSpaceAtBeginning(singleIns);
                     if (!singleIns.equals("")) {
                         execute(singleIns);
+                        singleIns = "";
                     }
-                    singleIns = "";
                     printOnce = true;
                 } else if (c == '\n') {
                     singleIns += c;
