@@ -9,6 +9,9 @@ import java.util.List;
  *
  * Currently only support INSERT, FIND (no deletion),
  * since deletion is not needed in whole project.
+ *
+ * @param <K> key type.
+ * @param <V> value type.
  */
 public class BTree<K extends Comparable<K>, V> {
     /**
@@ -27,10 +30,6 @@ public class BTree<K extends Comparable<K>, V> {
          *              Need to greater than or equal to 3.
          */
         public BTreeNode(int order) {
-            if (order < 3) {
-                System.err.println("Order of a b-tree need to be >= 3");
-                assert order >= 3;
-            }
             mOrder = order;
             mKeys = new ArrayList<>();
             mValues = new ArrayList<>();
@@ -110,16 +109,23 @@ public class BTree<K extends Comparable<K>, V> {
         }
 
         /**
-         * Setter of both key and value.
+         * Setter of key.
+         *
+         * @param index index to set.
+         * @param key key to set.
+         */
+        public void setKey(int index, K key) {
+            mKeys.set(index, key);
+        }
+
+        /**
+         * Setter of keys.
          *
          * @param keys a list of keys to set.
-         * @param values a list of values to set.
          */
-        public void setKeysAndValues(List<K> keys, List<V> values) {
+        public void setKeys(List<K> keys) {
             mKeys = new ArrayList<>();
             mKeys.addAll(keys);
-            mValues = new ArrayList<>();
-            mValues.addAll(values);
         }
 
         /**
@@ -149,6 +155,16 @@ public class BTree<K extends Comparable<K>, V> {
          */
         public void setValue(int index, V value) {
             mValues.set(index, value);
+        }
+
+        /**
+         * Values setter.
+         *
+         * @param values a list of values to set.
+         */
+        public void setValues(List<V> values) {
+            mValues = new ArrayList<>();
+            mValues.addAll(values);
         }
 
         /**
@@ -249,7 +265,8 @@ public class BTree<K extends Comparable<K>, V> {
         private BTreeNode splitRight() {
             int midIndex = mKeys.size() / 2;
             BTreeNode result = new BTreeNode(mOrder);
-            result.setKeysAndValues(mKeys.subList(midIndex + 1, mKeys.size()), mValues.subList(midIndex + 1, mValues.size()));
+            result.setKeys(mKeys.subList(midIndex + 1, mKeys.size()));
+            result.setValues(mValues.subList(midIndex + 1, mValues.size()));
             result.setNext(mNext.subList(midIndex + 1, mNext.size()));
             return result;
         }
@@ -314,8 +331,7 @@ public class BTree<K extends Comparable<K>, V> {
      */
     public BTree(int order) {
         if (order < 3) {
-            System.err.println("Order of a b-tree need to be >= 3");
-            assert order >= 3;
+            order = 3;
         }
         mOrder = order;
         mRoot = new BTreeNode(mOrder);
