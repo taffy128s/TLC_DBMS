@@ -28,10 +28,11 @@ public class Interpreter {
     public void start() {
         System.out.println("Welcome!");
         System.out.println();
+        System.out.print(">> ");
         String singleIns = "";
         Reader reader = new InputStreamReader(System.in);
         int temp;
-        System.out.print(">> ");
+        boolean printOnce = false;
         try {
             while ((temp = reader.read()) != -1) {
                 char c = (char) temp;
@@ -41,9 +42,15 @@ public class Interpreter {
                         execute(singleIns);
                     }
                     singleIns = "";
+                    printOnce = true;
                 } else if (c == '\n') {
                     singleIns += c;
-                    System.out.print(">> ");
+                    if (printOnce) {
+                        System.out.print(">> ");
+                        printOnce = false;
+                    } else {
+                        System.out.print("-> ");
+                    }
                 } else singleIns += c;
             }
         } catch (IOException e) {
