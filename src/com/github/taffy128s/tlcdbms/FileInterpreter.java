@@ -3,11 +3,13 @@ package com.github.taffy128s.tlcdbms;
 import java.io.FileReader;
 
 public class FileInterpreter extends Interpreter {
-    
+
     private FileReader inputStream = null;
-    
+    private String mFilename;
+
     public FileInterpreter(String filename) {
         super();
+        mFilename = filename;
         try {
             filename = filename.toLowerCase();
             if (!filename.endsWith(".sql")) {
@@ -15,11 +17,11 @@ public class FileInterpreter extends Interpreter {
             }
             inputStream = new FileReader(filename);
         } catch (Exception e) {
-            System.out.println("Open file error.");
+            System.out.println(mFilename + ": no such file or directory.");
             System.exit(0);
         }
     }
-    
+
     public void start() {
         try {
             String singleIns = "";
@@ -42,11 +44,11 @@ public class FileInterpreter extends Interpreter {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Read file error.");
+            System.out.println(mFilename + ": read file error.");
             System.exit(0);
         }
     }
-    
+
     private void ignoreTillNewLine() {
         int temp;
         try {
@@ -57,9 +59,9 @@ public class FileInterpreter extends Interpreter {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Read file error.");
+            System.out.println(mFilename + ": read file error.");
             System.exit(0);
         }
     }
-    
+
 }
