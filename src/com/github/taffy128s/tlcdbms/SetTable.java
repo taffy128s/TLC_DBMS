@@ -38,26 +38,36 @@ public class SetTable extends Table {
     }
 
     @Override
-    public boolean insert(DataRecord data) {
-        if (mTable.contains(data)) {
+    public boolean insert(DataRecord dataRecord) {
+        if (mTable.contains(dataRecord)) {
             System.out.println("Data tuple already exists in table.");
             return false;
-        } else if (mPrimaryKey != -1 && data.get(mPrimaryKey) == null) {
+        } else if (mPrimaryKey != -1 && dataRecord.get(mPrimaryKey) == null) {
             System.out.println("Primary key cannot be null.");
             return false;
-        } else if (mPrimaryKey != -1 && checkPrimaryKey(data)) {
-            System.out.println("Primary key " + data.get(mPrimaryKey) + " already exists in table.");
+        } else if (mPrimaryKey != -1 && checkPrimaryKey(dataRecord)) {
+            System.out.println("Primary key " + dataRecord.get(mPrimaryKey) + " already exists in table.");
             return false;
         } else {
             // WHAT THE SPEC.
             // setAutoPrimaryKey(data);
-            data.set(data.length() - 1, null);
-            mTable.add(data);
+            dataRecord.set(dataRecord.length() - 1, null);
+            mTable.add(dataRecord);
             if (mPrimaryKey != -1) {
-                mPrimaryTable.add(data.get(mPrimaryKey));
+                mPrimaryTable.add(dataRecord.get(mPrimaryKey));
             }
             return true;
         }
+    }
+
+    @Override
+    public boolean insertAll(ArrayList<DataRecord> dataRecords) {
+        boolean result = true;
+        for (DataRecord dataRecord : dataRecords) {
+            boolean status = insert(dataRecord);
+            result = result && status;
+        }
+        return result;
     }
 
     /**
@@ -77,6 +87,11 @@ public class SetTable extends Table {
             result.add(records);
         }
         return result;
+    }
+
+    @Override
+    public String getTableType() {
+        return "SETTABLE";
     }
 
     @Override

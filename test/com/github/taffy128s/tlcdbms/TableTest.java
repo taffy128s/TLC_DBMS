@@ -37,12 +37,14 @@ public class TableTest {
         record.append(50);
         record.append("SS");
         dataRecords.add(record);
+        table.insert(record);
         record = new DataRecord();
         record.append("ADAS");
         record.append("asd");
         record.append(20);
         record.append("BS");
         dataRecords.add(record);
+        table.insert(record);
     }
 
     @After
@@ -52,8 +54,8 @@ public class TableTest {
 
     @Test
     public void insert() throws Exception {
-        assertEquals(true, table.insert(dataRecords.get(0)));
-        assertEquals(true, table.insert(dataRecords.get(1)));
+        assertEquals(false, table.insert(dataRecords.get(0)));
+        assertEquals(false, table.insert(dataRecords.get(1)));
         assertEquals(false, table.insert(dataRecords.get(0)));
         assertEquals(false, table.insert(dataRecords.get(1)));
         assertEquals(true, pTable.insert(dataRecords.get(0)));
@@ -97,4 +99,17 @@ public class TableTest {
         // nothing
     }
 
+    @Test
+    public void disk() throws Exception {
+        System.out.println(System.getProperty("user.dir"));
+        String filename = "./out.bin";
+        table.writeToDisk(filename);
+        SetTable setTable = new SetTable();
+        setTable.restoreFromDisk(filename);
+        assertEquals(setTable.getTablename(), table.getTablename());
+        assertEquals(setTable.getPrimaryKey(), table.getPrimaryKey());
+        assertEquals(true, setTable.getAttributeNames().equals(table.getAttributeNames()));
+        assertEquals(true, setTable.getAttributeTypes().equals(table.getAttributeTypes()));
+        assertEquals(true, setTable.getAllRecords().equals(table.getAllRecords()));
+    }
 }

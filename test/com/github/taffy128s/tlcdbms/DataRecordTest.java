@@ -17,6 +17,7 @@ public class DataRecordTest {
         dataRecord = new DataRecord();
         dataRecord.append("Bird");
         dataRecord.append("Male");
+        dataRecord.append(null);
         dataRecord.append(20);
         dataRecord.append("Computer Science");
     }
@@ -57,6 +58,23 @@ public class DataRecordTest {
 
     @Test
     public void length() throws Exception {
-        assertEquals(4, dataRecord.length());
+        assertEquals(5, dataRecord.length());
+    }
+
+    @Test
+    public void disk() throws Exception {
+        String filename = "./out.bin";
+        dataRecord.writeToDisk(filename);
+        DataRecord another = new DataRecord();
+        another.restoreFromDisk(filename);
+        assertEquals(true, dataRecord.getAllFields().equals(another.getAllFields()));
+    }
+
+    @Test
+    public void string() throws Exception {
+        String str = dataRecord.writeToString();
+        DataRecord another = new DataRecord();
+        another.restoreFromString(str);
+        assertEquals(true, dataRecord.getAllFields().equals(another.getAllFields()));
     }
 }

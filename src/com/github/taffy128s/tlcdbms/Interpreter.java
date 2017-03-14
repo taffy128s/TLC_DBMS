@@ -20,6 +20,7 @@ public class Interpreter {
     public Interpreter() {
         parser = new SQLParser();
         manager = new DBManager();
+        manager.restoreFromDisk(DBManager.FILENAME);
     }
 
     /**
@@ -53,9 +54,11 @@ public class Interpreter {
             }
         } catch (IOException e) {
             System.out.println("Goodbye...");
+            manager.writeToDisk(DBManager.FILENAME);
             System.exit(0);
         }
         System.out.println("Goodbye...");
+        manager.writeToDisk(DBManager.FILENAME);
         System.exit(0);
     }
 
@@ -73,6 +76,7 @@ public class Interpreter {
         if (sqlParseResult.getCommandType() == CommandType.QUIT ||
                 sqlParseResult.getCommandType() == CommandType.EXIT) {
             System.out.println("Goodbye...");
+            manager.writeToDisk(DBManager.FILENAME);
             System.exit(0);
         }
         switch (sqlParseResult.getCommandType()) {

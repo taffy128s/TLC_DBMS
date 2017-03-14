@@ -46,13 +46,14 @@ public class FileInterpreter extends Interpreter {
             System.out.println(mFilename + ": read file error.");
             System.exit(0);
         }
+        execute("quit");
     }
 
     private void ignoreTillNewLine() {
         try {
             int temp;
             while ((temp = inputStream.read()) != -1)
-                if (temp == '\n') 
+                if (temp == '\n')
                     break;
         } catch (Exception e) {
             System.out.println(mFilename + ": read file error.");

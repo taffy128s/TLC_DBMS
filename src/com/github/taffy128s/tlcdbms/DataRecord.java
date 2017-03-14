@@ -1,31 +1,71 @@
 package com.github.taffy128s.tlcdbms;
 
+import java.io.*;
 import java.util.ArrayList;
 
 /**
  * Class for storing a tuple of data.
  * Ex. used to store ('John', 'Male', 20).
- * <bold>Note that data can be null.</bold>
+ * <b>Note that data can be null.</b>
  *
  * Use append(), update() to maintain data stored.
  */
-public class DataRecord {
+public class DataRecord implements Comparable<DataRecord>, DiskWritable, StringWritable {
     private ArrayList<Object> mDataList;
+    private int mCompareIndex;
 
     /**
      * Initialize a new data record.
      */
     public DataRecord() {
         mDataList = new ArrayList<>();
+        mCompareIndex = 0;
+    }
+
+    /**
+     * Initialize a new data record.
+     *
+     * @param compareIndex data index compareTo() method to use.
+     */
+    public DataRecord(int compareIndex) {
+        mDataList = new ArrayList<>();
+        mCompareIndex = compareIndex;
     }
 
     /**
      * Initialize a new data record with a list of data.
      *
      * @param datas an array list of data.
+     * @param compareIndex data index compareTo() method to use.
      */
-    public DataRecord(ArrayList<Object> datas) {
+    public DataRecord(ArrayList<Object> datas, int compareIndex) {
         mDataList = datas;
+        mCompareIndex = compareIndex;
+    }
+
+    /**
+     * Initialize a new data record with same data as record given.
+     * Will copy all the data.
+     *
+     * @param that data to initialize.
+     * @param compareIndex data index compareTo() method to use.
+     */
+    public DataRecord(DataRecord that, int compareIndex) {
+        mCompareIndex = compareIndex;
+        mDataList = new ArrayList<>();
+        for (Object object : that.getAllFields()) {
+            if (object == null) {
+                mDataList.add(null);
+            } else if (DataChecker.isValidInteger(object.toString())) {
+                Integer data = Integer.parseInt(object.toString());
+                mDataList.add(data);
+            } else if (DataChecker.isValidQuotedVarChar(object.toString())) {
+                String data = object.toString();
+                mDataList.add(data);
+            } else {
+                System.err.println("You should not go here! @DataRecord.DataRecord(DaraRecord)");
+            }
+        }
     }
 
     /**
@@ -59,13 +99,6 @@ public class DataRecord {
      */
     public void update(int index, Object data) {
         mDataList.set(index, data);
-    }
-
-    /**
-     * Clear all data stored.
-     */
-    public void clear() {
-        mDataList.clear();
     }
 
     /**
@@ -117,6 +150,24 @@ public class DataRecord {
     }
 
     /**
+     * CompareIndex setter.
+     *
+     * @param compareIndex data index compareTo() method to use.
+     */
+    public void setCompareIndex(int compareIndex) {
+        mCompareIndex = compareIndex;
+    }
+
+    /**
+     * CompareIndex getter.
+     *
+     * @return data index compareTo() method to use.
+     */
+    public int getCompareIndex() {
+        return mCompareIndex;
+    }
+
+    /**
      * Get the length of this data record.
      * i.e. How many columns in the data record.
      *
@@ -126,12 +177,6 @@ public class DataRecord {
         return mDataList.size();
     }
 
-    /**
-     * Override Object.equals().
-     *
-     * @param o that.
-     * @return true if equal, false if not.
-     */
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -146,21 +191,11 @@ public class DataRecord {
         return mDataList != null ? mDataList.equals(that.mDataList) : that.mDataList == null;
     }
 
-    /**
-     * Override Object.hashCode().
-     *
-     * @return hashcode.
-     */
     @Override
     public int hashCode() {
         return mDataList != null ? mDataList.hashCode() : 0;
     }
 
-    /**
-     * Override Object.toString().
-     *
-     * @return a string representation of the object.
-     */
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -174,5 +209,104 @@ public class DataRecord {
         }
         stringBuilder.append("\n");
         return stringBuilder.toString();
+    }
+
+    @Override
+    public int compareTo(DataRecord o) {
+        Object left = mDataList.get(mCompareIndex);
+        Object right = o.get(o.getCompareIndex());
+        if (left == null || right == null) {
+            throw new NullPointerException();
+        }
+        if (DataChecker.isValidInteger(left.toString())) {
+            Integer leftValue = Integer.parseInt(mDataList.get(mCompareIndex).toString());
+            Integer rightValue = Integer.parseInt(right.toString());
+            return leftValue.compareTo(rightValue);
+        } else {
+            String leftValue = mDataList.get(mCompareIndex).toString();
+            String rightValue = right.toString();
+            return leftValue.compareTo(rightValue);
+        }
+    }
+
+    @Override
+    public boolean writeToDisk(String filename) {
+        try {
+            FileWriter writer = new FileWriter(filename);
+            for (int i = 0; i < mDataList.size(); ++i) {
+                if (i > 0) {
+                    writer.write("\0");
+                }
+                if (mDataList.get(i) == null) {
+                    writer.write("null");
+                } else {
+                    writer.write(mDataList.get(i).toString());
+                }
+            }
+            writer.close();
+            return true;
+        } catch (IOException e) {
+            System.err.println(filename + ": I/O error.");
+        }
+        return false;
+    }
+
+    @Override
+    public boolean restoreFromDisk(String filename) {
+        try {
+            mDataList = new ArrayList<>();
+            BufferedReader reader = new BufferedReader(new FileReader(filename));
+            String input;
+            while ((input = reader.readLine()) != null) {
+                String[] datas = input.split("\0");
+                for (String data : datas) {
+                    if (data.equalsIgnoreCase("null")) {
+                        mDataList.add(null);
+                    } else if (DataChecker.isValidInteger(data)) {
+                        mDataList.add(Integer.parseInt(data));
+                    } else {
+                        mDataList.add(data);
+                    }
+                }
+            }
+            reader.close();
+            return true;
+        } catch (FileNotFoundException e) {
+            System.err.println(filename + ": no such file or directory.");
+        } catch (IOException e) {
+            System.err.println(filename + ": I/O error.");
+        }
+        return false;
+    }
+
+    @Override
+    public String writeToString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < mDataList.size(); ++i) {
+            if (i > 0) {
+                stringBuilder.append("\0");
+            }
+            if (mDataList.get(i) == null) {
+                stringBuilder.append("null");
+            } else {
+                stringBuilder.append(mDataList.get(i).toString());
+            }
+        }
+        return stringBuilder.toString();
+    }
+
+    @Override
+    public boolean restoreFromString(String string) {
+        String[] datas = string.split("\0");
+        for (String data : datas) {
+            if (data.equalsIgnoreCase("null")) {
+                mDataList.add(null);
+            } else if (DataChecker.isValidInteger(data)) {
+                mDataList.add(Integer.parseInt(data));
+            } else {
+                mDataList.add(data);
+            }
+        }
+        return true;
     }
 }
