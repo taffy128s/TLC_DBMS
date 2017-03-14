@@ -39,6 +39,30 @@ public class DataType {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        DataType dataType = (DataType) o;
+
+        if (mLimit != dataType.mLimit) {
+            return false;
+        }
+        return mType == dataType.mType;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mType != null ? mType.hashCode() : 0;
+        result = 31 * result + mLimit;
+        return result;
+    }
+
+    @Override
     public String toString() {
         if (mType == DataTypeIdentifier.INT) {
             return "INT";
