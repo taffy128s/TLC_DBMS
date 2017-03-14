@@ -10,37 +10,23 @@ import java.util.ArrayList;
  *
  * Use append(), update() to maintain data stored.
  */
-public class DataRecord implements Comparable<DataRecord>, DiskWritable, StringWritable {
+public class DataRecord implements DiskWritable, StringWritable {
     private ArrayList<Object> mDataList;
-    private int mCompareIndex;
 
     /**
      * Initialize a new data record.
      */
     public DataRecord() {
         mDataList = new ArrayList<>();
-        mCompareIndex = 0;
-    }
-
-    /**
-     * Initialize a new data record.
-     *
-     * @param compareIndex data index compareTo() method to use.
-     */
-    public DataRecord(int compareIndex) {
-        mDataList = new ArrayList<>();
-        mCompareIndex = compareIndex;
     }
 
     /**
      * Initialize a new data record with a list of data.
      *
      * @param datas an array list of data.
-     * @param compareIndex data index compareTo() method to use.
      */
-    public DataRecord(ArrayList<Object> datas, int compareIndex) {
+    public DataRecord(ArrayList<Object> datas) {
         mDataList = datas;
-        mCompareIndex = compareIndex;
     }
 
     /**
@@ -48,10 +34,8 @@ public class DataRecord implements Comparable<DataRecord>, DiskWritable, StringW
      * Will copy all the data.
      *
      * @param that data to initialize.
-     * @param compareIndex data index compareTo() method to use.
      */
-    public DataRecord(DataRecord that, int compareIndex) {
-        mCompareIndex = compareIndex;
+    public DataRecord(DataRecord that) {
         mDataList = new ArrayList<>();
         for (Object object : that.getAllFields()) {
             if (object == null) {
@@ -150,24 +134,6 @@ public class DataRecord implements Comparable<DataRecord>, DiskWritable, StringW
     }
 
     /**
-     * CompareIndex setter.
-     *
-     * @param compareIndex data index compareTo() method to use.
-     */
-    public void setCompareIndex(int compareIndex) {
-        mCompareIndex = compareIndex;
-    }
-
-    /**
-     * CompareIndex getter.
-     *
-     * @return data index compareTo() method to use.
-     */
-    public int getCompareIndex() {
-        return mCompareIndex;
-    }
-
-    /**
      * Get the length of this data record.
      * i.e. How many columns in the data record.
      *
@@ -209,24 +175,6 @@ public class DataRecord implements Comparable<DataRecord>, DiskWritable, StringW
         }
         stringBuilder.append("\n");
         return stringBuilder.toString();
-    }
-
-    @Override
-    public int compareTo(DataRecord o) {
-        Object left = mDataList.get(mCompareIndex);
-        Object right = o.get(o.getCompareIndex());
-        if (left == null || right == null) {
-            throw new NullPointerException();
-        }
-        if (DataChecker.isValidInteger(left.toString())) {
-            Integer leftValue = Integer.parseInt(mDataList.get(mCompareIndex).toString());
-            Integer rightValue = Integer.parseInt(right.toString());
-            return leftValue.compareTo(rightValue);
-        } else {
-            String leftValue = mDataList.get(mCompareIndex).toString();
-            String rightValue = right.toString();
-            return leftValue.compareTo(rightValue);
-        }
     }
 
     @Override
