@@ -37,14 +37,6 @@ public class SetTable extends Table {
         mPrimaryTable = new HashSet<>();
     }
 
-    /**
-     * Insert a data record into table.
-     * Assume that data is with valid type.
-     * ** NEED TO CALL setAutoPrimaryKey() BEFORE INSERT INTO TABLE. **
-     *
-     * @param data data record to be inserted.
-     * @return true if succeed, false if failed.
-     */
     @Override
     public boolean insert(DataRecord data) {
         if (mTable.contains(data)) {
@@ -78,11 +70,6 @@ public class SetTable extends Table {
         return mPrimaryKey == -1 || mPrimaryTable.contains(data.get(mPrimaryKey));
     }
 
-    /**
-     * Get all records in the table.
-     *
-     * @return an array list of all records.
-     */
     @Override
     public ArrayList<DataRecord> getAllRecords() {
         ArrayList<DataRecord> result = new ArrayList<>();
@@ -92,11 +79,6 @@ public class SetTable extends Table {
         return result;
     }
 
-    /**
-     * Override Object.toString().
-     *
-     * @return a string representation of the object.
-     */
     @Override
     public String toString() {
         Object[] records = mTable.toArray();

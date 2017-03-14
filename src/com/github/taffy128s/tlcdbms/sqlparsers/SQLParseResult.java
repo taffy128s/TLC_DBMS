@@ -197,11 +197,6 @@ public class SQLParseResult {
         return mShowFullInfo;
     }
 
-    /**
-     * Override Object.toString().
-     *
-     * @return a string representation of the object.
-     */
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();

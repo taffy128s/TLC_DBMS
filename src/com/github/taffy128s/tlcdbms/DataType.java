@@ -38,11 +38,6 @@ public class DataType {
         return mLimit;
     }
 
-    /**
-     * Override Object.toString().
-     *
-     * @return a string representation of the object.
-     */
     @Override
     public String toString() {
         if (mType == DataTypeIdentifier.INT) {

@@ -245,11 +245,6 @@ public class BPlusTree<K extends Comparable<K>, V> {
             return mKeys.size() >= mCapacity;
         }
 
-        /**
-         * Override Object.toString().
-         *
-         * @return a string representation of this object.
-         */
         @Override
         public String toString() {
             return mKeys.toString();
@@ -508,11 +503,6 @@ public class BPlusTree<K extends Comparable<K>, V> {
             return mKeys.size() >= mOrder;
         }
 
-        /**
-         * Override Object.toString().
-         *
-         * @return a string representation of this object.
-         */
         @Override
         public String toString() {
             return "BPlusTreeNode{" +

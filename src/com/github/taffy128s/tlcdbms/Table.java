@@ -117,11 +117,6 @@ public abstract class Table {
         return mAttributeTypes;
     }
 
-    /**
-     * Override Object.toString().
-     *
-     * @return a string representation of the object.
-     */
     @Override
     public String toString() {
         return ("Table " + mTablename) + "\n";

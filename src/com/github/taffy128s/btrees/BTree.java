@@ -271,11 +271,6 @@ public class BTree<K extends Comparable<K>, V> {
             return result;
         }
 
-        /**
-         * Override Object.toString().
-         *
-         * @return a string representation of the object.
-         */
         @Override
         public String toString() {
             return "BTreeNode{Keys " + mKeys + "}";
