@@ -568,7 +568,6 @@ public class BPlusTree<K extends Comparable<K>, V> {
     private int mCapacity;
     private int mSize;
     private BPlusTreeNode mRoot;
-
     private BPlusTreeData mFirst;
 
     /**
