@@ -172,7 +172,7 @@ public class DBManager implements DiskWritable {
                 attributeStrings.add(attributeNames.get(i) + " " + attributeTypes.get(i));
             }
         }
-        parameter.getBlocks().add("-1");
+        parameter.getBlocks().add(null);
         int expectedSize = attributeNames.size() - 1;
         int gotSize = parameter.getBlocks().size() - 1;
         if (!parameter.isCustomOrder() && expectedSize != gotSize) {

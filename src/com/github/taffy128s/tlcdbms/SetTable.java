@@ -51,7 +51,6 @@ public class SetTable extends Table {
         } else {
             // WHAT THE SPEC.
             // setAutoPrimaryKey(data);
-            dataRecord.set(dataRecord.length() - 1, null);
             mTable.add(dataRecord);
             if (mPrimaryKey != -1) {
                 mPrimaryTable.add(dataRecord.get(mPrimaryKey));
