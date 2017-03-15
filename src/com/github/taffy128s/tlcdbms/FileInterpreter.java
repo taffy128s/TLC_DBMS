@@ -28,11 +28,11 @@ public class FileInterpreter extends Interpreter {
             int temp;
             while ((temp = inputStream.read()) != -1) {
                 char c = (char) temp;
-                if (c == '#') {
+                /*if (c == '#') {
                     ignoreTillNewLine();
                     singleIns += ' ';
                     continue;
-                }
+                }*/
                 if (c == ';') {
                     singleIns = noSpaceAtBeginning(singleIns);
                     System.out.println(">> " + singleIns);
