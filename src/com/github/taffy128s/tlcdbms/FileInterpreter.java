@@ -25,14 +25,15 @@ public class FileInterpreter extends Interpreter {
     public void start() {
         try {
             String singleIns = "";
+            boolean haveOne = false;
             int temp;
             while ((temp = inputStream.read()) != -1) {
                 char c = (char) temp;
-                /*if (c == '#') {
+                if (c == '#' && !haveOne) {
                     ignoreTillNewLine();
                     singleIns += ' ';
                     continue;
-                }*/
+                }
                 if (c == ';') {
                     singleIns = noSpaceAtBeginning(singleIns);
                     System.out.println(">> " + singleIns);
@@ -40,6 +41,9 @@ public class FileInterpreter extends Interpreter {
                         execute(singleIns);
                         singleIns = "";
                     }
+                } else if (c == '\'') {
+                    singleIns += c;
+                    haveOne = !haveOne;
                 } else singleIns += c;
             }
         } catch (Exception e) {

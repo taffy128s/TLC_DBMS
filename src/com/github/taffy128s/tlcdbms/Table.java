@@ -192,6 +192,7 @@ public abstract class Table implements DiskWritable {
                 records.add(record);
             }
             if (records.size() != recordSize) {
+                reader.close();
                 return false;
             }
             insertAll(records);

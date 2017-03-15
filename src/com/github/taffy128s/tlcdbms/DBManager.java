@@ -388,6 +388,7 @@ public class DBManager implements DiskWritable {
                     System.err.println("Unsupported table type.");
                 }
             }
+            reader.close();
         } catch (FileNotFoundException e) {
             System.err.println("./" + DIRNAME + "/" + filename + ": no such file or directory.");
         } catch (IOException e) {
