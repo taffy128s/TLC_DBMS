@@ -1101,10 +1101,6 @@ public class BPlusTree<K extends Comparable<K>, V> {
         return mSize == 0;
     }
 
-    public BPlusTreeNode getRoot() {
-        return  mRoot;
-    }
-
     /**
      * Get first data block.
      * (The first block of linked list).
