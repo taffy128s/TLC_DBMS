@@ -43,14 +43,17 @@ public class BPlusTree<K extends Comparable<K>, V> {
          *
          * @param key key to insert.
          * @param value value to insert.
+         * @return 1 if a new data added, 0 if only modified existed one.
          */
-        public void put(K key, V value) {
+        public int put(K key, V value) {
             int index = Collections.binarySearch(mKeys, key);
             if (index >= 0) {
                 mValues.set(index, value);
+                return 0;
             } else {
                 mKeys.add((-1 * index - 1), key);
                 mValues.add((-1 * index - 1), value);
+                return 1;
             }
         }
 
@@ -289,7 +292,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
             mKeys = new ArrayList<>();
             mValues = new ArrayList<>();
             mNext = new ArrayList<>();
-            mValues.add(new BPlusTreeData(capacity));
+            mValues.add(null);
             mNext.add(null);
         }
 
@@ -299,15 +302,18 @@ public class BPlusTree<K extends Comparable<K>, V> {
          * @param key key to insert.
          * @param value value to insert.
          * @param next next TreeNode, null if none.
+         * @return 1 if a new data added, 0 if only modify existed one.
          */
-        public void put(K key, BPlusTreeData value, BPlusTreeNode next) {
+        public int put(K key, BPlusTreeData value, BPlusTreeNode next) {
             int index = Collections.binarySearch(mKeys, key);
             if (index >= 0) {
-                mValues.set(index, value);
+                mValues.set(index + 1, value);
+                return 0;
             } else {
                 mKeys.add((-1) * index - 1, key);
                 mValues.add((-1) * index, value);
                 mNext.add((-1) * index, next);
+                return 1;
             }
         }
 
@@ -589,6 +595,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
         mCapacity = capacity;
         mSize = 0;
         mRoot = new BPlusTreeNode(mOrder, mCapacity);
+        mRoot.setValue(0, new BPlusTreeData(mCapacity));
         mFirst = mRoot.getValue(0);
     }
 
@@ -599,7 +606,6 @@ public class BPlusTree<K extends Comparable<K>, V> {
      * @param value value to insert.
      */
     public void put(K key, V value) {
-        ++mSize;
         BPlusTreeNode treeNode = findTreeNode(mRoot, null, key);
         int index = Collections.binarySearch(treeNode.getKeys(), key);
         if (index < 0) {
@@ -609,14 +615,14 @@ public class BPlusTree<K extends Comparable<K>, V> {
         }
         if (treeNode.isEmpty()) {
             BPlusTreeData newTreeData = new BPlusTreeData(mCapacity);
-            newTreeData.put(key, value);
+            mSize += newTreeData.put(key, value);
             treeNode.getValue(0).setNext(newTreeData);
             newTreeData.setPrev(treeNode.getValue(0));
             treeNode.put(key, newTreeData, null);
             return;
         }
         BPlusTreeData treeData = treeNode.getValue(index);
-        treeData.put(key, value);
+        mSize += treeData.put(key, value);
         if (treeData.isFull()) {
             K midKey = treeData.getMidKey();
             BPlusTreeData newData = treeData.split();
@@ -1095,6 +1101,10 @@ public class BPlusTree<K extends Comparable<K>, V> {
         return mSize == 0;
     }
 
+    public BPlusTreeNode getRoot() {
+        return  mRoot;
+    }
+
     /**
      * Get first data block.
      * (The first block of linked list).
@@ -1122,7 +1132,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
         }
         int index = Collections.binarySearch(root.getKeys(), key);
         if (index >= 0) {
-            return root;
+            return findTreeNode(root.getNext(index + 1), root, key);
         } else {
             return findTreeNode(root.getNext((-1) * index - 1), root, key);
         }
@@ -1148,17 +1158,48 @@ public class BPlusTree<K extends Comparable<K>, V> {
             insertTreeNode(root.getNext((-1) * index - 1), root, key, treeData);
             if (root.isFull()) {
                 K keyElement = root.getMidKey();
-                BPlusTreeData valueElement = root.getMidValue();
                 BPlusTreeNode q = root.split();
                 if (parent == null) {
                     parent = new BPlusTreeNode(mOrder, mCapacity);
                     parent.setNext(0, root);
-                    parent.put(keyElement, valueElement, q);
+                    parent.put(keyElement, null, q);
                     mRoot = parent;
                 } else {
-                    parent.put(keyElement, valueElement, q);
+                    parent.put(keyElement, null, q);
                 }
             }
         }
+    }
+
+    /**
+     * Dump this tree.
+     * For debugging.
+     */
+    public void dump() {
+        dump(mRoot);
+        System.out.println();
+    }
+
+    /**
+     * Dump this tree.
+     * For debugging.
+     *
+     * @param root root tree node.
+     */
+    private void dump(BPlusTreeNode root) {
+        System.out.print("(");
+        if (root == null) {
+            System.out.print(")");
+            return;
+        }
+        System.out.print(root.getValue(0) + " ");
+        for (int i = 0; i < root.getKeys().size(); ++i) {
+            System.out.print(root.getKey(i) + " ");
+            System.out.print(root.getValue(i + 1) + " ");
+        }
+        for (BPlusTreeNode node : root.getNexts()) {
+            dump(node);
+        }
+        System.out.print(")");
     }
 }

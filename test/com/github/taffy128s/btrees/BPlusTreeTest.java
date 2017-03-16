@@ -28,7 +28,10 @@ public class BPlusTreeTest {
 
     @Test
     public void put() throws Exception {
-
+        BPlusTree<Integer, Integer> bt = new BPlusTree<>(100, 100);
+        bt.put(5, 7);
+        bt.put(5, 9);
+        System.out.println(bt.getKeys().size());
     }
 
     @Test
@@ -39,7 +42,7 @@ public class BPlusTreeTest {
             testcase.add(random.nextInt() % 200000);
         }
         for (int test : testcase) {
-            int datain = random.nextInt() % 100;
+            int datain = random.nextInt() % 10000;
             if (!tree.containsKey(test)) {
                 tree.put(test, new ArrayList<>());
             }
@@ -49,7 +52,7 @@ public class BPlusTreeTest {
             tree.get(test).add(datain);
             trees.get(test).add(datain);
         }
-        for (int i = 0; i < 100000; ++i) {
+        for (int i = 0; i < 500000; ++i) {
             ArrayList<Integer> a = tree.get(i);
             ArrayList<Integer> b = trees.get(i);
             String sa;
@@ -70,7 +73,7 @@ public class BPlusTreeTest {
 
     @Test
     public void rangeQuery() throws Exception {
-        BPlusTree<Integer, Integer> t = new BPlusTree<>(7, 8);
+        BPlusTree<Integer, Integer> t = new BPlusTree<>(10, 100);
         System.out.println(t.getValues(5, 99));
         t.put(1, 2);
         t.put(6, 8);
@@ -91,7 +94,7 @@ public class BPlusTreeTest {
         }
         Collections.shuffle(testcase);
         Collections.shuffle(dataIn);
-        for (int i = 0; i < 300000; ++i) {
+        for (int i = 0; i < 500000; ++i) {
             tt.put(testcase.get(i), dataIn.get(i));
             ts.put(testcase.get(i), dataIn.get(i));
         }
@@ -101,6 +104,12 @@ public class BPlusTreeTest {
         for (int i = 0; i < 150; ++i) {
             int from = random.nextInt() % 300000;
             int to = random.nextInt() % 300000;
+            if (from < 0) {
+                from *= (-1);
+            }
+            if (to < 0) {
+                to *= (-1);
+            }
             int low = Math.min(from, to);
             int high = Math.max(from, to);
 
@@ -111,7 +120,7 @@ public class BPlusTreeTest {
             assertEquals(ansK.size(), tss.size());
             for (int j = 0; j < ansK.size(); ++j) {
                 assertEquals(true, tss.containsKey(ansK.get(j)));
-                assertEquals(0, tss.get(ansK.get(j)).compareTo(ansV.get(j)));
+                assertEquals(true, tss.get(ansK.get(j)).equals(ansV.get(j)));
             }
 
             ansK = tt.getKeysLess(high);
@@ -121,7 +130,7 @@ public class BPlusTreeTest {
             assertEquals(ansV.size(), tss.size());
             for (int j = 0; j < ansK.size(); ++j) {
                 assertEquals(true, tss.containsKey(ansK.get(j)));
-                assertEquals(0, tss.get(ansK.get(j)).compareTo(ansV.get(j)));
+                assertEquals(true, tss.get(ansK.get(j)).equals(ansV.get(j)));
             }
 
             ansK = tt.getKeysLessEqual(high);
@@ -131,7 +140,7 @@ public class BPlusTreeTest {
             assertEquals(ansV.size(), tss.size());
             for (int j = 0; j < ansK.size(); ++j) {
                 assertEquals(true, tss.containsKey(ansK.get(j)));
-                assertEquals(0, tss.get(ansK.get(j)).compareTo(ansV.get(j)));
+                assertEquals(true, tss.get(ansK.get(j)).equals(ansV.get(j)));
             }
 
             ansK = tt.getKeysGreater(low);
@@ -141,7 +150,7 @@ public class BPlusTreeTest {
             assertEquals(ansV.size(), tss.size());
             for (int j = 0; j < ansK.size(); ++j) {
                 assertEquals(true, tss.containsKey(ansK.get(j)));
-                assertEquals(0, tss.get(ansK.get(j)).compareTo(ansV.get(j)));
+                assertEquals(true, tss.get(ansK.get(j)).equals(ansV.get(j)));
             }
 
             ansK = tt.getKeysGreaterEqual(low);
@@ -151,13 +160,74 @@ public class BPlusTreeTest {
             assertEquals(ansV.size(), tss.size());
             for (int j = 0; j < ansK.size(); ++j) {
                 assertEquals(true, tss.containsKey(ansK.get(j)));
-                assertEquals(0, tss.get(ansK.get(j)).compareTo(ansV.get(j)));
+                assertEquals(true, tss.get(ansK.get(j)).equals(ansV.get(j)));
             }
         }
     }
 
     @Test
     public void sequentialVisit() throws Exception {
+
+    }
+
+    @Test
+    public void duplicateKeys() throws Exception {
+        ArrayList<Integer> keys = new ArrayList<>();
+        ArrayList<Integer> values = new ArrayList<>();
+        Random random = new Random();
+        for (int i = 0; i < 1000000; ++i) {
+            keys.add(random.nextInt() % 20000);
+            values.add(i);
+        }
+        BPlusTree<Integer, Integer> bt = new BPlusTree<>(10, 10);
+        TreeMap<Integer, Integer> tm = new TreeMap<>();
+        for (int i = 0; i < 1000000; ++i) {
+            bt.put(keys.get(i), values.get(i));
+            tm.put(keys.get(i), values.get(i));
+        }
+        System.out.println(tm.size());
+        System.out.println(bt.getKeys().size());
+        assertEquals(tm.size(), bt.size());
+        assertEquals(tm.size(), bt.getKeys().size());
+        for (int key : tm.keySet()) {
+            assertEquals(tm.get(key), bt.get(key));
+        }
+    }
+
+    @Test
+    public void keysTest() throws Exception {
+        ArrayList<Integer> testKeys = new ArrayList<>();
+        ArrayList<Integer> testValues = new ArrayList<>();
+        Random random = new Random();
+        for (int i = 0; i < 1000000; ++i) {
+            testKeys.add(random.nextInt() % 100000);
+            testValues.add(random.nextInt() % 100000);
+        }
+        BPlusTree<Integer, Integer> bt = new BPlusTree<>(10, 10);
+        TreeMap<Integer, Integer> tm = new TreeMap<>();
+        for (int i = 0; i < 1000000; ++i) {
+            bt.put(testKeys.get(i), testValues.get(i));
+            tm.put(testKeys.get(i), testValues.get(i));
+        }
+        ArrayList<Integer> keyAns = bt.getKeys(5000, 100000);
+        System.out.println(keyAns.size());
+        HashSet<Integer> set = new HashSet<>();
+        for (int k : keyAns) {
+            if (set.contains(k)) {
+                System.out.println("DUPLICATED: " + k);
+            }
+            set.add(k);
+            if (!tm.subMap(5000, 100000).containsKey(k)) {
+                System.out.println("no: " + k);
+            }
+        }
+        System.out.println(bt.getKeys().size());
+        System.out.println(bt.getValues().size());
+        System.out.println(tm.size());
+    }
+
+    @Test
+    public void small() throws Exception {
 
     }
 }
