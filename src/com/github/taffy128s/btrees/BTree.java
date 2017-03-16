@@ -19,7 +19,6 @@ public class BTree<K extends Comparable<K>, V> {
      */
     private class BTreeNode {
         private int mOrder;
-        private boolean mIsLeafNode;
         private ArrayList<K> mKeys;
         private ArrayList<V> mValues;
         private ArrayList<BTreeNode> mNext;
@@ -32,7 +31,6 @@ public class BTree<K extends Comparable<K>, V> {
          */
         public BTreeNode(int order) {
             mOrder = order;
-            mIsLeafNode = true;
             mKeys = new ArrayList<>();
             mValues = new ArrayList<>();
             mNext = new ArrayList<>();
@@ -48,9 +46,6 @@ public class BTree<K extends Comparable<K>, V> {
          * @return 1 if new data added, 0 if only modify existed one.
          */
         public int put(K key, V value, BTreeNode next) {
-            if (next != null) {
-                mIsLeafNode = false;
-            }
             int index = Collections.binarySearch(mKeys, key);
             if (index >= 0) {
                 mValues.set(index, value);
@@ -201,9 +196,6 @@ public class BTree<K extends Comparable<K>, V> {
          * @param next value to set.
          */
         public void setNext(int index, BTreeNode next) {
-            if (next != null) {
-                mIsLeafNode = false;
-            }
             mNext.set(index, next);
         }
 
@@ -215,12 +207,6 @@ public class BTree<K extends Comparable<K>, V> {
         public void setNext(List<BTreeNode> values) {
             mNext = new ArrayList<>();
             mNext.addAll(values);
-            for (BTreeNode treeNode : values) {
-                if (treeNode != null) {
-                    mIsLeafNode = false;
-                    return;
-                }
-            }
         }
 
         /**
@@ -244,16 +230,6 @@ public class BTree<K extends Comparable<K>, V> {
          */
         public ArrayList<BTreeNode> getNexts() {
             return mNext;
-        }
-
-        /**
-         * Check whether this node is a leaf node.
-         * (i.e. no children).
-         *
-         * @return true if this node is a leaf node, false otherwise.
-         */
-        public boolean isLeafNode() {
-            return mIsLeafNode;
         }
 
         /**
@@ -448,6 +424,9 @@ public class BTree<K extends Comparable<K>, V> {
      * @return a find result.
      */
     private BTreeFindResult findTreeNode(BTreeNode root, BTreeNode parent, K key) {
+        if (root == null) {
+            return new BTreeFindResult(parent, -1);
+        }
         if (root.isEmpty()) {
             return new BTreeFindResult(root, -1);
         }
@@ -455,11 +434,7 @@ public class BTree<K extends Comparable<K>, V> {
         if (index >= 0) {
             return new BTreeFindResult(root, index);
         } else {
-            if (root.isLeafNode()) {
-                return new BTreeFindResult(root, -1);
-            } else {
-                return findTreeNode(root.getNext((-1) * index - 1), root, key);
-            }
+            return findTreeNode(root.getNext((-1) * index - 1), root, key);
         }
     }
 
