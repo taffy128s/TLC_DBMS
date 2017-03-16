@@ -36,7 +36,7 @@ public class BTreeTest {
         treep.put(3, 1);
         treep.put(4, 1);
         treep.put(5, 1);
-        System.out.println(treep.getAllValues());
+        System.out.println(treep.getValues());
     }
 
     @Test
@@ -76,6 +76,27 @@ public class BTreeTest {
                 correct = new ArrayList<>();
             }
             assertEquals(result, correct);
+        }
+    }
+
+    @Test
+    public void duplicatedKey() throws Exception {
+        ArrayList<Integer> keys = new ArrayList<>();
+        Random random = new Random();
+        for (int i = 0; i < 5000000; ++i) {
+            keys.add(random.nextInt() % 10000);
+        }
+        BTree<Integer, Integer> bt = new BTree<>(5);
+        TreeMap<Integer, Integer> tm = new TreeMap<>();
+        for (int i = 0; i < 5000000; ++i) {
+            bt.put(keys.get(i), i);
+            tm.put(keys.get(i), i);
+        }
+        System.out.println(tm.size());
+        System.out.println(bt.size());
+        assertEquals(tm.size(), bt.size());
+        for (int key : tm.keySet()) {
+            assertEquals(tm.get(key), bt.get(key));
         }
     }
 }

@@ -19,6 +19,7 @@ public class BTree<K extends Comparable<K>, V> {
      */
     private class BTreeNode {
         private int mOrder;
+        private boolean mIsLeafNode;
         private ArrayList<K> mKeys;
         private ArrayList<V> mValues;
         private ArrayList<BTreeNode> mNext;
@@ -31,6 +32,7 @@ public class BTree<K extends Comparable<K>, V> {
          */
         public BTreeNode(int order) {
             mOrder = order;
+            mIsLeafNode = true;
             mKeys = new ArrayList<>();
             mValues = new ArrayList<>();
             mNext = new ArrayList<>();
@@ -43,15 +45,21 @@ public class BTree<K extends Comparable<K>, V> {
          * @param key key data.
          * @param value value data.
          * @param next next object, null if not exists.
+         * @return 1 if new data added, 0 if only modify existed one.
          */
-        public void put(K key, V value, BTreeNode next) {
+        public int put(K key, V value, BTreeNode next) {
+            if (next != null) {
+                mIsLeafNode = false;
+            }
             int index = Collections.binarySearch(mKeys, key);
             if (index >= 0) {
                 mValues.set(index, value);
+                return 0;
             } else {
                 mKeys.add((-1) * index - 1, key);
                 mValues.add((-1) * index - 1, value);
                 mNext.add((-1) * index, next);
+                return 1;
             }
         }
 
@@ -193,6 +201,9 @@ public class BTree<K extends Comparable<K>, V> {
          * @param next value to set.
          */
         public void setNext(int index, BTreeNode next) {
+            if (next != null) {
+                mIsLeafNode = false;
+            }
             mNext.set(index, next);
         }
 
@@ -204,6 +215,12 @@ public class BTree<K extends Comparable<K>, V> {
         public void setNext(List<BTreeNode> values) {
             mNext = new ArrayList<>();
             mNext.addAll(values);
+            for (BTreeNode treeNode : values) {
+                if (treeNode != null) {
+                    mIsLeafNode = false;
+                    return;
+                }
+            }
         }
 
         /**
@@ -227,6 +244,16 @@ public class BTree<K extends Comparable<K>, V> {
          */
         public ArrayList<BTreeNode> getNexts() {
             return mNext;
+        }
+
+        /**
+         * Check whether this node is a leaf node.
+         * (i.e. no children).
+         *
+         * @return true if this node is a leaf node, false otherwise.
+         */
+        public boolean isLeafNode() {
+            return mIsLeafNode;
         }
 
         /**
@@ -316,6 +343,7 @@ public class BTree<K extends Comparable<K>, V> {
     }
 
     private int mOrder;
+    private int mSize;
     private BTreeNode mRoot;
 
     /**
@@ -329,6 +357,7 @@ public class BTree<K extends Comparable<K>, V> {
             order = 3;
         }
         mOrder = order;
+        mSize = 0;
         mRoot = new BTreeNode(mOrder);
     }
 
@@ -360,6 +389,28 @@ public class BTree<K extends Comparable<K>, V> {
     }
 
     /**
+     * Get all keys in this tree.
+     *
+     * @return a list of keys in this tree.
+     */
+    public ArrayList<K> getKeys() {
+        ArrayList<K> allKeys = new ArrayList<>();
+        getKeys(mRoot, allKeys);
+        return allKeys;
+    }
+
+    /**
+     * Get all values in this tree.
+     *
+     * @return a list of values in this tree.
+     */
+    public ArrayList<V> getValues() {
+        ArrayList<V> allValues = new ArrayList<>();
+        getValues(mRoot, allValues);
+        return allValues;
+    }
+
+    /**
      * Check whether the key is in this tree.
      *
      * @param key key to check.
@@ -368,17 +419,6 @@ public class BTree<K extends Comparable<K>, V> {
     public boolean containsKey(K key) {
         BTreeFindResult result = findTreeNode(mRoot, null, key);
         return result.getIndex() != -1;
-    }
-
-    /**
-     * Get all values in this tree.
-     *
-     * @return a list of values in this tree.
-     */
-    public ArrayList<V> getAllValues() {
-        ArrayList<V> allValues = new ArrayList<>();
-        getAllValues(mRoot, allValues);
-        return allValues;
     }
 
     /**
@@ -391,6 +431,15 @@ public class BTree<K extends Comparable<K>, V> {
     }
 
     /**
+     * Get size of this tree.
+     *
+     * @return size of this tree.
+     */
+    public int size() {
+        return mSize;
+    }
+
+    /**
      * Find Tree Node with key value given.
      *
      * @param root root tree node(this.mRoot if first call).
@@ -399,9 +448,6 @@ public class BTree<K extends Comparable<K>, V> {
      * @return a find result.
      */
     private BTreeFindResult findTreeNode(BTreeNode root, BTreeNode parent, K key) {
-        if (root == null) {
-            return new BTreeFindResult(parent, -1);
-        }
         if (root.isEmpty()) {
             return new BTreeFindResult(root, -1);
         }
@@ -409,7 +455,11 @@ public class BTree<K extends Comparable<K>, V> {
         if (index >= 0) {
             return new BTreeFindResult(root, index);
         } else {
-            return findTreeNode(root.getNext((-1) * index - 1), root, key);
+            if (root.isLeafNode()) {
+                return new BTreeFindResult(root, -1);
+            } else {
+                return findTreeNode(root.getNext((-1) * index - 1), root, key);
+            }
         }
     }
 
@@ -423,7 +473,7 @@ public class BTree<K extends Comparable<K>, V> {
      */
     private void insertTreeNode(BTreeNode root, BTreeNode parent, K key, V value) {
         if (root == null) {
-            parent.put(key, value, null);
+            mSize += parent.put(key, value, null);
             return;
         }
         int index = Collections.binarySearch(root.getKeys(), key);
@@ -448,18 +498,34 @@ public class BTree<K extends Comparable<K>, V> {
     }
 
     /**
+     * Get all keys of this tree.
+     *
+     * @param root root tree node(mRoot if first call).
+     * @param result a list to store results.
+     */
+    private void getKeys(BTreeNode root, ArrayList<K> result) {
+        if (root == null) {
+            return;
+        }
+        result.addAll(root.getKeys());
+        for (BTreeNode next : root.getNexts()) {
+            getKeys(next, result);
+        }
+    }
+
+    /**
      * Get all values of this tree.
      *
      * @param root root tree node(mRoot if first call).
      * @param result a list to store results.
      */
-    private void getAllValues(BTreeNode root, ArrayList<V> result) {
+    private void getValues(BTreeNode root, ArrayList<V> result) {
         if (root == null) {
             return;
         }
         result.addAll(root.getValues());
         for (BTreeNode next : root.getNexts()) {
-            getAllValues(next, result);
+            getValues(next, result);
         }
     }
 }
