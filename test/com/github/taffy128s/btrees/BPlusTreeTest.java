@@ -94,13 +94,25 @@ public class BPlusTreeTest {
         }
         Collections.shuffle(testcase);
         Collections.shuffle(dataIn);
-        for (int i = 0; i < 500000; ++i) {
+        for (int i = 0; i < 700000; ++i) {
             tt.put(testcase.get(i), dataIn.get(i));
             ts.put(testcase.get(i), dataIn.get(i));
+        }
+        for (int i = 3000; i < 575000; ++i) {
+            tt.put(testcase.get(i), dataIn.get(i - 7));
+            ts.put(testcase.get(i), dataIn.get(i - 7));
         }
         assertEquals(tt.size(), ts.size());
         assertEquals(tt.getKeys().size(), ts.size());
         assertEquals(tt.getValues().size(), ts.size());
+        ArrayList<Integer> allKeys = tt.getKeys();
+        ArrayList<Integer> allValues = tt.getValues();
+        allValues.sort(Comparator.naturalOrder());
+        for (int key : ts.keySet()) {
+            assertEquals(ts.get(key), tt.get(key));
+            assertEquals(true, Collections.binarySearch(allKeys, key) >= 0);
+            assertEquals(true, Collections.binarySearch(allValues, tt.get(key)) >= 0);
+        }
         for (int i = 0; i < 150; ++i) {
             int from = random.nextInt() % 300000;
             int to = random.nextInt() % 300000;
