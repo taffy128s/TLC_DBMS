@@ -73,7 +73,7 @@ public class BPlusTreeTest {
 
     @Test
     public void rangeQuery() throws Exception {
-        BPlusTree<Integer, Integer> t = new BPlusTree<>(10, 100);
+        BPlusTree<Integer, Integer> t = new BPlusTree<>(100, 1000);
         System.out.println(t.getValues(5, 99));
         t.put(1, 2);
         t.put(6, 8);
@@ -239,7 +239,49 @@ public class BPlusTreeTest {
     }
 
     @Test
-    public void small() throws Exception {
+    public void construct() throws Exception {
+        ArrayList<Integer> testKeys = new ArrayList<>();
+        ArrayList<Integer> testValues = new ArrayList<>();
+        Random random = new Random();
+        for (int i = 0; i < 1000000; ++i) {
+            testKeys.add(i);
+            testValues.add(random.nextInt() % 100000);
+        }
+        BPlusTree<Integer, Integer> bt = new BPlusTree<>(10, 10);
+        TreeMap<Integer, Integer> tm = new TreeMap<>();
+        bt.construct(testKeys, testValues);
+        for (int i = 0; i < 1000000; ++i) {
+            tm.put(testKeys.get(i), testValues.get(i));
+        }
+        ArrayList<Integer> keyAns = bt.getKeys(5000, 100000);
+        System.out.println(keyAns.size());
+        HashSet<Integer> set = new HashSet<>();
+        for (int k : keyAns) {
+            if (set.contains(k)) {
+                System.out.println("DUPLICATED: " + k);
+            }
+            set.add(k);
+            if (!tm.subMap(5000, 100000).containsKey(k)) {
+                System.out.println("no: " + k);
+            }
+        }
+        System.out.println(bt.size());
+        System.out.println(bt.getKeys().size());
+        System.out.println(bt.getValues().size());
+        System.out.println(tm.size());
+    }
 
+    @Test
+    public void constructSpeed() throws Exception {
+        ArrayList<Integer> testKeys = new ArrayList<>();
+        ArrayList<Integer> testValues = new ArrayList<>();
+        Random random = new Random();
+        for (int i = 0; i < 1000000; ++i) {
+            testKeys.add(i);
+            testValues.add(random.nextInt() % 100000);
+        }
+        BPlusTree<Integer, Integer> bt = new BPlusTree<>(10, 1000);
+        bt.construct(testKeys, testValues);
+        System.out.println(bt.size());
     }
 }

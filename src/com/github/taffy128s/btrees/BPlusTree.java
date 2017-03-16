@@ -58,6 +58,19 @@ public class BPlusTree<K extends Comparable<K>, V> {
         }
 
         /**
+         * Append a data pair(key, value) directly into the end of this data block.
+         *
+         * @param key key to insert.
+         * @param value value to insert.
+         * @return always 1 (always add a new data).
+         */
+        public int putLast(K key, V value) {
+            mKeys.add(key);
+            mValues.add(value);
+            return 1;
+        }
+
+        /**
          * Get value with corresponding key.
          *
          * @param key key to get.
@@ -575,6 +588,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
     private int mSize;
     private BPlusTreeNode mRoot;
     private BPlusTreeData mFirst;
+    private BPlusTreeData mLast;
 
     /**
      * Initialize a b plus tree.
@@ -597,6 +611,57 @@ public class BPlusTree<K extends Comparable<K>, V> {
         mRoot = new BPlusTreeNode(mOrder, mCapacity);
         mRoot.setValue(0, new BPlusTreeData(mCapacity));
         mFirst = mRoot.getValue(0);
+        mLast = mRoot.getValue(0);
+    }
+
+    /**
+     * Initialize a b plus tree with initial data given.
+     * Note that (key, value) pair need to be sort in ascending order.
+     * And size of keys needs to equal to size of values.
+     *
+     * @param order tree order.
+     *              Need >= 3.
+     * @param capacity tree data block capacity.
+     *                 Need >= 3.
+     * @param keys a list of keys (must sorted).
+     * @param values a list of values.
+     */
+    public BPlusTree(int order, int capacity, ArrayList<K> keys, ArrayList<V> values) {
+        if (order < 3) {
+            order = 3;
+        }
+        if (capacity < 3) {
+            capacity = 3;
+        }
+        mOrder = order;
+        mCapacity = capacity;
+        construct(keys, values);
+    }
+
+    /**
+     * Construct a new tree with keys and values given.
+     * Note that (key, value) pair need to be sort in ascending order.
+     * And size of keys needs to equal to size of values.
+     *
+     * @param keys a list of keys (must sorted).
+     * @param values a list of values.
+     */
+    public void construct(ArrayList<K> keys, ArrayList<V> values) {
+        mSize = 0;
+        mRoot = new BPlusTreeNode(mOrder, mCapacity);
+        mRoot.setValue(0, new BPlusTreeData(mCapacity));
+        mFirst = mRoot.getValue(0);
+        mLast = mRoot.getValue(0);
+        int inputSize = keys.size();
+        for (int i = 0; i < inputSize; ++i) {
+            mSize += mLast.putLast(keys.get(i), values.get(i));
+            if (mLast.isFull()) {
+                K midKey = mLast.getMidKey();
+                BPlusTreeData newData = mLast.split();
+                insertTreeNode(mRoot, null, midKey, newData);
+                mLast = newData;
+            }
+        }
     }
 
     /**
@@ -613,20 +678,15 @@ public class BPlusTree<K extends Comparable<K>, V> {
         } else {
             ++index;
         }
-        if (treeNode.isEmpty()) {
-            BPlusTreeData newTreeData = new BPlusTreeData(mCapacity);
-            mSize += newTreeData.put(key, value);
-            treeNode.getValue(0).setNext(newTreeData);
-            newTreeData.setPrev(treeNode.getValue(0));
-            treeNode.put(key, newTreeData, null);
-            return;
-        }
         BPlusTreeData treeData = treeNode.getValue(index);
         mSize += treeData.put(key, value);
         if (treeData.isFull()) {
             K midKey = treeData.getMidKey();
             BPlusTreeData newData = treeData.split();
             insertTreeNode(mRoot, null, midKey, newData);
+            if (mLast == treeData) {
+                mLast = newData;
+            }
         }
     }
 
