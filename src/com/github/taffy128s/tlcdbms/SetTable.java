@@ -47,12 +47,10 @@ public class SetTable extends Table {
         } else if (mPrimaryKey != -1 && dataRecord.get(mPrimaryKey) == null) {
             System.out.println("Primary key cannot be null.");
             return false;
-        } else if (mPrimaryKey != -1 && checkPrimaryKey(dataRecord)) {
+        } else if (!checkPrimaryKey(dataRecord)) {
             System.out.println("Primary key " + dataRecord.get(mPrimaryKey) + " already exists in table.");
             return false;
         } else {
-            // WHAT THE SPEC.
-            // setAutoPrimaryKey(data);
             mTable.add(dataRecord);
             if (mPrimaryKey != -1) {
                 mPrimaryTable.add(dataRecord.get(mPrimaryKey));
@@ -78,7 +76,7 @@ public class SetTable extends Table {
      * @return true if the primary key is valid, false if invalid.
      */
     private boolean checkPrimaryKey(DataRecord data) {
-        return mPrimaryKey == -1 || mPrimaryTable.contains(data.get(mPrimaryKey));
+        return mPrimaryKey == -1 || !mPrimaryTable.contains(data.get(mPrimaryKey));
     }
 
     @Override
