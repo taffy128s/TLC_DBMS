@@ -98,7 +98,7 @@ public class BPlusTreeTest {
             tt.put(testcase.get(i), dataIn.get(i));
             ts.put(testcase.get(i), dataIn.get(i));
         }
-        for (int i = 3000; i < 575000; ++i) {
+        for (int i = 5500; i < 675000; ++i) {
             tt.put(testcase.get(i), dataIn.get(i - 7));
             ts.put(testcase.get(i), dataIn.get(i - 7));
         }
@@ -113,7 +113,7 @@ public class BPlusTreeTest {
             assertEquals(true, Collections.binarySearch(allKeys, key) >= 0);
             assertEquals(true, Collections.binarySearch(allValues, tt.get(key)) >= 0);
         }
-        for (int i = 0; i < 150; ++i) {
+        for (int i = 0; i < 200; ++i) {
             int from = random.nextInt() % 300000;
             int to = random.nextInt() % 300000;
             if (from < 0) {
@@ -273,15 +273,17 @@ public class BPlusTreeTest {
 
     @Test
     public void constructSpeed() throws Exception {
-        ArrayList<Integer> testKeys = new ArrayList<>();
-        ArrayList<Integer> testValues = new ArrayList<>();
-        Random random = new Random();
-        for (int i = 0; i < 1000000; ++i) {
-            testKeys.add(i);
-            testValues.add(random.nextInt() % 100000);
+        for (int t = 0; t < 20; ++t) {
+            ArrayList<Integer> testKeys = new ArrayList<>();
+            ArrayList<Integer> testValues = new ArrayList<>();
+            Random random = new Random();
+            for (int i = 0; i < 50000; ++i) {
+                testKeys.add(i);
+                testValues.add(random.nextInt() % 100000);
+            }
+            BPlusTree<Integer, Integer> bt = new BPlusTree<>(10, 1000);
+            bt.construct(testKeys, testValues);
+            System.out.println(bt.size());
         }
-        BPlusTree<Integer, Integer> bt = new BPlusTree<>(10, 1000);
-        bt.construct(testKeys, testValues);
-        System.out.println(bt.size());
     }
 }

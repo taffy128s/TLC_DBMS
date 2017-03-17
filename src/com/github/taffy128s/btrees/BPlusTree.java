@@ -2,6 +2,7 @@ package com.github.taffy128s.btrees;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -13,12 +14,11 @@ import java.util.List;
  * @param <K> key type.
  * @param <V> value type.
  */
-public class BPlusTree<K extends Comparable<K>, V> {
+public class BPlusTree<K, V> {
     /**
      * B Plus Tree data block.
      */
     private class BPlusTreeData {
-        private int mCapacity;
         private ArrayList<K> mKeys;
         private ArrayList<V> mValues;
         private BPlusTreeData mNext;
@@ -26,12 +26,8 @@ public class BPlusTree<K extends Comparable<K>, V> {
 
         /**
          * Initialize a new Data Block.
-         *
-         * @param capacity capacity of this block.
-         *                 Need >= 3.
          */
-        BPlusTreeData(int capacity) {
-            mCapacity = capacity;
+        BPlusTreeData() {
             mKeys = new ArrayList<>();
             mValues = new ArrayList<>();
             mNext = null;
@@ -46,7 +42,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
          * @return 1 if a new data added, 0 if only modified existed one.
          */
         public int put(K key, V value) {
-            int index = Collections.binarySearch(mKeys, key);
+            int index = Collections.binarySearch(mKeys, key, mComparator);
             if (index >= 0) {
                 mValues.set(index, value);
                 return 0;
@@ -77,7 +73,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
          * @return value with corresponding key.
          */
         public V get(K key) {
-            int index = Collections.binarySearch(mKeys, key);
+            int index = Collections.binarySearch(mKeys, key, mComparator);
             if (index >= 0) {
                 return mValues.get(index);
             } else {
@@ -274,7 +270,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
          */
         private BPlusTreeData splitRight() {
             int midIndex = mKeys.size() / 2;
-            BPlusTreeData rightNode = new BPlusTreeData(mCapacity);
+            BPlusTreeData rightNode = new BPlusTreeData();
             rightNode.setKeys(mKeys.subList(midIndex, mKeys.size()));
             rightNode.setValues(mValues.subList(midIndex, mValues.size()));
             return rightNode;
@@ -285,23 +281,14 @@ public class BPlusTree<K extends Comparable<K>, V> {
      * B Plus Tree Node.
      */
     private class BPlusTreeNode {
-        private int mOrder;
-        private int mCapacity;
         private ArrayList<K> mKeys;
         private ArrayList<BPlusTreeData> mValues;
         private ArrayList<BPlusTreeNode> mNext;
 
         /**
          * Initialize a tree node.
-         *
-         * @param order order of this tree.
-         *              Need >= 3.
-         * @param capacity capacity of this tree.
-         *                 Need >= 3.
          */
-        public BPlusTreeNode(int order, int capacity) {
-            mOrder = order;
-            mCapacity = capacity;
+        public BPlusTreeNode() {
             mKeys = new ArrayList<>();
             mValues = new ArrayList<>();
             mNext = new ArrayList<>();
@@ -318,7 +305,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
          * @return 1 if a new data added, 0 if only modify existed one.
          */
         public int put(K key, BPlusTreeData value, BPlusTreeNode next) {
-            int index = Collections.binarySearch(mKeys, key);
+            int index = Collections.binarySearch(mKeys, key, mComparator);
             if (index >= 0) {
                 mValues.set(index + 1, value);
                 return 0;
@@ -337,7 +324,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
          * @return data block with corresponding key.
          */
         public BPlusTreeData get(K key) {
-            int index = Collections.binarySearch(mKeys, key);
+            int index = Collections.binarySearch(mKeys, key, mComparator);
             if (index >= 0) {
                 return mValues.get(index);
             } else {
@@ -537,7 +524,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
          */
         private BPlusTreeNode splitRight() {
             int midIndex = mKeys.size() / 2;
-            BPlusTreeNode result = new BPlusTreeNode(mOrder, mCapacity);
+            BPlusTreeNode result = new BPlusTreeNode();
             result.setKeys(mKeys.subList(midIndex + 1, mKeys.size()));
             result.setValues(mValues.subList(midIndex + 1, mValues.size()));
             result.setNext(mNext.subList(midIndex + 1, mNext.size()));
@@ -590,6 +577,8 @@ public class BPlusTree<K extends Comparable<K>, V> {
     private BPlusTreeData mFirst;
     private BPlusTreeData mLast;
 
+    private Comparator<? super K> mComparator;
+
     /**
      * Initialize a b plus tree.
      *
@@ -608,10 +597,37 @@ public class BPlusTree<K extends Comparable<K>, V> {
         mOrder = order;
         mCapacity = capacity;
         mSize = 0;
-        mRoot = new BPlusTreeNode(mOrder, mCapacity);
-        mRoot.setValue(0, new BPlusTreeData(mCapacity));
+        mRoot = new BPlusTreeNode();
+        mRoot.setValue(0, new BPlusTreeData());
         mFirst = mRoot.getValue(0);
         mLast = mRoot.getValue(0);
+        mComparator = (o1, o2) -> ((Comparable) o1).compareTo(o2);
+    }
+
+    /**
+     * Initialize a b plus tree.
+     *
+     * @param order tree order.
+     *              Need >= 3.
+     * @param capacity tree data block capacity.
+     *                 Need >= 3.
+     * @param comparator comparator.
+     */
+    public BPlusTree(int order, int capacity, Comparator<? super K> comparator) {
+        if (order < 3) {
+            order = 3;
+        }
+        if (capacity < 3) {
+            capacity = 3;
+        }
+        mOrder = order;
+        mCapacity = capacity;
+        mSize = 0;
+        mRoot = new BPlusTreeNode();
+        mRoot.setValue(0, new BPlusTreeData());
+        mFirst = mRoot.getValue(0);
+        mLast = mRoot.getValue(0);
+        mComparator = comparator;
     }
 
     /**
@@ -635,6 +651,33 @@ public class BPlusTree<K extends Comparable<K>, V> {
         }
         mOrder = order;
         mCapacity = capacity;
+        mComparator = (o1, o2) -> ((Comparable) o1).compareTo(o2);
+        construct(keys, values);
+    }
+
+    /**
+     * Initialize a b plus tree with initial data given.
+     * Note that (key, value) pair need to be sort in ascending order.
+     * And size of keys needs to equal to size of values.
+     *
+     * @param order tree order.
+     *              Need >= 3.
+     * @param capacity tree data block capacity.
+     *                 Need >= 3.
+     * @param comparator comparator.
+     * @param keys a list of keys (must sorted).
+     * @param values a list of values.
+     */
+    public BPlusTree(int order, int capacity, Comparator<? super K> comparator, ArrayList<K> keys, ArrayList<V> values) {
+        if (order < 3) {
+            order = 3;
+        }
+        if (capacity < 3) {
+            capacity = 3;
+        }
+        mOrder = order;
+        mCapacity = capacity;
+        mComparator = comparator;
         construct(keys, values);
     }
 
@@ -648,8 +691,8 @@ public class BPlusTree<K extends Comparable<K>, V> {
      */
     public void construct(ArrayList<K> keys, ArrayList<V> values) {
         mSize = 0;
-        mRoot = new BPlusTreeNode(mOrder, mCapacity);
-        mRoot.setValue(0, new BPlusTreeData(mCapacity));
+        mRoot = new BPlusTreeNode();
+        mRoot.setValue(0, new BPlusTreeData());
         mFirst = mRoot.getValue(0);
         mLast = mRoot.getValue(0);
         int inputSize = keys.size();
@@ -672,7 +715,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
      */
     public void put(K key, V value) {
         BPlusTreeNode treeNode = findTreeNode(mRoot, null, key);
-        int index = Collections.binarySearch(treeNode.getKeys(), key);
+        int index = Collections.binarySearch(treeNode.getKeys(), key, mComparator);
         if (index < 0) {
             index = (-1) * index - 1;
         } else {
@@ -698,7 +741,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
      */
     public V get(K key) {
         BPlusTreeNode treeNode = findTreeNode(mRoot, null, key);
-        int index = Collections.binarySearch(treeNode.getKeys(), key);
+        int index = Collections.binarySearch(treeNode.getKeys(), key, mComparator);
         if (index < 0) {
             index = (-1) * index - 1;
         } else {
@@ -732,7 +775,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
      */
     public ArrayList<K> getKeys(K fromKey, K toKey) {
         BPlusTreeNode treeNode = findTreeNode(mRoot, null, fromKey);
-        int index = Collections.binarySearch(treeNode.getKeys(), fromKey);
+        int index = Collections.binarySearch(treeNode.getKeys(), fromKey, mComparator);
         if (index < 0) {
             index = (-1) * index - 1;
         } else {
@@ -741,14 +784,14 @@ public class BPlusTree<K extends Comparable<K>, V> {
         ArrayList<K> ans = new ArrayList<>();
         BPlusTreeData treeData = treeNode.getValue(index);
         while (treeData != null) {
-            if (treeData.size() > 0 && toKey.compareTo(treeData.getKey(0)) <= 0) {
+            if (treeData.size() > 0 && mComparator.compare(toKey, treeData.getKey(0)) <= 0) {
                 return ans;
             }
-            int startIndex = Collections.binarySearch(treeData.getKeys(), fromKey);
+            int startIndex = Collections.binarySearch(treeData.getKeys(), fromKey, mComparator);
             if (startIndex < 0) {
                 startIndex = (-1) * startIndex - 1;
             }
-            int endIndex = Collections.binarySearch(treeData.getKeys(), toKey);
+            int endIndex = Collections.binarySearch(treeData.getKeys(), toKey, mComparator);
             if (endIndex < 0) {
                 endIndex = (-1) * endIndex - 1;
             }
@@ -769,7 +812,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
      */
     public ArrayList<K> getKeys(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive) {
         BPlusTreeNode treeNode = findTreeNode(mRoot, null, fromKey);
-        int index = Collections.binarySearch(treeNode.getKeys(), fromKey);
+        int index = Collections.binarySearch(treeNode.getKeys(), fromKey, mComparator);
         if (index < 0) {
             index = (-1) * index - 1;
         } else {
@@ -778,13 +821,13 @@ public class BPlusTree<K extends Comparable<K>, V> {
         ArrayList<K> ans = new ArrayList<>();
         BPlusTreeData treeData = treeNode.getValue(index);
         while (treeData != null) {
-            if (toInclusive && treeData.size() > 0 && toKey.compareTo(treeData.getKey(0)) < 0) {
+            if (toInclusive && treeData.size() > 0 && mComparator.compare(toKey, treeData.getKey(0)) < 0) {
                 return ans;
             }
-            if (!toInclusive && treeData.size() > 0 && toKey.compareTo(treeData.getKey(0)) <= 0) {
+            if (!toInclusive && treeData.size() > 0 && mComparator.compare(toKey, treeData.getKey(0)) <= 0) {
                 return ans;
             }
-            int startIndex = Collections.binarySearch(treeData.getKeys(), fromKey);
+            int startIndex = Collections.binarySearch(treeData.getKeys(), fromKey, mComparator);
             if (startIndex < 0) {
                 startIndex = (-1) * startIndex - 1;
             } else {
@@ -792,7 +835,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
                     ++startIndex;
                 }
             }
-            int endIndex = Collections.binarySearch(treeData.getKeys(), toKey);
+            int endIndex = Collections.binarySearch(treeData.getKeys(), toKey, mComparator);
             if (endIndex < 0) {
                 endIndex = (-1) * endIndex - 1;
             } else {
@@ -830,7 +873,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
      */
     public ArrayList<V> getValues(K fromKey, K toKey) {
         BPlusTreeNode treeNode = findTreeNode(mRoot, null, fromKey);
-        int index = Collections.binarySearch(treeNode.getKeys(), fromKey);
+        int index = Collections.binarySearch(treeNode.getKeys(), fromKey, mComparator);
         if (index < 0) {
             index = (-1) * index - 1;
         } else {
@@ -839,14 +882,14 @@ public class BPlusTree<K extends Comparable<K>, V> {
         ArrayList<V> ans = new ArrayList<>();
         BPlusTreeData treeData = treeNode.getValue(index);
         while (treeData != null) {
-            if (treeData.size() > 0 && toKey.compareTo(treeData.getKey(0)) <= 0) {
+            if (treeData.size() > 0 && mComparator.compare(toKey, treeData.getKey(0)) <= 0) {
                 return ans;
             }
-            int startIndex = Collections.binarySearch(treeData.getKeys(), fromKey);
+            int startIndex = Collections.binarySearch(treeData.getKeys(), fromKey, mComparator);
             if (startIndex < 0) {
                 startIndex = (-1) * startIndex - 1;
             }
-            int endIndex = Collections.binarySearch(treeData.getKeys(), toKey);
+            int endIndex = Collections.binarySearch(treeData.getKeys(), toKey, mComparator);
             if (endIndex < 0) {
                 endIndex = (-1) * endIndex - 1;
             }
@@ -867,7 +910,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
      */
     public ArrayList<V> getValues(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive) {
         BPlusTreeNode treeNode = findTreeNode(mRoot, null, fromKey);
-        int index = Collections.binarySearch(treeNode.getKeys(), fromKey);
+        int index = Collections.binarySearch(treeNode.getKeys(), fromKey, mComparator);
         if (index < 0) {
             index = (-1) * index - 1;
         } else {
@@ -876,13 +919,13 @@ public class BPlusTree<K extends Comparable<K>, V> {
         ArrayList<V> ans = new ArrayList<>();
         BPlusTreeData treeData = treeNode.getValue(index);
         while (treeData != null) {
-            if (toInclusive && treeData.size() > 0 && toKey.compareTo(treeData.getKey(0)) < 0) {
+            if (toInclusive && treeData.size() > 0 && mComparator.compare(toKey, treeData.getKey(0)) < 0) {
                 return ans;
             }
-            if (!toInclusive && treeData.size() > 0 && toKey.compareTo(treeData.getKey(0)) <= 0) {
+            if (!toInclusive && treeData.size() > 0 && mComparator.compare(toKey, treeData.getKey(0)) <= 0) {
                 return ans;
             }
-            int startIndex = Collections.binarySearch(treeData.getKeys(), fromKey);
+            int startIndex = Collections.binarySearch(treeData.getKeys(), fromKey, mComparator);
             if (startIndex < 0) {
                 startIndex = (-1) * startIndex - 1;
             } else {
@@ -890,7 +933,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
                     ++startIndex;
                 }
             }
-            int endIndex = Collections.binarySearch(treeData.getKeys(), toKey);
+            int endIndex = Collections.binarySearch(treeData.getKeys(), toKey, mComparator);
             if (endIndex < 0) {
                 endIndex = (-1) * endIndex - 1;
             } else {
@@ -914,11 +957,11 @@ public class BPlusTree<K extends Comparable<K>, V> {
         ArrayList<K> ans = new ArrayList<>();
         BPlusTreeData treeData = mFirst;
         while (treeData != null) {
-            if (treeData.size() > 0 && key.compareTo(treeData.getKey(0)) <= 0) {
+            if (treeData.size() > 0 && mComparator.compare(key, treeData.getKey(0)) <= 0) {
                 return ans;
             }
             int startIndex = 0;
-            int endIndex = Collections.binarySearch(treeData.getKeys(), key);
+            int endIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
             if (endIndex < 0) {
                 endIndex = (-1) * endIndex - 1;
             }
@@ -938,11 +981,11 @@ public class BPlusTree<K extends Comparable<K>, V> {
         ArrayList<V> ans = new ArrayList<>();
         BPlusTreeData treeData = mFirst;
         while (treeData != null) {
-            if (treeData.size() > 0 && key.compareTo(treeData.getKey(0)) <= 0) {
+            if (treeData.size() > 0 && mComparator.compare(key, treeData.getKey(0)) <= 0) {
                 return ans;
             }
             int startIndex = 0;
-            int endIndex = Collections.binarySearch(treeData.getKeys(), key);
+            int endIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
             if (endIndex < 0) {
                 endIndex = (-1) * endIndex - 1;
             }
@@ -962,11 +1005,11 @@ public class BPlusTree<K extends Comparable<K>, V> {
         ArrayList<K> ans = new ArrayList<>();
         BPlusTreeData treeData = mFirst;
         while (treeData != null) {
-            if (treeData.size() > 0 && key.compareTo(treeData.getKey(0)) < 0) {
+            if (treeData.size() > 0 && mComparator.compare(key, treeData.getKey(0)) < 0) {
                 return ans;
             }
             int startIndex = 0;
-            int endIndex = Collections.binarySearch(treeData.getKeys(), key);
+            int endIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
             if (endIndex < 0) {
                 endIndex = (-1) * endIndex - 1;
             } else {
@@ -988,11 +1031,11 @@ public class BPlusTree<K extends Comparable<K>, V> {
         ArrayList<V> ans = new ArrayList<>();
         BPlusTreeData treeData = mFirst;
         while (treeData != null) {
-            if (treeData.size() > 0 && key.compareTo(treeData.getKey(0)) < 0) {
+            if (treeData.size() > 0 && mComparator.compare(key, treeData.getKey(0)) < 0) {
                 return ans;
             }
             int startIndex = 0;
-            int endIndex = Collections.binarySearch(treeData.getKeys(), key);
+            int endIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
             if (endIndex < 0) {
                 endIndex = (-1) * endIndex - 1;
             } else {
@@ -1012,7 +1055,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
      */
     public ArrayList<K> getKeysGreater(K key) {
         BPlusTreeNode treeNode = findTreeNode(mRoot, null, key);
-        int index = Collections.binarySearch(treeNode.getKeys(), key);
+        int index = Collections.binarySearch(treeNode.getKeys(), key, mComparator);
         if (index < 0) {
             index = (-1) * index - 1;
         } else {
@@ -1020,7 +1063,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
         }
         ArrayList<K> ans = new ArrayList<>();
         BPlusTreeData treeData = treeNode.getValue(index);
-        int startIndex = Collections.binarySearch(treeData.getKeys(), key);
+        int startIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
         if (startIndex < 0) {
             startIndex = (-1) * startIndex - 1;
         } else {
@@ -1043,7 +1086,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
      */
     public ArrayList<V> getValuesGreater(K key) {
         BPlusTreeNode treeNode = findTreeNode(mRoot, null, key);
-        int index = Collections.binarySearch(treeNode.getKeys(), key);
+        int index = Collections.binarySearch(treeNode.getKeys(), key, mComparator);
         if (index < 0) {
             index = (-1) * index - 1;
         } else {
@@ -1051,7 +1094,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
         }
         ArrayList<V> ans = new ArrayList<>();
         BPlusTreeData treeData = treeNode.getValue(index);
-        int startIndex = Collections.binarySearch(treeData.getKeys(), key);
+        int startIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
         if (startIndex < 0) {
             startIndex = (-1) * startIndex - 1;
         } else {
@@ -1074,7 +1117,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
      */
     public ArrayList<K> getKeysGreaterEqual(K key) {
         BPlusTreeNode treeNode = findTreeNode(mRoot, null, key);
-        int index = Collections.binarySearch(treeNode.getKeys(), key);
+        int index = Collections.binarySearch(treeNode.getKeys(), key, mComparator);
         if (index < 0) {
             index = (-1) * index - 1;
         } else {
@@ -1082,7 +1125,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
         }
         ArrayList<K> ans = new ArrayList<>();
         BPlusTreeData treeData = treeNode.getValue(index);
-        int startIndex = Collections.binarySearch(treeData.getKeys(), key);
+        int startIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
         if (startIndex < 0) {
             startIndex = (-1) * startIndex - 1;
         }
@@ -1103,7 +1146,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
      */
     public ArrayList<V> getValuesGreaterEqual(K key) {
         BPlusTreeNode treeNode = findTreeNode(mRoot, null, key);
-        int index = Collections.binarySearch(treeNode.getKeys(), key);
+        int index = Collections.binarySearch(treeNode.getKeys(), key, mComparator);
         if (index < 0) {
             index = (-1) * index - 1;
         } else {
@@ -1111,7 +1154,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
         }
         ArrayList<V> ans = new ArrayList<>();
         BPlusTreeData treeData = treeNode.getValue(index);
-        int startIndex = Collections.binarySearch(treeData.getKeys(), key);
+        int startIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
         if (startIndex < 0) {
             startIndex = (-1) * startIndex - 1;
         }
@@ -1132,7 +1175,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
      */
     public boolean containsKey(K key) {
         BPlusTreeNode treeNode = findTreeNode(mRoot, null, key);
-        int index = Collections.binarySearch(treeNode.getKeys(), key);
+        int index = Collections.binarySearch(treeNode.getKeys(), key, mComparator);
         if (index < 0) {
             index = (-1) * index - 1;
         } else {
@@ -1140,6 +1183,23 @@ public class BPlusTree<K extends Comparable<K>, V> {
         }
         BPlusTreeData treeData = treeNode.getValue(index);
         return treeData.get(key) != null;
+    }
+
+    /**
+     * Check whether there is value in this tree.
+     * ** NEED TRAVERSE WHOLE TREE **
+     *
+     * @param value value to check.
+     * @return true if this tree contains the value, false otherwise.
+     */
+    public boolean containsValue(V value) {
+        ArrayList<V> allValues = getValues();
+        for (V v : allValues) {
+            if (v.equals(value)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -1186,7 +1246,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
         if (root.isEmpty()) {
             return root;
         }
-        int index = Collections.binarySearch(root.getKeys(), key);
+        int index = Collections.binarySearch(root.getKeys(), key, mComparator);
         if (index >= 0) {
             return findTreeNode(root.getNext(index + 1), root, key);
         } else {
@@ -1207,7 +1267,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
             parent.put(key, treeData, null);
             return;
         }
-        int index = Collections.binarySearch(root.getKeys(), key);
+        int index = Collections.binarySearch(root.getKeys(), key, mComparator);
         if (index >= 0) {
             root.setValue(index, treeData);
         } else {
@@ -1216,7 +1276,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
                 K keyElement = root.getMidKey();
                 BPlusTreeNode q = root.split();
                 if (parent == null) {
-                    parent = new BPlusTreeNode(mOrder, mCapacity);
+                    parent = new BPlusTreeNode();
                     parent.setNext(0, root);
                     parent.put(keyElement, null, q);
                     mRoot = parent;
