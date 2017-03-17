@@ -1,5 +1,6 @@
 package com.github.taffy128s.tlcdbms;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -16,6 +17,7 @@ public class SetTable extends Table {
 
     /**
      * Initialize a SetTable.
+     * Note that this constructor should only be called when restoring from disk.
      */
     public SetTable() {
         super();
@@ -60,7 +62,7 @@ public class SetTable extends Table {
     }
 
     @Override
-    public boolean insertAll(ArrayList<DataRecord> dataRecords) {
+    protected boolean insertAll(ArrayList<DataRecord> dataRecords) {
         boolean result = true;
         for (DataRecord dataRecord : dataRecords) {
             boolean status = insert(dataRecord);
@@ -102,5 +104,70 @@ public class SetTable extends Table {
             stringBuilder.append(record.toString());
         }
         return stringBuilder.toString();
+    }
+
+    @Override
+    public boolean writeToDisk(String filename) {
+        try {
+            FileWriter writer = new FileWriter(filename);
+            writer.write(mTablename + "\n");
+            writer.write(mAttributeNames.size() + "\n");
+            for (int i = 0; i < mAttributeNames.size(); ++i) {
+                writer.write(mAttributeNames.get(i) + "\0");
+                writer.write(mAttributeTypes.get(i).getLimit() + "\n");
+            }
+            writer.write(mPrimaryKey + "\n");
+            ArrayList<DataRecord> dataRecords = getAllRecords();
+            writer.write(dataRecords.size() + "\n");
+            for (DataRecord record : dataRecords) {
+                writer.write(record.writeToString() + "\n");
+            }
+            writer.close();
+            return true;
+        } catch (IOException e) {
+            System.err.println(filename + ": file I/O error.");
+        }
+        return false;
+    }
+
+    @Override
+    public boolean restoreFromDisk(String filename) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(filename));
+            String input;
+            mTablename = reader.readLine();
+            int attrSize = Integer.parseInt(reader.readLine());
+            for (int i = 0; i < attrSize; ++i) {
+                input = reader.readLine();
+                String[] attrProperties = input.split("\0");
+                mAttributeNames.add(attrProperties[0]);
+                int limit = Integer.parseInt(attrProperties[1]);
+                if (limit < 0) {
+                    mAttributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
+                } else {
+                    mAttributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, limit));
+                }
+            }
+            mPrimaryKey = Integer.parseInt(reader.readLine());
+            int recordSize = Integer.parseInt(reader.readLine());
+            ArrayList<DataRecord> records = new ArrayList<>();
+            while ((input = reader.readLine()) != null) {
+                DataRecord record = new DataRecord();
+                record.restoreFromString(input);
+                records.add(record);
+            }
+            if (records.size() != recordSize) {
+                reader.close();
+                return false;
+            }
+            insertAll(records);
+            reader.close();
+            return true;
+        } catch (FileNotFoundException e) {
+            System.err.println(filename + ": no such file or directory.");
+        } catch (IOException e) {
+            System.err.println(filename + ": file I/O error.");
+        }
+        return false;
     }
 }

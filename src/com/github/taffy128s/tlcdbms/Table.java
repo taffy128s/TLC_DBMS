@@ -1,6 +1,5 @@
 package com.github.taffy128s.tlcdbms;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -22,6 +21,7 @@ public abstract class Table implements DiskWritable {
 
     /**
      * Initialize a Table.
+     * Note that this constructor should only be called when restoring from disk.
      */
     public Table() {
         mTablename = "";
@@ -142,69 +142,10 @@ public abstract class Table implements DiskWritable {
     }
 
     @Override
-    public boolean writeToDisk(String filename) {
-        try {
-            FileWriter writer = new FileWriter(filename);
-            writer.write(mTablename + "\n");
-            writer.write(mAttributeNames.size() + "\n");
-            for (int i = 0; i < mAttributeNames.size(); ++i) {
-                writer.write(mAttributeNames.get(i) + "\0");
-                writer.write(mAttributeTypes.get(i).getLimit() + "\n");
-            }
-            writer.write(mPrimaryKey + "\n");
-            ArrayList<DataRecord> dataRecords = getAllRecords();
-            writer.write(dataRecords.size() + "\n");
-            for (DataRecord record : dataRecords) {
-                writer.write(record.writeToString() + "\n");
-            }
-            writer.close();
-            return true;
-        } catch (IOException e) {
-            System.err.println(filename + ": file I/O error.");
-        }
-        return false;
-    }
+    public abstract boolean writeToDisk(String filename);
 
     @Override
-    public boolean restoreFromDisk(String filename) {
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filename));
-            String input;
-            mTablename = reader.readLine();
-            int attrSize = Integer.parseInt(reader.readLine());
-            for (int i = 0; i < attrSize; ++i) {
-                input = reader.readLine();
-                String[] attrProperties = input.split("\0");
-                mAttributeNames.add(attrProperties[0]);
-                int limit = Integer.parseInt(attrProperties[1]);
-                if (limit < 0) {
-                    mAttributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
-                } else {
-                    mAttributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, limit));
-                }
-            }
-            mPrimaryKey = Integer.parseInt(reader.readLine());
-            int recordSize = Integer.parseInt(reader.readLine());
-            ArrayList<DataRecord> records = new ArrayList<>();
-            while ((input = reader.readLine()) != null) {
-                DataRecord record = new DataRecord();
-                record.restoreFromString(input);
-                records.add(record);
-            }
-            if (records.size() != recordSize) {
-                reader.close();
-                return false;
-            }
-            insertAll(records);
-            reader.close();
-            return true;
-        } catch (FileNotFoundException e) {
-            System.err.println(filename + ": no such file or directory.");
-        } catch (IOException e) {
-            System.err.println(filename + ": file I/O error.");
-        }
-        return false;
-    }
+    public abstract boolean restoreFromDisk(String filename);
 
     /**
      * Get table type,
@@ -227,11 +168,12 @@ public abstract class Table implements DiskWritable {
     /**
      * Insert all data records into table.
      * Assume that all data are with valid type.
+     * Used for disk restoreFromDisk().
      *
      * @param dataRecords a list of data records.
      * @return true if succeed, false if failed.
      */
-    public abstract boolean insertAll(ArrayList<DataRecord> dataRecords);
+    protected abstract boolean insertAll(ArrayList<DataRecord> dataRecords);
 
     /**
      * Get all records in the table.
