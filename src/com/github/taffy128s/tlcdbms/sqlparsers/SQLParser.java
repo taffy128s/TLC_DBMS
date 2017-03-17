@@ -546,7 +546,7 @@ public class SQLParser {
     private SQLBlock getBlock() {
         String block = nextToken(true);
         if (DataChecker.isStringNull(block)) {
-            return new SQLBlock(null, true);
+            return new SQLBlock("null", true);
         } else if (DataChecker.isValidInteger(block)) {
             return new SQLBlock(block, true);
         } else if (DataChecker.isValidQuotedVarChar(block)) {

@@ -37,7 +37,7 @@ public class DBManager implements DiskWritable {
             System.out.println("Table '" + tablename + "' already exists.");
             return;
         }
-        Table newTable = new SetTable(tablename, attributeNames, attributeTypes, primaryKey);
+        Table newTable = new BPlusTreeTable(tablename, attributeNames, attributeTypes, primaryKey);
         mTables.put(tablename, newTable);
         System.out.println("Query OK, table '" + tablename + "' created successfully.");
     }
@@ -172,7 +172,7 @@ public class DBManager implements DiskWritable {
                 attributeStrings.add(attributeNames.get(i) + " " + attributeTypes.get(i));
             }
         }
-        parameter.getBlocks().add(null);
+        parameter.getBlocks().add("null");
         int expectedSize = attributeNames.size() - 1;
         int gotSize = parameter.getBlocks().size() - 1;
         if (!parameter.isCustomOrder() && expectedSize != gotSize) {
@@ -204,7 +204,7 @@ public class DBManager implements DiskWritable {
         for (int index : orderIndex) {
             String block = (index != -1) ? parameter.getBlocks().get(index) : null;
             if (block == null) {
-                dataRecord.append(null);
+                dataRecord.append("null");
             } else if (attributeTypes.get(tableAttrIndex).getType() == DataTypeIdentifier.INT) {
                 if (!DataChecker.isValidInteger(block)) {
                     System.out.println("For attribute '" + attributeNames.get(tableAttrIndex) + "' in table '" + parameter.getTablename() + "':");

@@ -248,7 +248,7 @@ public class DataRecord implements DiskWritable, StringWritable {
         String[] datas = string.split("\0");
         for (String data : datas) {
             if (data.equalsIgnoreCase("null")) {
-                mDataList.add(null);
+                mDataList.add("null");
             } else if (DataChecker.isValidInteger(data)) {
                 mDataList.add(Integer.parseInt(data));
             } else {
