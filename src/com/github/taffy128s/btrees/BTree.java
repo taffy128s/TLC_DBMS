@@ -2,6 +2,7 @@ package com.github.taffy128s.btrees;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -13,24 +14,19 @@ import java.util.List;
  * @param <K> key type.
  * @param <V> value type.
  */
-public class BTree<K extends Comparable<K>, V> {
+public class BTree<K, V> {
     /**
      * Tree Node of B Tree.
      */
     private class BTreeNode {
-        private int mOrder;
         private ArrayList<K> mKeys;
         private ArrayList<V> mValues;
         private ArrayList<BTreeNode> mNext;
 
         /**
          * Initialize a tree node.
-         *
-         * @param order order of this node(equals to tree).
-         *              Need to greater than or equal to 3.
          */
-        public BTreeNode(int order) {
-            mOrder = order;
+        public BTreeNode() {
             mKeys = new ArrayList<>();
             mValues = new ArrayList<>();
             mNext = new ArrayList<>();
@@ -46,7 +42,7 @@ public class BTree<K extends Comparable<K>, V> {
          * @return 1 if new data added, 0 if only modify existed one.
          */
         public int put(K key, V value, BTreeNode next) {
-            int index = Collections.binarySearch(mKeys, key);
+            int index = Collections.binarySearch(mKeys, key, mComparator);
             if (index >= 0) {
                 mValues.set(index, value);
                 return 0;
@@ -65,7 +61,7 @@ public class BTree<K extends Comparable<K>, V> {
          * @return value with corresponding key.
          */
         public V get(K key) {
-            int index = Collections.binarySearch(mKeys, key);
+            int index = Collections.binarySearch(mKeys, key, mComparator);
             if (index >= 0) {
                 return mValues.get(index);
             } else {
@@ -267,7 +263,7 @@ public class BTree<K extends Comparable<K>, V> {
          */
         private BTreeNode splitRight() {
             int midIndex = mKeys.size() / 2;
-            BTreeNode result = new BTreeNode(mOrder);
+            BTreeNode result = new BTreeNode();
             result.setKeys(mKeys.subList(midIndex + 1, mKeys.size()));
             result.setValues(mValues.subList(midIndex + 1, mValues.size()));
             result.setNext(mNext.subList(midIndex + 1, mNext.size()));
@@ -322,6 +318,8 @@ public class BTree<K extends Comparable<K>, V> {
     private int mSize;
     private BTreeNode mRoot;
 
+    private Comparator<? super K> mComparator;
+
     /**
      * Initialize a b tree with order given.
      *
@@ -334,7 +332,25 @@ public class BTree<K extends Comparable<K>, V> {
         }
         mOrder = order;
         mSize = 0;
-        mRoot = new BTreeNode(mOrder);
+        mRoot = new BTreeNode();
+        mComparator = (o1, o2) -> ((Comparable) o1).compareTo(o2);
+    }
+
+    /**
+     * Initialize a b tree with order given.
+     *
+     * @param order order of this tree.
+     *              Need >= 3.
+     * @param comparator comparator.
+     */
+    public BTree(int order, Comparator<? super K> comparator) {
+        if (order < 3) {
+            order = 3;
+        }
+        mOrder = order;
+        mSize = 0;
+        mRoot = new BTreeNode();
+        mComparator = comparator;
     }
 
     /**
@@ -430,7 +446,7 @@ public class BTree<K extends Comparable<K>, V> {
         if (root.isEmpty()) {
             return new BTreeFindResult(root, -1);
         }
-        int index = Collections.binarySearch(root.getKeys(), key);
+        int index = Collections.binarySearch(root.getKeys(), key, mComparator);
         if (index >= 0) {
             return new BTreeFindResult(root, index);
         } else {
@@ -451,7 +467,7 @@ public class BTree<K extends Comparable<K>, V> {
             mSize += parent.put(key, value, null);
             return;
         }
-        int index = Collections.binarySearch(root.getKeys(), key);
+        int index = Collections.binarySearch(root.getKeys(), key, mComparator);
         if (index >= 0) {
             root.setValue(index, value);
         } else {
@@ -461,7 +477,7 @@ public class BTree<K extends Comparable<K>, V> {
                 V valueElement = root.getMidValue();
                 BTreeNode q = root.split();
                 if (parent == null) {
-                    parent = new BTreeNode(mOrder);
+                    parent = new BTreeNode();
                     parent.setNext(0, root);
                     parent.put(keyElement, valueElement, q);
                     mRoot = parent;
