@@ -122,6 +122,9 @@ public class DBManager implements DiskWritable {
         ArrayList<String> attributeNames = mTables.get(tablename).getAttributeNames();
         ArrayList<DataType> attributeTypes = mTables.get(tablename).getAttributeTypes();
         ArrayList<DataRecord> allRecords = mTables.get(tablename).getAllRecords();
+        if (parameter.getShowRowLimitation() != -1) {
+            allRecords.subList(parameter.getShowRowLimitation(), allRecords.size()).clear();
+        }
         printTable(attributeNames, attributeTypes, allRecords, !parameter.getShowFullInfo());
     }
 

@@ -30,7 +30,7 @@ SHOW Syntax
 ```
 SHOW TABLES;
 or
-SHOW TABLE [FULL] table_name;
+SHOW TABLE [FULL] table_name [LIMIT length];
 ```
 
 DESC syntax

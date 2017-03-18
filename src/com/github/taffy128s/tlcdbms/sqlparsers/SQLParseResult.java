@@ -19,6 +19,7 @@ public class SQLParseResult {
     private ArrayList<String> mBlocks;
     private ArrayList<String> mUpdateOrder;
     private int mPrimaryKeyIndex;
+    private int mShowRowLimitation;
     private boolean mCustomOrder;
     private boolean mShowFullInfo;
 
@@ -34,6 +35,7 @@ public class SQLParseResult {
         mBlocks = null;
         mUpdateOrder = null;
         mPrimaryKeyIndex = -1;
+        mShowRowLimitation = 0;
         mCustomOrder = false;
         mShowFullInfo = false;
     }
@@ -180,6 +182,24 @@ public class SQLParseResult {
      */
     public int getPrimaryKeyIndex() {
         return mPrimaryKeyIndex;
+    }
+
+    /**
+     * Show row limitation setter.
+     *
+     * @param showRowLimitation value to set.
+     */
+    public void setShowRowLimitation(int showRowLimitation) {
+        mShowRowLimitation = showRowLimitation;
+    }
+
+    /**
+     * Show row limitation getter.
+     *
+     * @return show row limitation.
+     */
+    public int getShowRowLimitation() {
+        return mShowRowLimitation;
     }
 
     /**

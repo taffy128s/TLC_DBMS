@@ -323,12 +323,28 @@ public class SQLParser {
             if (tablename == null) {
                 return null;
             }
+            int limitation = -1;
+            if (checkTokenIgnoreCase("limit", false)) {
+                checkTokenIgnoreCase("limit", true);
+                String limitString = nextToken(true);
+                if (DataChecker.isValidInteger(limitString)) {
+                    limitation = Integer.parseInt(limitString);
+                    if (limitation <= 0) {
+                        printErrorMessage("Invalid limitation (needs > 0).");
+                        return null;
+                    }
+                } else {
+                    printErrorMessage("Invalid limitation (needs an integer > 0).");
+                    return null;
+                }
+            }
             if (!isEnded()) {
                 System.out.println("Unexpected strings at end of line.");
                 return null;
             }
             result.setCommandType(CommandType.SHOW_TABLE_CONTENT);
             result.setTablename(tablename);
+            result.setShowRowLimitation(limitation);
             return result;
         } else if (checkTokenIgnoreCase("tables", false)) {
             checkTokenIgnoreCase("tables", true);
