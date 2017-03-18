@@ -32,12 +32,18 @@ public class DBManager implements DiskWritable {
         String tablename = parameter.getTablename();
         ArrayList<String> attributeNames = parameter.getAttributeNames();
         ArrayList<DataType> attributeTypes = parameter.getAttributeTypes();
+        ArrayList<TableStructure> attributeIndices = parameter.getAttributeIndices();
         int primaryKey = parameter.getPrimaryKeyIndex();
         if (mTables.containsKey(tablename)) {
             System.out.println("Table '" + tablename + "' already exists.");
             return;
         }
-        Table newTable = new SetTable(tablename, attributeNames, attributeTypes, primaryKey);
+        Table newTable;
+        if (attributeIndices == null) {
+            newTable = new SetTable(tablename, attributeNames, attributeTypes, primaryKey);
+        } else {
+            newTable = new MultiIndexTable(tablename, attributeNames, attributeTypes, attributeIndices, primaryKey);
+        }
         mTables.put(tablename, newTable);
         System.out.println("Query OK, table '" + tablename + "' created successfully.");
     }
@@ -57,8 +63,16 @@ public class DBManager implements DiskWritable {
         if (dataRecord == null) {
             return;
         }
-        boolean result = mTables.get(tablename).insert(dataRecord);
-        if (result) {
+        InsertionResult checkResult = mTables.get(tablename).checkInputData(dataRecord);
+        if (checkResult == InsertionResult.DUPLICATED_DATA_TUPLE) {
+            System.out.println("Data tuple already exists in table.");
+        } else if (checkResult == InsertionResult.NULL_PRIMARY_KEY) {
+            System.out.println("Primary Key field cannot be null.");
+        } else if (checkResult == InsertionResult.DUPLICATED_PRIMARY_KEY) {
+            int primaryKeyIndex = mTables.get(tablename).getPrimaryKey();
+            System.out.println("Primary Key " + dataRecord.get(primaryKeyIndex) + " already exists in table.");
+        } else {
+            mTables.get(tablename).insert(dataRecord);
             System.out.println("Query OK, table '" + tablename + "': 1 row added.");
         }
     }
@@ -384,6 +398,10 @@ public class DBManager implements DiskWritable {
                     Table setTable = new SetTable();
                     setTable.restoreFromDisk("./" + DIRNAME + "/" + tableAttr[0] + ".tlctable");
                     mTables.put(tableAttr[0], setTable);
+                } else if (tableAttr[1].equalsIgnoreCase("MULTIINDEXTABLE")) {
+                    Table multiIndexTable = new MultiIndexTable();
+                    multiIndexTable.restoreFromDisk("./" + DIRNAME + "/" + tableAttr[0] + ".tlctable");
+                    mTables.put(tableAttr[0], multiIndexTable);
                 } else {
                     System.err.println("Unsupported table type.");
                 }

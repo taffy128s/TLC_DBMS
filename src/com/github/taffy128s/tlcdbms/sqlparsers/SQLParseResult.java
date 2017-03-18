@@ -3,6 +3,7 @@ package com.github.taffy128s.tlcdbms.sqlparsers;
 import com.github.taffy128s.tlcdbms.CommandType;
 import com.github.taffy128s.tlcdbms.DataType;
 import com.github.taffy128s.tlcdbms.DataTypeIdentifier;
+import com.github.taffy128s.tlcdbms.TableStructure;
 
 import java.util.ArrayList;
 
@@ -14,6 +15,7 @@ public class SQLParseResult {
     private String mTablename;
     private ArrayList<String> mAttributeNames;
     private ArrayList<DataType> mAttributeTypes;
+    private ArrayList<TableStructure> mAttributeIndices;
     private ArrayList<String> mBlocks;
     private ArrayList<String> mUpdateOrder;
     private int mPrimaryKeyIndex;
@@ -28,6 +30,7 @@ public class SQLParseResult {
         mTablename = "";
         mAttributeNames = null;
         mAttributeTypes = null;
+        mAttributeIndices = null;
         mBlocks = null;
         mUpdateOrder = null;
         mPrimaryKeyIndex = -1;
@@ -105,6 +108,24 @@ public class SQLParseResult {
      */
     public ArrayList<DataType> getAttributeTypes() {
         return mAttributeTypes;
+    }
+
+    /**
+     * AttributeIndices setter.
+     *
+     * @param attributeIndices a list of table structures.
+     */
+    public void setAttributeIndices(ArrayList<TableStructure> attributeIndices) {
+        mAttributeIndices = attributeIndices;
+    }
+
+    /**
+     * AttributeIndices getter.
+     *
+     * @return a list of table structures.
+     */
+    public ArrayList<TableStructure> getAttributeIndices() {
+        return mAttributeIndices;
     }
 
     /**

@@ -577,7 +577,7 @@ public class BPlusTree<K, V> {
     private BPlusTreeData mFirst;
     private BPlusTreeData mLast;
 
-    private Comparator<? super K> mComparator;
+    private final Comparator<? super K> mComparator;
 
     /**
      * Initialize a b plus tree.

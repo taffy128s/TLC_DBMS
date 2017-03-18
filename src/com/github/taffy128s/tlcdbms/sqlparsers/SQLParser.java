@@ -1,9 +1,6 @@
 package com.github.taffy128s.tlcdbms.sqlparsers;
 
-import com.github.taffy128s.tlcdbms.CommandType;
-import com.github.taffy128s.tlcdbms.DataChecker;
-import com.github.taffy128s.tlcdbms.DataType;
-import com.github.taffy128s.tlcdbms.DataTypeIdentifier;
+import com.github.taffy128s.tlcdbms.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -132,6 +129,7 @@ public class SQLParser {
         }
         ArrayList<String> attributeNames = new ArrayList<>();
         ArrayList<DataType> attributeTypes = new ArrayList<>();
+        ArrayList<TableStructure> attributeIndices = new ArrayList<>();
         int index = 0;
         boolean hasComma = false;
         HashSet<String> attrNameSet = new HashSet<>();
@@ -171,6 +169,24 @@ public class SQLParser {
                     result.setPrimaryKeyIndex(index);
                 }
             }
+            if (checkTokenIgnoreCase("key", false)) {
+                checkTokenIgnoreCase("key", true);
+                if (checkTokenIgnoreCase("bplustree", false)) {
+                    checkTokenIgnoreCase("bplustree", true);
+                    attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
+                } else if (checkTokenIgnoreCase("btree", false)) {
+                    checkTokenIgnoreCase("btree", true);
+                    attributeIndices.add(new TableStructure(index, TableStructType.BTREE));
+                } else if (checkTokenIgnoreCase("rbtree", false)) {
+                    checkTokenIgnoreCase("rbtree", true);
+                    attributeIndices.add(new TableStructure(index, TableStructType.RBTREE));
+                } else if (checkTokenIgnoreCase("hash", false)) {
+                    checkTokenIgnoreCase("hash", true);
+                    attributeIndices.add(new TableStructure(index, TableStructType.HASH));
+                } else {
+                    attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
+                }
+            }
             if (!checkTokenIgnoreCase(",", false)) {
                 break;
             }
@@ -190,8 +206,12 @@ public class SQLParser {
             printErrorMessage("No attributes specified for this new table.", 2, mTokens.get(2).length());
             return null;
         }
+        if (attributeIndices.isEmpty()) {
+            attributeIndices = null;
+        }
         result.setAttributeNames(attributeNames);
         result.setAttributeTypes(attributeTypes);
+        result.setAttributeIndices(attributeIndices);
         return result;
     }
 

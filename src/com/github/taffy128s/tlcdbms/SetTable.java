@@ -40,23 +40,25 @@ public class SetTable extends Table {
     }
 
     @Override
-    public boolean insert(DataRecord dataRecord) {
+    public InsertionResult checkInputData(DataRecord dataRecord) {
         if (mTable.contains(dataRecord)) {
-            System.out.println("Data tuple already exists in table.");
-            return false;
+            return InsertionResult.DUPLICATED_DATA_TUPLE;
         } else if (mPrimaryKey != -1 && dataRecord.get(mPrimaryKey) == null) {
-            System.out.println("Primary key cannot be null.");
-            return false;
+            return InsertionResult.NULL_PRIMARY_KEY;
         } else if (!checkPrimaryKey(dataRecord)) {
-            System.out.println("Primary key " + dataRecord.get(mPrimaryKey) + " already exists in table.");
-            return false;
+            return InsertionResult.DUPLICATED_PRIMARY_KEY;
         } else {
-            mTable.add(dataRecord);
-            if (mPrimaryKey != -1) {
-                mPrimaryTable.add(dataRecord.get(mPrimaryKey));
-            }
-            return true;
+            return InsertionResult.SUCCESS;
         }
+    }
+
+    @Override
+    public boolean insert(DataRecord dataRecord) {
+        mTable.add(dataRecord);
+        if (mPrimaryKey != -1) {
+            mPrimaryTable.add(dataRecord.get(mPrimaryKey));
+        }
+        return true;
     }
 
     @Override

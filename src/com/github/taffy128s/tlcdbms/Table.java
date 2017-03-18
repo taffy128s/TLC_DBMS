@@ -46,8 +46,10 @@ public abstract class Table implements DiskWritable {
         mAttributeNames = attributeNames;
         mAttributeTypes = attributeTypes;
         mPrimaryKey = primaryKey;
-        attributeNames.add(Table.AUTO_PRIMARY_KEY_NAME);
-        attributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
+        if (!attributeNames.get(attributeNames.size() - 1).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
+            attributeNames.add(Table.AUTO_PRIMARY_KEY_NAME);
+            attributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
+        }
     }
 
     /**
@@ -156,9 +158,17 @@ public abstract class Table implements DiskWritable {
     public abstract String getTableType();
 
     /**
+     * Check whether input data record is a valid data tuple in this table.
+     *
+     * @param dataRecord data to check.
+     * @return check result.
+     */
+    public abstract InsertionResult checkInputData(DataRecord dataRecord);
+
+    /**
      * Insert a data record into table.
-     * Assume that data is with valid type.
-     * ** NEED TO CALL setAutoPrimaryKey() BEFORE INSERT INTO TABLE. **
+     * Assume that data is valid, i.e.<br>
+     * <code>checkInputData(dataRecord) == InsertionResult.SUCCESS</code>
      *
      * @param dataRecord data record to be inserted.
      * @return true if succeed, false if failed.

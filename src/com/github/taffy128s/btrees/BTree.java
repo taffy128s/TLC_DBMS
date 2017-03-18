@@ -318,7 +318,7 @@ public class BTree<K, V> {
     private int mSize;
     private BTreeNode mRoot;
 
-    private Comparator<? super K> mComparator;
+    private final Comparator<? super K> mComparator;
 
     /**
      * Initialize a b tree with order given.
