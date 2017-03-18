@@ -12,10 +12,10 @@ Currently support CREATE, INSERT, SHOW, DESC, QUIT, EXIT commands.
 
 CREATE Syntax:
 ```
-CREATE TABLE table_name ( attr[, attr ...] );
+CREATE TABLE table_name(attr[, attr ...]);
 
 attr:
-    attr_name type [(PRIMARY KEY)|KEY [BPLUSTREE|HASH]]
+    attr_name type [(PRIMARY KEY)|(KEY [BPLUSTREE|HASH])]
 
 table_name:
     name_string
