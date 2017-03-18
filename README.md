@@ -15,33 +15,15 @@ CREATE Syntax:
 CREATE TABLE table_name(attr[, attr ...]);
 
 attr:
-    attr_name type [(PRIMARY KEY)|(KEY [BPLUSTREE|HASH])]
+    attr_name type [PRIMARY KEY | KEY [BPLUSTREE | HASH]]
 
-table_name:
-    name_string
-
-attr_name:
-    name_string
-
-name_string:
-    [A-Za-z_][A-Za-z0-9_]*
+type:
+    { INT | VARCHAR(length) }
 ```
 
 INSERT Syntax
 ```
 INSERT INTO table_name[(attr_name[, attr_name ...])] VALUES(data[, data...]);
-
-data:
-    ([+-][0-9]+)|('[[:print:]]*')
-
-table_name:
-    name_string
-
-attr_name:
-    name_string
-
-name_string:
-    [A-Za-z_][A-Za-z0-9_]*
 ```
 
 SHOW Syntax
@@ -49,17 +31,11 @@ SHOW Syntax
 SHOW TABLES;
 or
 SHOW TABLE [FULL] table_name;
-
-table_name:
-    [A-Za-z_][A-Za-z0-9_]*
 ```
 
 DESC syntax
 ```
 DESC [FULL] table_name;
-    
-table_name:
-    [A-Za-z_][A-Za-z0-9_]*
 ```
 
 QUIT Syntax
