@@ -46,10 +46,6 @@ public abstract class Table implements DiskWritable {
         mAttributeNames = attributeNames;
         mAttributeTypes = attributeTypes;
         mPrimaryKey = primaryKey;
-        if (!attributeNames.get(attributeNames.size() - 1).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
-            attributeNames.add(Table.AUTO_PRIMARY_KEY_NAME);
-            attributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
-        }
     }
 
     /**
