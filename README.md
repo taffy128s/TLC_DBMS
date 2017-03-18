@@ -7,8 +7,72 @@ Clone the entire repository and add it into a new Java project. <br />
 ### Prerequisites <br />
 Any computer with Java IDE and JDK 1.7 or higher installed. <br />
 
+## Syntax
+Currently support CREATE, INSERT, SHOW DESC, QUIT, EXIT commands.
+
+CREATE Syntax:
+```
+CREATE TABLE table_name ( attr[, attr ...] );
+
+attr:
+    attr_name type [(PRIMARY KEY)|KEY [BPLUSTREE|HASH]]
+
+table_name:
+    name_string
+
+attr_name:
+    name_string
+
+name_string:
+    [A-Za-z_][A-Za-z0-9_]*
+```
+
+INSERT Syntax
+```
+INSERT INTO table_name[(attr_name[, attr_name ...])] VALUES(data[, data...]);
+
+data:
+    ([+-][0-9]+)|('[[:print:]]*')
+
+table_name:
+    name_string
+
+attr_name:
+    name_string
+
+name_string:
+    [A-Za-z_][A-Za-z0-9_]*
+```
+
+SHOW Syntax
+```
+SHOW TABLES;
+or
+SHOW TABLE [FULL] table_name;
+
+table_name:
+    [A-Za-z_][A-Za-z0-9_]*
+```
+
+DESC syntax
+```
+DESC [FULL] table_name;
+    
+table_name:
+    [A-Za-z_][A-Za-z0-9_]*
+```
+
+QUIT Syntax
+```
+quit;
+```
+
+EXIT Syntax
+```
+exit;
+```
+
 ## Running the tests <br />
-Now we ONLY support CREATE, INSERT, SHOW, DESC, QUIT, EXIT commands. <br />
 Tests can be done through three ways: <br />
 (1) Create a text file filled with SQL commands, and pass the file name to the exported jar by argument. <br />
 (2) Add testcases like the format in any file under directory "test". Then, execute them using JUnit Test. <br />
