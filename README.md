@@ -33,7 +33,7 @@ or
 SHOW TABLE [FULL] table_name [LIMIT length];
 ```
 
-DESC syntax
+DESC Syntax
 ```
 DESC [FULL] table_name;
 ```
