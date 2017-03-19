@@ -9,6 +9,7 @@ Any computer with Java IDE and JDK 1.7 or higher installed. <br />
 
 ## Syntax
 Currently support CREATE, INSERT, SHOW, DESC, QUIT, EXIT commands.
+All keywords(like CREATE, INSERT) are case-insensitive.
 
 CREATE Syntax:
 ```
