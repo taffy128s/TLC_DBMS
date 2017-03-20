@@ -195,7 +195,8 @@ public class DBManager implements DiskWritable {
             }
         }
         if (parameter.getShowRowLimitation() != -1) {
-            allRecords.subList(parameter.getShowRowLimitation(), allRecords.size()).clear();
+            int startIndex = Math.min(parameter.getShowRowLimitation(), allRecords.size());
+            allRecords.subList(startIndex, allRecords.size()).clear();
         }
         printTable(attributeNames, attributeTypes, allRecords, !parameter.getShowFullInfo());
     }
