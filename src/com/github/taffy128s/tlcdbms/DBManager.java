@@ -4,7 +4,6 @@ import com.github.taffy128s.tlcdbms.sqlparsers.SQLParseResult;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Set;
 
