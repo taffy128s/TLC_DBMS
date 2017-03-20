@@ -27,11 +27,18 @@ INSERT Syntax
 INSERT INTO table_name[(attr_name[, attr_name ...])] VALUES(data[, data...]);
 ```
 
+DROP Syntax
+```
+DROP TABLE table_name[, table_name...];
+or
+DROP ALL TABLES;
+```
+
 SHOW Syntax
 ```
 SHOW TABLES;
 or
-SHOW TABLE [FULL] table_name [LIMIT length];
+SHOW TABLE [FULL] table_name [ORDER BY attr_name [ASC | DESC]] [LIMIT length];
 ```
 
 DESC Syntax

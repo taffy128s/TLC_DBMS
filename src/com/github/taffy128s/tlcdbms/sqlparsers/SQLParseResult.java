@@ -1,9 +1,6 @@
 package com.github.taffy128s.tlcdbms.sqlparsers;
 
-import com.github.taffy128s.tlcdbms.CommandType;
-import com.github.taffy128s.tlcdbms.DataType;
-import com.github.taffy128s.tlcdbms.DataTypeIdentifier;
-import com.github.taffy128s.tlcdbms.TableStructure;
+import com.github.taffy128s.tlcdbms.*;
 
 import java.util.ArrayList;
 
@@ -13,6 +10,7 @@ import java.util.ArrayList;
 public class SQLParseResult {
     private CommandType mCommandType;
     private String mTablename;
+    private ArrayList<String> mTablenames;
     private ArrayList<String> mAttributeNames;
     private ArrayList<DataType> mAttributeTypes;
     private ArrayList<TableStructure> mAttributeIndices;
@@ -22,6 +20,7 @@ public class SQLParseResult {
     private int mShowRowLimitation;
     private boolean mCustomOrder;
     private boolean mShowFullInfo;
+    private SortingType mShowSortType;
 
     /**
      * Constructor. Initialize all members.
@@ -29,6 +28,7 @@ public class SQLParseResult {
     public SQLParseResult() {
         mCommandType = CommandType.NONE;
         mTablename = "";
+        mTablenames = null;
         mAttributeNames = null;
         mAttributeTypes = null;
         mAttributeIndices = null;
@@ -38,6 +38,7 @@ public class SQLParseResult {
         mShowRowLimitation = 0;
         mCustomOrder = false;
         mShowFullInfo = false;
+        mShowSortType = SortingType.NONE;
     }
 
     /**
@@ -74,6 +75,24 @@ public class SQLParseResult {
      */
     public String getTablename() {
         return mTablename;
+    }
+
+    /**
+     * Tablenames setter.
+     *
+     * @param tablenames tablenames to set.
+     */
+    public void setTablenames(ArrayList<String> tablenames) {
+        mTablenames = tablenames;
+    }
+
+    /**
+     * Tablenames getter.
+     *
+     * @return a list of tablenames.
+     */
+    public ArrayList<String> getTablenames() {
+        return mTablenames;
     }
 
     /**
@@ -236,6 +255,24 @@ public class SQLParseResult {
      */
     public boolean getShowFullInfo() {
         return mShowFullInfo;
+    }
+
+    /**
+     * ShowSortType setter.
+     *
+     * @param sortType type to set.
+     */
+    public void setShowSortType(SortingType sortType) {
+        mShowSortType = sortType;
+    }
+
+    /**
+     * ShowSortType getter.
+     *
+     * @return sorting type.
+     */
+    public SortingType getShowSortType() {
+        return mShowSortType;
     }
 
     @Override

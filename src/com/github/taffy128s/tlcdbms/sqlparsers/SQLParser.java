@@ -92,6 +92,8 @@ public class SQLParser {
             return parseCreate();
         } else if (command.equalsIgnoreCase("insert")) {
             return parseInsert();
+        } else if (command.equalsIgnoreCase("drop")) {
+            return parseDrop();
         } else if (command.equalsIgnoreCase("show")) {
             return parseShow();
         } else if (command.equalsIgnoreCase("desc")) {
@@ -305,6 +307,61 @@ public class SQLParser {
     }
 
     /**
+     * Parse DROP.
+     *
+     * @return parse result, null if failed.
+     */
+    private SQLParseResult parseDrop() {
+        if (checkTokenIgnoreCase("table", false)) {
+            checkTokenIgnoreCase("table", true);
+            ArrayList<String> tablenames = new ArrayList<>();
+            while (true) {
+                String tablename = getTableName();
+                if (tablename == null) {
+                    return null;
+                }
+                tablenames.add(tablename);
+                if (checkTokenIgnoreCase(",", false)) {
+                    checkTokenIgnoreCase(",", true);
+                } else {
+                    break;
+                }
+            }
+            if (!isEnded()) {
+                printErrorMessage("Unexpected string at the end of line.");
+                return null;
+            }
+            if (tablenames.isEmpty()) {
+                printErrorMessage("No tablenames specified.");
+                return null;
+            }
+            SQLParseResult result = new SQLParseResult();
+            result.setCommandType(CommandType.DROP);
+            result.setTablenames(tablenames);
+            return result;
+        } else if (checkTokenIgnoreCase("all", false)) {
+            checkTokenIgnoreCase("all", true);
+            if (!checkTokenIgnoreCase("tables", true)) {
+                printErrorMessage("Expect keyword TABLES after DROP ALL.");
+                return null;
+            }
+            if (!isEnded()) {
+                printErrorMessage("Unexpected string at the end of line.");
+                return null;
+            }
+            SQLParseResult result = new SQLParseResult();
+            result.setCommandType(CommandType.DROP);
+            result.setTablenames(new ArrayList<>());
+            result.getTablenames().add(null);
+            return result;
+        } else {
+            nextToken(true);
+            printErrorMessage("Keyword TABLE or ALL expected after DROP.");
+            return null;
+        }
+    }
+
+    /**
      * Parse SHOW.
      *
      * @return parse result, null if failed.
@@ -322,6 +379,29 @@ public class SQLParser {
             String tablename = getTableName();
             if (tablename == null) {
                 return null;
+            }
+            ArrayList<String> attributeNames = new ArrayList<>();
+            if (checkTokenIgnoreCase("order", false)) {
+                checkTokenIgnoreCase("order", true);
+                if (!checkTokenIgnoreCase("by", true)) {
+                    printErrorMessage("Expect keyword BY after ORDER.");
+                    return null;
+                }
+                String attributeName = getAttributeName();
+                if (attributeName == null) {
+                    return null;
+                }
+                attributeNames.add(attributeName);
+                if (checkTokenIgnoreCase("asc", false)) {
+                    checkTokenIgnoreCase("asc", true);
+                    result.setShowSortType(SortingType.ASCENDING);
+                } else if (checkTokenIgnoreCase("desc", false)) {
+                    checkTokenIgnoreCase("desc", true);
+                    result.setShowSortType(SortingType.DESCENDING);
+                } else {
+                    result.setShowSortType(SortingType.ASCENDING);
+                }
+                result.setAttributeNames(attributeNames);
             }
             int limitation = -1;
             if (checkTokenIgnoreCase("limit", false)) {

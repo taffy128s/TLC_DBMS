@@ -89,6 +89,9 @@ public class Interpreter {
             case SELECT:
                 manager.select(sqlParseResult);
                 break;
+            case DROP:
+                manager.drop(sqlParseResult);
+                break;
             case SHOW_TABLE_LIST:
                 manager.showTableList(sqlParseResult);
                 break;
