@@ -43,9 +43,9 @@ public class DBManager implements DiskWritable {
         }
         Table newTable;
         if (attributeIndices == null) {
-            newTable = new SetTable(tablename, attributeNames, attributeTypes, primaryKey);
+            newTable = new SetTable(tablename, attributeNames, attributeTypes, primaryKey, -1);
         } else {
-            newTable = new MultiIndexTable(tablename, attributeNames, attributeTypes, attributeIndices, primaryKey);
+            newTable = new MultiIndexTable(tablename, attributeNames, attributeTypes, attributeIndices, primaryKey, -1);
         }
         mTables.put(tablename, newTable);
         System.out.println("Query OK, table '" + tablename + "' created successfully.");
@@ -165,33 +165,17 @@ public class DBManager implements DiskWritable {
         }
         ArrayList<String> attributeNames = mTables.get(tablename).getAttributeNames();
         ArrayList<DataType> attributeTypes = mTables.get(tablename).getAttributeTypes();
-        ArrayList<DataRecord> allRecords = mTables.get(tablename).getAllRecords();
+        ArrayList<DataRecord> allRecords;
         if (parameter.getAttributeNames() != null) {
             String sortAttributeName = parameter.getAttributeNames().get(0);
             final int sortIndex = attributeNames.indexOf(sortAttributeName);
-            final int coefficient = (parameter.getShowSortType() == SortingType.ASCENDING) ? 1 : -1;
             if (sortIndex == -1) {
                 System.out.println("Attribute " + sortAttributeName + " not exists in table " + tablename);
                 return;
             }
-            ArrayList<DataRecord> nullRecords = new ArrayList<>();
-            ArrayList<DataRecord> notNullRecords = new ArrayList<>();
-            for (DataRecord record : allRecords) {
-                if (record.get(sortIndex) == null) {
-                    nullRecords.add(record);
-                } else {
-                    notNullRecords.add(record);
-                }
-            }
-            notNullRecords.sort((o1, o2) -> coefficient * ((Comparable) o1.get(sortIndex)).compareTo(o2.get(sortIndex)));
-            allRecords.clear();
-            if (coefficient == 1) {
-                allRecords.addAll(nullRecords);
-                allRecords.addAll(notNullRecords);
-            } else {
-                allRecords.addAll(notNullRecords);
-                allRecords.addAll(nullRecords);
-            }
+            allRecords = mTables.get(tablename).getAllRecords(sortIndex, parameter.getShowSortType());
+        } else {
+            allRecords = mTables.get(tablename).getAllRecords();
         }
         if (parameter.getShowRowLimitation() != -1) {
             int startIndex = Math.min(parameter.getShowRowLimitation(), allRecords.size());
@@ -229,10 +213,13 @@ public class DBManager implements DiskWritable {
             DataRecord record = new DataRecord();
             record.append(attributeNames.get(i));
             record.append(attributeTypes.get(i));
-            if (i == mTables.get(tablename).getPrimaryKey()) {
+            TableFieldType fieldType = mTables.get(tablename).getFieldType(i);
+            if (fieldType == TableFieldType.PRIMARY_KEY) {
                 record.append("PRI");
             } else if (attributeNames.get(i).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
                 record.append("AUTO_PRI");
+            } else if (fieldType == TableFieldType.KEY) {
+                record.append("KEY");
             } else {
                 record.append("");
             }

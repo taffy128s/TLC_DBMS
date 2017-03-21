@@ -154,6 +154,15 @@ public abstract class Table implements DiskWritable {
     public abstract String getTableType();
 
     /**
+     * Get field key type.
+     * NORMAL(not key), KEY, PRIMARY_KEY.
+     *
+     * @param index index to get.
+     * @return key type.
+     */
+    public abstract TableFieldType getFieldType(int index);
+
+    /**
      * Check whether input data record is a valid data tuple in this table.
      *
      * @param dataRecord data to check.
@@ -187,4 +196,13 @@ public abstract class Table implements DiskWritable {
      * @return an array list of all records.
      */
     public abstract ArrayList<DataRecord> getAllRecords();
+
+    /**
+     * Get all records in the table.
+     * Sorted by column index given in parameter.
+     *
+     * @param sortIndex column (field) index to sort.
+     * @return an array list of all records.
+     */
+    public abstract ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType);
 }

@@ -14,6 +14,7 @@ import java.util.HashSet;
 public class SetTable extends Table {
     private HashSet<DataRecord> mTable;
     private HashSet<Object> mPrimaryTable;
+    private int mKeyIndex;
 
     /**
      * Initialize a SetTable.
@@ -32,11 +33,16 @@ public class SetTable extends Table {
      * @param attributeNames an array list of names.
      * @param attributeTypes an array list of types.
      * @param primaryKey primary key index, -1 if none.
+     * @param keyIndex column index of this table, -1 if none.
      */
-    public SetTable(String tablename, ArrayList<String> attributeNames, ArrayList<DataType> attributeTypes, int primaryKey) {
+    public SetTable(String tablename, ArrayList<String> attributeNames, ArrayList<DataType> attributeTypes, int primaryKey, int keyIndex) {
         super(tablename, attributeNames, attributeTypes, primaryKey);
         mTable = new HashSet<>();
         mPrimaryTable = new HashSet<>();
+        if (keyIndex == -1) {
+            keyIndex = (primaryKey == -1) ? 0 : primaryKey;
+        }
+        mKeyIndex = keyIndex;
     }
 
     @Override
@@ -91,8 +97,42 @@ public class SetTable extends Table {
     }
 
     @Override
+    public ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType) {
+        ArrayList<DataRecord> allRecords = getAllRecords();
+        ArrayList<DataRecord> nullRecords = new ArrayList<>();
+        ArrayList<DataRecord> notNullRecords = new ArrayList<>();
+        for (DataRecord record : allRecords) {
+            if (record.get(sortIndex) == null) {
+                nullRecords.add(record);
+            } else {
+                notNullRecords.add(record);
+            }
+        }
+        final int coefficient = (sortingType == SortingType.ASCENDING) ? 1 : -1;
+        notNullRecords.sort((o1, o2) -> coefficient * ((Comparable) o1.get(sortIndex)).compareTo(o2.get(sortIndex)));
+        allRecords.clear();
+        if (coefficient == 1) {
+            allRecords.addAll(nullRecords);
+            allRecords.addAll(notNullRecords);
+        } else {
+            allRecords.addAll(notNullRecords);
+            allRecords.addAll(nullRecords);
+        }
+        return allRecords;
+    }
+
+    @Override
     public String getTableType() {
         return "SETTABLE";
+    }
+
+    @Override
+    public TableFieldType getFieldType(int index) {
+        if (index == mPrimaryKey) {
+            return TableFieldType.PRIMARY_KEY;
+        } else {
+            return TableFieldType.NORMAL;
+        }
     }
 
     @Override

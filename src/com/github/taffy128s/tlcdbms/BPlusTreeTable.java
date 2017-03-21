@@ -4,6 +4,7 @@ import com.github.taffy128s.btrees.BPlusTree;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * B Plus Tree Table.
@@ -33,13 +34,17 @@ public class BPlusTreeTable extends Table {
      * @param attributeNames a list of attribute names.
      * @param attributeTypes a list of attribute types.
      * @param primaryKey primary key column index.
+     * @param keyIndex column index of this table, -1 if none.
      */
-    public BPlusTreeTable(String tablename, ArrayList<String> attributeNames, ArrayList<DataType> attributeTypes, int primaryKey) {
+    public BPlusTreeTable(String tablename, ArrayList<String> attributeNames, ArrayList<DataType> attributeTypes, int primaryKey, int keyIndex) {
         super(tablename, attributeNames, attributeTypes, primaryKey);
         mTable = new BPlusTree<>(100, 1000);
         mNullTable = new ArrayList<>();
         mIndexDataType = attributeTypes.get(0).getType();
-        mKeyIndex = (primaryKey == -1) ? 0 : primaryKey;
+        if (keyIndex == -1) {
+            keyIndex = (primaryKey == -1) ? 0 : primaryKey;
+        }
+        mKeyIndex = keyIndex;
     }
 
     /**
@@ -88,7 +93,7 @@ public class BPlusTreeTable extends Table {
      * @return true if valid, false otherwise.
      */
     private boolean checkPrimaryKey(DataRecord dataRecord) {
-        return mPrimaryKey == -1 || !mTable.containsKey(dataRecord.get(mPrimaryKey));
+        return mKeyIndex != mPrimaryKey || mPrimaryKey == -1 || !mTable.containsKey(dataRecord.get(mPrimaryKey));
     }
 
     /**
@@ -199,8 +204,52 @@ public class BPlusTreeTable extends Table {
     }
 
     @Override
+    public ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType) {
+        if (sortIndex == mKeyIndex) {
+            ArrayList<DataRecord> allRecords = getAllRecords();
+            if (sortingType == SortingType.DESCENDING) {
+                Collections.reverse(allRecords);
+            }
+            return allRecords;
+        } else {
+            ArrayList<DataRecord> allRecords = getAllRecords();
+            ArrayList<DataRecord> nullRecords = new ArrayList<>();
+            ArrayList<DataRecord> notNullRecords = new ArrayList<>();
+            for (DataRecord record : allRecords) {
+                if (record.get(sortIndex) == null) {
+                    nullRecords.add(record);
+                } else {
+                    notNullRecords.add(record);
+                }
+            }
+            final int coefficient = (sortingType == SortingType.ASCENDING) ? 1 : -1;
+            notNullRecords.sort((o1, o2) -> coefficient * ((Comparable) o1.get(sortIndex)).compareTo(o2.get(sortIndex)));
+            allRecords.clear();
+            if (coefficient == 1) {
+                allRecords.addAll(nullRecords);
+                allRecords.addAll(notNullRecords);
+            } else {
+                allRecords.addAll(notNullRecords);
+                allRecords.addAll(nullRecords);
+            }
+            return allRecords;
+        }
+    }
+
+    @Override
     public String getTableType() {
         return "BPLUSTREETABLE";
+    }
+
+    @Override
+    public TableFieldType getFieldType(int index) {
+        if (index == mPrimaryKey) {
+            return TableFieldType.PRIMARY_KEY;
+        } else if (index == mKeyIndex) {
+            return TableFieldType.KEY;
+        } else {
+            return TableFieldType.NORMAL;
+        }
     }
 
     @Override

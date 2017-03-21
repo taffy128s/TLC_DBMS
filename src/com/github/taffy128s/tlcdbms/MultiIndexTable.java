@@ -2,6 +2,7 @@ package com.github.taffy128s.tlcdbms;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Multi-index table.
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 public class MultiIndexTable extends Table {
     private ArrayList<TableStructure> mIndices;
     private ArrayList<Table> mTables;
+    private int mKeyIndex;
 
     /**
      * Initialize a Multi-index Table.
@@ -29,20 +31,25 @@ public class MultiIndexTable extends Table {
      * @param attrTypes an array list of types.
      * @param attrIndices an array list of index types.
      * @param primaryKey primary key index, -1 if none.
+     * @param keyIndex column index of this table, -1 if none.
      */
-    public MultiIndexTable(String tablename, ArrayList<String> attrNames, ArrayList<DataType> attrTypes, ArrayList<TableStructure> attrIndices, int primaryKey) {
+    public MultiIndexTable(String tablename, ArrayList<String> attrNames, ArrayList<DataType> attrTypes, ArrayList<TableStructure> attrIndices, int primaryKey, int keyIndex) {
         super(tablename, attrNames, attrTypes, primaryKey);
         mIndices = attrIndices;
         mTables = new ArrayList<>();
+        if (keyIndex == -1) {
+            keyIndex = (primaryKey == -1) ? 0 : primaryKey;
+        }
+        mKeyIndex = keyIndex;
         for (int i = 0; i < attrNames.size(); ++i) {
             mTables.add(null);
         }
         for (TableStructure tableStructure : attrIndices) {
             if (tableStructure.getType() == TableStructType.BPLUSTREE) {
-                BPlusTreeTable newTable = new BPlusTreeTable(tablename, attrNames, attrTypes, primaryKey);
+                BPlusTreeTable newTable = new BPlusTreeTable(tablename, attrNames, attrTypes, primaryKey, tableStructure.getIndex());
                 mTables.set(tableStructure.getIndex(), newTable);
             } else if (tableStructure.getType() == TableStructType.HASH) {
-                HashTable newTable = new HashTable(tablename, attrNames, attrTypes, primaryKey);
+                HashTable newTable = new HashTable(tablename, attrNames, attrTypes, primaryKey, tableStructure.getIndex());
                 mTables.set(tableStructure.getIndex(), newTable);
             }
         }
@@ -87,8 +94,52 @@ public class MultiIndexTable extends Table {
     }
 
     @Override
+    public ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType) {
+        if (mTables.get(sortIndex) != null) {
+            ArrayList<DataRecord> allRecords = mTables.get(sortIndex).getAllRecords(sortIndex, sortingType);
+            if (sortingType == SortingType.DESCENDING) {
+                Collections.reverse(allRecords);
+            }
+            return allRecords;
+        } else {
+            ArrayList<DataRecord> allRecords = getAllRecords();
+            ArrayList<DataRecord> nullRecords = new ArrayList<>();
+            ArrayList<DataRecord> notNullRecords = new ArrayList<>();
+            for (DataRecord record : allRecords) {
+                if (record.get(sortIndex) == null) {
+                    nullRecords.add(record);
+                } else {
+                    notNullRecords.add(record);
+                }
+            }
+            final int coefficient = (sortingType == SortingType.ASCENDING) ? 1 : -1;
+            notNullRecords.sort((o1, o2) -> coefficient * ((Comparable) o1.get(sortIndex)).compareTo(o2.get(sortIndex)));
+            allRecords.clear();
+            if (coefficient == 1) {
+                allRecords.addAll(nullRecords);
+                allRecords.addAll(notNullRecords);
+            } else {
+                allRecords.addAll(notNullRecords);
+                allRecords.addAll(nullRecords);
+            }
+            return allRecords;
+        }
+    }
+
+    @Override
     public String getTableType() {
         return "MULTIINDEXTABLE";
+    }
+
+    @Override
+    public TableFieldType getFieldType(int index) {
+        if (index == mPrimaryKey) {
+            return TableFieldType.PRIMARY_KEY;
+        } else if (mTables.get(index) != null) {
+            return TableFieldType.KEY;
+        } else {
+            return TableFieldType.NORMAL;
+        }
     }
 
     @Override
@@ -101,6 +152,7 @@ public class MultiIndexTable extends Table {
                 writer.write(mAttributeNames.get(i) + "\0");
                 writer.write(mAttributeTypes.get(i).getLimit() + "\n");
             }
+            writer.write(mPrimaryKey + "\n");
             writer.write(mIndices.size() + "\n");
             for (TableStructure tableStructure : mIndices) {
                 writer.write(tableStructure.getIndex() + "\0");
@@ -110,7 +162,6 @@ public class MultiIndexTable extends Table {
                     writer.write("HASH\n");
                 }
             }
-            writer.write(mPrimaryKey + "\n");
             ArrayList<DataRecord> dataRecords = getAllRecords();
             writer.write(dataRecords.size() + "\n");
             for (DataRecord record : dataRecords) {
@@ -145,6 +196,7 @@ public class MultiIndexTable extends Table {
             for (int i = 0; i < attrSize; ++i) {
                 mTables.add(null);
             }
+            mPrimaryKey = Integer.parseInt(reader.readLine());
             int indicesSize = Integer.parseInt(reader.readLine());
             for (int i = 0; i < indicesSize; ++i) {
                 String indexString = reader.readLine();
@@ -152,13 +204,12 @@ public class MultiIndexTable extends Table {
                 int columnIndex = Integer.parseInt(options[0]);
                 if (options[1].equalsIgnoreCase("bplustree")) {
                     mIndices.add(new TableStructure(columnIndex, TableStructType.BPLUSTREE));
-                    mTables.set(columnIndex, new BPlusTreeTable(mTablename, mAttributeNames, mAttributeTypes, mPrimaryKey));
+                    mTables.set(columnIndex, new BPlusTreeTable(mTablename, mAttributeNames, mAttributeTypes, mPrimaryKey, columnIndex));
                 } else if (options[1].equalsIgnoreCase("hash")) {
                     mIndices.add(new TableStructure(columnIndex, TableStructType.HASH));
-                    mTables.set(columnIndex, new HashTable(mTablename, mAttributeNames, mAttributeTypes, mPrimaryKey));
+                    mTables.set(columnIndex, new HashTable(mTablename, mAttributeNames, mAttributeTypes, mPrimaryKey, columnIndex));
                 }
             }
-            mPrimaryKey = Integer.parseInt(reader.readLine());
             int recordSize = Integer.parseInt(reader.readLine());
             ArrayList<DataRecord> records = new ArrayList<>();
             while ((input = reader.readLine()) != null) {

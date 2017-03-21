@@ -169,6 +169,7 @@ public class SQLParser {
                     return null;
                 } else {
                     result.setPrimaryKeyIndex(index);
+                    attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
                 }
             }
             if (checkTokenIgnoreCase("key", false)) {
