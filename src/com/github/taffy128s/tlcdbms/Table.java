@@ -382,6 +382,86 @@ public abstract class Table implements DiskWritable {
      */
     public abstract ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType);
 
+    /**
+     * Get union (OR) of two lists.
+     * Set union.
+     *
+     * @param records list 1.
+     * @param another list 2.
+     * @return a list of result
+     */
+    public static ArrayList<DataRecord> union(ArrayList<DataRecord> records, ArrayList<DataRecord> another) {
+        HashSet<DataRecord> recordHashSet = new HashSet<>(records);
+        recordHashSet.addAll(another);
+        ArrayList<DataRecord> result = new ArrayList<>();
+        for (DataRecord record : recordHashSet) {
+            result.add(record);
+        }
+        return result;
+    }
+
+    /**
+     * Get union (OR) of lists given.
+     * Set union.
+     *
+     * @param records lists.
+     * @return a list of result.
+     */
+    public static ArrayList<DataRecord> union(ArrayList<ArrayList<DataRecord>> records) {
+        if (records.isEmpty()) {
+            return new ArrayList<>();
+        }
+        HashSet<DataRecord> recordHashSet = new HashSet<>(records.get(0));
+        for (int i = 1; i < records.size(); ++i) {
+            recordHashSet.addAll(records.get(i));
+        }
+        ArrayList<DataRecord> result = new ArrayList<>();
+        for (DataRecord record : recordHashSet) {
+            result.add(record);
+        }
+        return result;
+    }
+
+    /**
+     * Get intersection (AND) of two lists.
+     * Set intersection.
+     *
+     * @param records list 1.
+     * @param another list 2.
+     * @return a list of result.
+     */
+    public static ArrayList<DataRecord> intersect(ArrayList<DataRecord> records, ArrayList<DataRecord> another) {
+        HashSet<DataRecord> recordHashSet = new HashSet<>(records);
+        ArrayList<DataRecord> result = new ArrayList<>();
+        for (DataRecord record : another) {
+            if (recordHashSet.contains(record)) {
+                result.add(record);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get intersection (AND) of lists given.
+     * Set intersection.
+     *
+     * @param records lists.
+     * @return a list of result.
+     */
+    public static ArrayList<DataRecord> intersect(ArrayList<ArrayList<DataRecord>> records) {
+        if (records.isEmpty()) {
+            return new ArrayList<>();
+        }
+        if (records.size() == 1) {
+            return records.get(0);
+        }
+        ArrayList<DataRecord> result = records.get(0);
+        for (int i = 1; i < records.size(); ++i) {
+            result = intersect(result, records.get(i));
+        }
+        return result;
+    }
+
     @Override
     public String toString() {
         return ("Table " + mTablename) + "\n";
