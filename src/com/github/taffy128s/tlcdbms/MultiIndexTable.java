@@ -89,6 +89,104 @@ public class MultiIndexTable extends Table {
     }
 
     @Override
+    public ArrayList<DataRecord> query(int columnIndex, Object key) {
+        if (mTables.get(columnIndex) != null) {
+            return mTables.get(columnIndex).query(columnIndex, key);
+        } else {
+            for (Table table : mTables) {
+                if (table != null) {
+                    return table.query(columnIndex, key);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryLess(int columnIndex, Object key) {
+        if (mTables.get(columnIndex) != null) {
+            return mTables.get(columnIndex).queryLess(columnIndex, key);
+        } else {
+            for (Table table : mTables) {
+                if (table != null) {
+                    return table.queryLess(columnIndex, key);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryLessEqual(int columnIndex, Object key) {
+        if (mTables.get(columnIndex) != null) {
+            return mTables.get(columnIndex).queryLessEqual(columnIndex, key);
+        } else {
+            for (Table table : mTables) {
+                if (table != null) {
+                    return table.queryLessEqual(columnIndex, key);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryGreater(int columnIndex, Object key) {
+        if (mTables.get(columnIndex) != null) {
+            return mTables.get(columnIndex).queryGreater(columnIndex, key);
+        } else {
+            for (Table table : mTables) {
+                if (table != null) {
+                    return table.queryGreater(columnIndex, key);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryGreaterEqual(int columnIndex, Object key) {
+        if (mTables.get(columnIndex) != null) {
+            return mTables.get(columnIndex).queryGreaterEqual(columnIndex, key);
+        } else {
+            for (Table table : mTables) {
+                if (table != null) {
+                    return table.queryGreaterEqual(columnIndex, key);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryRange(int columnIndex, Object fromKey, Object toKey) {
+        if (mTables.get(columnIndex) != null) {
+            return mTables.get(columnIndex).queryRange(columnIndex, fromKey, toKey);
+        } else {
+            for (Table table : mTables) {
+                if (table != null) {
+                    return table.queryRange(columnIndex, fromKey, toKey);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryRange(int columnIndex, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive) {
+        if (mTables.get(columnIndex) != null) {
+            return mTables.get(columnIndex).queryRange(columnIndex, fromKey, fromInclusive, toKey, toInclusive);
+        } else {
+            for (Table table : mTables) {
+                if (table != null) {
+                    return table.queryRange(columnIndex, fromKey, fromInclusive, toKey, toInclusive);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public ArrayList<DataRecord> getAllRecords() {
         return mTables.get(mIndices.get(0).getIndex()).getAllRecords();
     }

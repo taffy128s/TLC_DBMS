@@ -164,6 +164,52 @@ public class HashTable extends Table {
     }
 
     @Override
+    public ArrayList<DataRecord> query(int columnIndex, Object key) {
+        if (mKeyIndex == columnIndex) {
+            ArrayList<DataRecord> result = new ArrayList<>();
+            if (key == null) {
+                result.addAll(mNullTable);
+                return result;
+            } else {
+                result.addAll(mTable.get(key));
+                return result;
+            }
+        } else {
+            return super.query(columnIndex, key);
+        }
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryLess(int columnIndex, Object key) {
+        return super.queryLess(columnIndex, key);
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryLessEqual(int columnIndex, Object key) {
+        return super.queryLessEqual(columnIndex, key);
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryGreater(int columnIndex, Object key) {
+        return super.queryGreater(columnIndex, key);
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryGreaterEqual(int columnIndex, Object key) {
+        return super.queryGreaterEqual(columnIndex, key);
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryRange(int columnIndex, Object fromKey, Object toKey) {
+        return super.queryRange(columnIndex, fromKey, toKey);
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryRange(int columnIndex, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive) {
+        return super.queryRange(columnIndex, fromKey, fromInclusive, toKey, toInclusive);
+    }
+
+    @Override
     public ArrayList<DataRecord> getAllRecords() {
         ArrayList<DataRecord> allRecord = new ArrayList<>();
         allRecord.addAll(getNullTableRecords());

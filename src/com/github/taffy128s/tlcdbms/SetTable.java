@@ -77,6 +77,41 @@ public class SetTable extends Table {
         return result;
     }
 
+    @Override
+    public ArrayList<DataRecord> query(int columnIndex, Object key) {
+        return super.query(columnIndex, key);
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryLess(int columnIndex, Object key) {
+        return super.queryLess(columnIndex, key);
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryLessEqual(int columnIndex, Object key) {
+        return super.queryLessEqual(columnIndex, key);
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryGreater(int columnIndex, Object key) {
+        return super.queryGreater(columnIndex, key);
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryGreaterEqual(int columnIndex, Object key) {
+        return super.queryGreaterEqual(columnIndex, key);
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryRange(int columnIndex, Object fromKey, Object toKey) {
+        return super.queryRange(columnIndex, fromKey, toKey);
+    }
+
+    @Override
+    public ArrayList<DataRecord> queryRange(int columnIndex, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive) {
+        return super.queryRange(columnIndex, fromKey, fromInclusive, toKey, toInclusive);
+    }
+
     /**
      * Check whether the primary key is already in table.
      *

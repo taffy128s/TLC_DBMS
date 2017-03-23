@@ -134,17 +134,6 @@ public abstract class Table implements DiskWritable {
         return mAttributeTypes;
     }
 
-    @Override
-    public String toString() {
-        return ("Table " + mTablename) + "\n";
-    }
-
-    @Override
-    public abstract boolean writeToDisk(String filename);
-
-    @Override
-    public abstract boolean restoreFromDisk(String filename);
-
     /**
      * Get table type,
      * such as "SETTABLE", "TREETABLE".
@@ -191,6 +180,193 @@ public abstract class Table implements DiskWritable {
     protected abstract boolean insertAll(ArrayList<DataRecord> dataRecords);
 
     /**
+     * Get all data which has the same value as key of specified column index.
+     * (i.e. = ).
+     *
+     * @param columnIndex column (or field) index to check.
+     * @param key key to get.
+     * @return an array list of DataRecords as result.
+     */
+    public ArrayList<DataRecord> query(int columnIndex, Object key) {
+        ArrayList<DataRecord> result = new ArrayList<>();
+        ArrayList<DataRecord> allRecords = getAllRecords();
+        if (key == null) {
+            for (DataRecord record : allRecords) {
+                if (record.get(columnIndex) == null) {
+                    result.add(record);
+                }
+            }
+            return result;
+        }
+        for (DataRecord record : allRecords) {
+            if (key.equals(record.get(columnIndex))) {
+                result.add(record);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get all data which has less value than key of specified column index.
+     * (i.e. < ).
+     *
+     * @param columnIndex column (or field) index to check.
+     * @param key key to get.
+     * @return an array list of DataRecords as result.
+     */
+    public ArrayList<DataRecord> queryLess(int columnIndex, Object key) {
+        if (key == null) {
+            return new ArrayList<>();
+        }
+        ArrayList<DataRecord> allRecords = getAllRecords();
+        ArrayList<DataRecord> result = new ArrayList<>();
+        for (DataRecord record : allRecords) {
+            if (record.get(columnIndex) != null && ((Comparable) record.get(columnIndex)).compareTo(key) < 0) {
+                result.add(record);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get all data which has less or equal value than key of specified column index.
+     * (i.e. <= ).
+     *
+     * @param columnIndex column (or field) index to check.
+     * @param key key to get.
+     * @return an array list of DataRecords as result.
+     */
+    public ArrayList<DataRecord> queryLessEqual(int columnIndex, Object key) {
+        if (key == null) {
+            return new ArrayList<>();
+        }
+        ArrayList<DataRecord> allRecords = getAllRecords();
+        ArrayList<DataRecord> result = new ArrayList<>();
+        for (DataRecord record : allRecords) {
+            if (record.get(columnIndex) != null && ((Comparable) record.get(columnIndex)).compareTo(key) <= 0) {
+                result.add(record);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get all data which has greater value than key of specified column index.
+     * (i.e. > ).
+     *
+     * @param columnIndex column (or field) index to check.
+     * @param key key to get.
+     * @return an array list of DataRecords as result.
+     */
+    public ArrayList<DataRecord> queryGreater(int columnIndex, Object key) {
+        if (key == null) {
+            return new ArrayList<>();
+        }
+        ArrayList<DataRecord> allRecords = getAllRecords();
+        ArrayList<DataRecord> result = new ArrayList<>();
+        for (DataRecord record : allRecords) {
+            if (record.get(columnIndex) != null && ((Comparable) record.get(columnIndex)).compareTo(key) > 0) {
+                result.add(record);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get all data which has greater or equal value than key of specified column index.
+     * (i.e. >= ).
+     *
+     * @param columnIndex column (or field) index to check.
+     * @param key key to get.
+     * @return an array list of DataRecords as result.
+     */
+    public ArrayList<DataRecord> queryGreaterEqual(int columnIndex, Object key) {
+        if (key == null) {
+            return new ArrayList<>();
+        }
+        ArrayList<DataRecord> allRecords = getAllRecords();
+        ArrayList<DataRecord> result = new ArrayList<>();
+        for (DataRecord record : allRecords) {
+            if (record.get(columnIndex) != null && ((Comparable) record.get(columnIndex)).compareTo(key) >= 0) {
+                result.add(record);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get all data which the key of specified column index is in range [fromKey, toKey).
+     *
+     * @param columnIndex column (or field) index to check.
+     * @param fromKey key to start. (lower bound).
+     * @param toKey key to end. (upper bound).
+     * @return an array list of DataRecords as result.
+     */
+    public ArrayList<DataRecord> queryRange(int columnIndex, Object fromKey, Object toKey) {
+        if (fromKey == null || toKey == null) {
+            return new ArrayList<>();
+        }
+        ArrayList<DataRecord> allRecords = getAllRecords();
+        ArrayList<DataRecord> result = new ArrayList<>();
+        for (DataRecord record : allRecords) {
+            if (record.get(columnIndex) == null) {
+                continue;
+            }
+            if (((Comparable) record.get(columnIndex)).compareTo(fromKey) >= 0 &&
+                        ((Comparable) record.get(columnIndex)).compareTo(toKey) < 0) {
+                result.add(record);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get all data which the key of specified column index is in range from fromKey to toKey.
+     * Two boolean parameter to specify whether fromKey and toKey is inclusive or not.
+     *
+     * @param columnIndex column (or field) index to check.
+     * @param fromKey key to start. (lower bound).
+     * @param fromInclusive whether fromKey is inclusive or not.
+     * @param toKey key to end. (upper bound).
+     * @param toInclusive whether toKey is inclusive or not.
+     * @return an array list of DataRecords as result.
+     */
+    public ArrayList<DataRecord> queryRange(int columnIndex, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive) {
+        if (fromKey == null || toKey == null) {
+            return new ArrayList<>();
+        }
+        ArrayList<DataRecord> allRecords = getAllRecords();
+        ArrayList<DataRecord> result = new ArrayList<>();
+        for (DataRecord record : allRecords) {
+            if (record.get(columnIndex) == null) {
+                continue;
+            }
+            int compareToFrom = ((Comparable) record.get(columnIndex)).compareTo(fromKey);
+            int compareToTo = ((Comparable) record.get(columnIndex)).compareTo(toKey);
+            if (fromInclusive) {
+                if (compareToFrom < 0) {
+                    continue;
+                }
+            } else {
+                if (compareToFrom <= 0) {
+                    continue;
+                }
+            }
+            if (toInclusive) {
+                if (compareToTo > 0) {
+                    continue;
+                }
+            } else {
+                if (compareToTo >= 0) {
+                    continue;
+                }
+            }
+            result.add(record);
+        }
+        return result;
+    }
+
+    /**
      * Get all records in the table.
      *
      * @return an array list of all records.
@@ -205,4 +381,15 @@ public abstract class Table implements DiskWritable {
      * @return an array list of all records.
      */
     public abstract ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType);
+
+    @Override
+    public String toString() {
+        return ("Table " + mTablename) + "\n";
+    }
+
+    @Override
+    public abstract boolean writeToDisk(String filename);
+
+    @Override
+    public abstract boolean restoreFromDisk(String filename);
 }
