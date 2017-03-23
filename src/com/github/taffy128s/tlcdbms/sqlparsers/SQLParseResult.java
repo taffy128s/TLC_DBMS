@@ -21,7 +21,10 @@ public class SQLParseResult {
     private boolean mCustomOrder;
     private boolean mShowFullInfo;
     private SortingType mShowSortType;
-
+    private QueryType mQueryType;
+    private ArrayList<String> mTargets;
+    private ArrayList<Condition> mConditions;
+    
     /**
      * Constructor. Initialize all members.
      */
@@ -39,6 +42,9 @@ public class SQLParseResult {
         mCustomOrder = false;
         mShowFullInfo = false;
         mShowSortType = SortingType.NONE;
+        mQueryType = QueryType.NORMAL;
+        mTargets = null;
+        mConditions = null;
     }
 
     /**
@@ -275,7 +281,31 @@ public class SQLParseResult {
         return mShowSortType;
     }
 
-    @Override
+    public QueryType getQueryType() {
+		return mQueryType;
+	}
+
+	public void setQueryType(QueryType mQueryType) {
+		this.mQueryType = mQueryType;
+	}
+
+	public ArrayList<String> getTargets() {
+		return mTargets;
+	}
+
+	public void setTargets(ArrayList<String> mTargets) {
+		this.mTargets = mTargets;
+	}
+
+	public ArrayList<Condition> getConditions() {
+		return mConditions;
+	}
+
+	public void setConditions(ArrayList<Condition> mConditions) {
+		this.mConditions = mConditions;
+	}
+
+	@Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         if (mCommandType == CommandType.CREATE) {
