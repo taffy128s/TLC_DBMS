@@ -3,6 +3,7 @@ package com.github.taffy128s.tlcdbms.sqlparsers;
 import com.github.taffy128s.tlcdbms.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -108,6 +109,102 @@ public class SQLParser {
         }
     }
 
+    private SQLParseResult parseSelect() {
+        SQLParseResult result = new SQLParseResult();
+        result.setCommandType(CommandType.SELECT);
+        if (checkTokenIgnoreCase("sum", false)) {
+            nextToken(true);
+            if (!checkTokenIgnoreCase("(", true)) {
+                printErrorMessage("Missing left parenthesis.");
+                return null;
+            } 
+            String attributeName = getAttributeName();
+            if (attributeName == null) {
+                return null;
+            }
+            if (!checkTokenIgnoreCase(")", true)) {
+                printErrorMessage("Missing right parenthesis.");
+                return null;
+            }
+        } else if (checkTokenIgnoreCase("count", false)) {
+            nextToken(true);
+            if (!checkTokenIgnoreCase("(", true)) {
+                printErrorMessage("Missing left parenthesis");
+                return null;
+            }
+            if (checkTokenIgnoreCase("*", false)) {
+                nextToken(true);
+            } else {
+                String attributeName = getAttributeName();
+                if (attributeName == null) {
+                    return null;
+                }
+            }
+            if (checkTokenIgnoreCase(")", true)) {
+                printErrorMessage("Missing right parenthesis");
+                return null;
+            }
+        } else if (checkTokenIgnoreCase("*", false)) {
+            nextToken(true);
+        } else {
+            ArrayList<String> attrNames = new ArrayList<>();
+            String attrName = getAttributeName();
+            if (attrName == null) {
+                return null;
+            }
+            attrNames.add(attrName);
+            while (checkTokenIgnoreCase(",", false)) {
+                nextToken(true);
+                attrName = getAttributeName();
+                if (attrName == null) {
+                    return null;
+                }
+            }
+        }
+        if (!checkTokenIgnoreCase("from", true)) {
+            printErrorMessage("Expect keyword FROM after query type.");
+            return null;
+        }
+        ArrayList<String> tableNameList = new ArrayList<>();
+        HashMap<String, String> tableNameMap = new HashMap<>();
+        String tableName, alias;
+        tableName = getTableName();
+        if (tableName == null) {
+            return null;
+        }
+        tableNameList.add(tableName);
+        if (checkTokenIgnoreCase("as", false)) {
+            nextToken(true);
+            alias = getAttributeName();
+            if (alias == null) {
+                return null;
+            }
+            tableNameMap.put(tableName, alias);
+        }
+        while (checkTokenIgnoreCase(",", false)) {
+            nextToken(true);
+            tableName = getTableName();
+            if (tableName == null) {
+                return null;
+            }
+            tableNameList.add(tableName);
+            if (checkTokenIgnoreCase("as", false)) {
+                nextToken(true);
+                alias = getAttributeName();
+                if (alias == null) {
+                    return null;
+                }
+                tableNameMap.put(tableName, alias);
+            }
+        }
+        if (!checkTokenIgnoreCase("where", true)) {
+            printErrorMessage("Expect keyword WHERE after table list.");
+            return null;
+        }
+        
+        return result;
+    }
+    
     /**
      * Parse CREATE.
      *
@@ -499,19 +596,6 @@ public class SQLParser {
     }
 
     /**
-     * Get current token.
-     *
-     * @return current token string, "" if failed.
-     */
-    private String currentToken() {
-        if (mIndex >= 0 && mIndex < mTokens.size()) {
-            return mTokens.get(mIndex);
-        } else {
-            return "";
-        }
-    }
-
-    /**
      * Get next token.
      *
      * @param increment true to increase mIndex.
@@ -781,10 +865,20 @@ public class SQLParser {
                     preProcessCommand += "\0";
                     break;
                 case '<':
-                    preProcessCommand += "\0<\0";
+                    if (i + 1 < mCommand.length()) {
+                        if (mCommand.charAt(i + 1) == '>' || mCommand.charAt(i + 1) == '=') {
+                            preProcessCommand += "\0<" + mCommand.charAt(i + 1) + "\0";
+                            i++;
+                        } else preProcessCommand += "\0<\0";
+                    } else preProcessCommand += "\0<\0";
                     break;
                 case '>':
-                    preProcessCommand += "\0>\0";
+                    if (i + 1 < mCommand.length()) {
+                        if (mCommand.charAt(i + 1) == '=') {
+                            preProcessCommand += "\0>" + mCommand.charAt(i + 1) + "\0";
+                            i++;
+                        } else preProcessCommand += "\0>\0";
+                    } else preProcessCommand += "\0>\0";
                     break;
                 case '=':
                     preProcessCommand += "\0=\0";
