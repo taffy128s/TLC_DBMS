@@ -1,6 +1,6 @@
 package com.github.taffy128s.tlcdbms;
 
-public enum BinaryOperation {
+public enum BinaryOperator {
 	GREATER_THAN,
 	GREATER_EQUAL,
 	LESS_THAN,

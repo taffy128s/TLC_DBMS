@@ -5,8 +5,12 @@ public class Condition {
 	private String mLeftValue;
 	private String mRightTableName;
 	private String mRightValue;
-	private BinaryOperation mOperator;
-	public Condition(String leftTableName, String leftValue, String rightTableName, String rightValue, BinaryOperation operator) {
+	private BinaryOperator mOperator;
+	private Boolean mLeftConstant;
+	private Boolean mRightConstant;
+	public Condition(Boolean leftConstant, String leftTableName, String leftValue, Boolean rightConstant, String rightTableName, String rightValue, BinaryOperator operator) {
+		mLeftConstant = leftConstant;
+		mRightConstant = rightConstant;
 		mLeftTableName = leftTableName;
 		mLeftValue = leftValue;
 		mRightTableName = rightTableName;
@@ -25,7 +29,7 @@ public class Condition {
 	public String getRightValue() {
 		return mRightValue;
 	}
-	public BinaryOperation getOperator() {
+	public BinaryOperator getOperator() {
 		return mOperator;
 	}
 	
