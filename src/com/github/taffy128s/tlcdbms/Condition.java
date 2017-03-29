@@ -40,6 +40,34 @@ public class Condition {
 		return mOperator;
 	}
 	
-	
+	public String toString() {
+	    StringBuilder stringBuilder = new StringBuilder();
+	    stringBuilder.append(mLeftConstant).append(" ");
+	    stringBuilder.append(mLeftTableName).append(" ");
+	    stringBuilder.append(mLeftAttribute).append(" | ");
+	    stringBuilder.append(mRightConstant).append(" ");
+	    stringBuilder.append(mRightTableName).append(" ");
+	    stringBuilder.append(mRightAttribute).append(" ...");
+	    if (mOperator == BinaryOperator.AND) {
+	        stringBuilder.append("AND");
+	    } else if (mOperator == BinaryOperator.OR) {
+	        stringBuilder.append("OR");
+	    } else if (mOperator == BinaryOperator.GREATER_EQUAL) {
+	        stringBuilder.append(">=");
+	    } else if (mOperator == BinaryOperator.GREATER_THAN) {
+	        stringBuilder.append(">");
+	    } else if (mOperator == BinaryOperator.LESS_EQUAL) {
+	        stringBuilder.append("<=");
+	    } else if (mOperator == BinaryOperator.LESS_THAN) {
+	        stringBuilder.append("<");
+	    } else if (mOperator == BinaryOperator.EQUAL) {
+	        stringBuilder.append("=");
+	    } else if (mOperator == BinaryOperator.NOT_EQUAL) {
+	        stringBuilder.append("<>");
+	    } else {
+	        stringBuilder.append("unknown operator");
+	    }
+	    return stringBuilder.toString();
+	}
 	
 }

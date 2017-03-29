@@ -337,19 +337,19 @@ public class SQLParser {
     }
     
     private BinaryOperator toBinaryOperator(String input) {
-        if (input.equals(">=")) {
+        if (input.equalsIgnoreCase(">=")) {
             return BinaryOperator.GREATER_EQUAL;
-        } else if (input.equals(">")) {
+        } else if (input.equalsIgnoreCase(">")) {
             return BinaryOperator.GREATER_THAN;
-        } else if (input.equals("<")) {
+        } else if (input.equalsIgnoreCase("<")) {
             return BinaryOperator.LESS_THAN;
-        } else if (input.equals("<=")) {
+        } else if (input.equalsIgnoreCase("<=")) {
             return BinaryOperator.LESS_EQUAL;
-        } else if (input.equals("<>")) {
+        } else if (input.equalsIgnoreCase("<>")) {
             return BinaryOperator.NOT_EQUAL;
-        } else if (input.equals("=")) {
+        } else if (input.equalsIgnoreCase("=")) {
             return BinaryOperator.EQUAL;
-        } else if (input.equals("AND")) {
+        } else if (input.equalsIgnoreCase("AND")) {
             return BinaryOperator.AND;
         } else {
             return BinaryOperator.OR;

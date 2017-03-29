@@ -37,6 +37,9 @@ public class Interpreter {
         try {
             while ((temp = reader.read()) != -1) {
                 char c = (char) temp;
+                if (printOnce && !(c == '\t' || c == '\n' || c == '\r' || c == ' ')) {
+                    printOnce = false;
+                }
                 if (c == ';') {
                     singleIns = noSpaceAtBeginning(singleIns);
                     if (!singleIns.equals("")) {
@@ -88,6 +91,7 @@ public class Interpreter {
                 break;
             case SELECT:
                 //manager.select(sqlParseResult);
+                System.out.println(sqlParseResult);
                 break;
             case DROP:
                 manager.drop(sqlParseResult);

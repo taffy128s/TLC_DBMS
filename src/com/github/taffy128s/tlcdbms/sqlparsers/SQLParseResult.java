@@ -326,7 +326,7 @@ public class SQLParseResult {
             }
             stringBuilder.append("\n");
             stringBuilder.append("PRIMARY KEY INDEX " + mPrimaryKeyIndex + "\n");
-        } else {
+        } else if (mCommandType == CommandType.INSERT) {
             stringBuilder.append("INSERT\n");
             stringBuilder.append("Table ").append(mTablename).append("\n");
             stringBuilder.append("Block content\n");
@@ -340,6 +340,32 @@ public class SQLParseResult {
                     stringBuilder.append(attrName).append(" ");
                 }
                 stringBuilder.append("\n");
+            }
+        } else if (mCommandType == CommandType.SELECT) {
+            stringBuilder.append("SELECT\n");
+            stringBuilder.append("Query type: ");
+            if (mQueryType == QueryType.COUNT) {
+                stringBuilder.append("COUNT").append("\n");
+            } else if (mQueryType == QueryType.SUM) {
+                stringBuilder.append("SUM").append("\n");
+            } else if (mQueryType == QueryType.NORMAL) {
+                stringBuilder.append("NORMAL").append("\n");
+            }
+            stringBuilder.append("Targets:\n");
+            for (String target : mTargets) {
+                stringBuilder.append("  ").append(target).append("\n");
+            }
+            stringBuilder.append("Table names:\n");
+            for (String tableName : mTablenames) {
+                stringBuilder.append("  ").append(tableName).append("\n");
+            }
+            stringBuilder.append("Conditions:\n");
+            if (mConditions == null) {
+                stringBuilder.append("  ").append("No 'WHERE'").append("\n");
+            } else {
+                for (Condition condition : mConditions) {
+                    stringBuilder.append("  ").append(condition).append("\n");
+                }
             }
         }
         return stringBuilder.toString();
