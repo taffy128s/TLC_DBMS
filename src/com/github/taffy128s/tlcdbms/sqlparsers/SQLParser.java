@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import javax.management.Attribute;
+
 /**
  * SQL parser for this project.
  */
@@ -117,8 +119,8 @@ public class SQLParser {
             if (!checkTokenIgnoreCase("(", true)) {
                 printErrorMessage("Missing left parenthesis.");
                 return null;
-            } 
-            String attributeName = getAttributeName();
+            }
+            String attributeName = getAttributeNameWithPossibleDot();
             if (attributeName == null) {
                 return null;
             }
@@ -126,16 +128,21 @@ public class SQLParser {
                 printErrorMessage("Missing right parenthesis.");
                 return null;
             }
+            result.setQueryType(QueryType.SUM);
+            ArrayList<String> targets = new ArrayList<>();
+            targets.add(attributeName);
         } else if (checkTokenIgnoreCase("count", false)) {
             nextToken(true);
             if (!checkTokenIgnoreCase("(", true)) {
                 printErrorMessage("Missing left parenthesis");
                 return null;
             }
+            String attributeName;
             if (checkTokenIgnoreCase("*", false)) {
                 nextToken(true);
+                attributeName = "*";
             } else {
-                String attributeName = getAttributeName();
+                attributeName = getAttributeNameWithPossibleDot();
                 if (attributeName == null) {
                     return null;
                 }
@@ -144,22 +151,30 @@ public class SQLParser {
                 printErrorMessage("Missing right parenthesis");
                 return null;
             }
+            result.setQueryType(QueryType.COUNT);
+            ArrayList<String> targets = new ArrayList<>();
+            targets.add(attributeName);
         } else if (checkTokenIgnoreCase("*", false)) {
             nextToken(true);
+            result.setQueryType(QueryType.NORMAL);
+            ArrayList<String> targets = new ArrayList<>();
+            targets.add("*");
         } else {
-            ArrayList<String> attrNames = new ArrayList<>();
-            String attrName = getAttributeName();
+            ArrayList<String> targets = new ArrayList<>();
+            String attrName = getAttributeNameWithPossibleDot();
             if (attrName == null) {
                 return null;
             }
-            attrNames.add(attrName);
+            targets.add(attrName);
             while (checkTokenIgnoreCase(",", false)) {
                 nextToken(true);
-                attrName = getAttributeName();
+                attrName = getAttributeNameWithPossibleDot();
                 if (attrName == null) {
                     return null;
                 }
             }
+            result.setQueryType(QueryType.NORMAL);
+            //TODO: replace prefix using map...
         }
         if (!checkTokenIgnoreCase("from", true)) {
             printErrorMessage("Expect keyword FROM after query type.");
@@ -167,42 +182,72 @@ public class SQLParser {
         }
         ArrayList<String> tableNameList = new ArrayList<>();
         HashMap<String, String> tableNameMap = new HashMap<>();
+        if (!getTableNameAndAlias(tableNameList, tableNameMap)) {
+            return null;
+        }
+        while (checkTokenIgnoreCase(",", false)) {
+            nextToken(true);
+            if (!getTableNameAndAlias(tableNameList, tableNameMap)) {
+                return null;
+            }
+        }
+        if (!checkTokenIgnoreCase("where", false)) {
+            if (isEnded()) {
+                
+            } else {
+                printErrorMessage("Expect keyword WHERE after table list.");
+                return null;
+            }
+        } else {
+            nextToken(true);
+            
+        }
+        return result;
+    }
+    
+    private String getAttributeNameWithPossibleDot() {
+        String name = nextToken(true);
+        if (!name.matches("[a-zA-Z_][0-9a-zA-Z_]*") 
+                && !name.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")) {
+            printErrorMessage("Invalid target name '" + name + "'.");
+            return null;
+        } else if (SQLKeyWords.isSQLKeyword(name)) {
+            printErrorMessage("Invalid target name '" + name + "'.");
+            return null;
+        } else {
+            return name;
+        }
+    }
+    
+    private boolean getTableNameAndAlias(ArrayList<String> tableNameList, HashMap<String, String> tableNameMap) {
         String tableName, alias;
         tableName = getTableName();
         if (tableName == null) {
-            return null;
+            return false;
         }
         tableNameList.add(tableName);
         if (checkTokenIgnoreCase("as", false)) {
             nextToken(true);
-            alias = getAttributeName();
+            alias = getAliasName();
             if (alias == null) {
-                return null;
+                return false;
             }
             tableNameMap.put(tableName, alias);
         }
-        while (checkTokenIgnoreCase(",", false)) {
-            nextToken(true);
-            tableName = getTableName();
-            if (tableName == null) {
-                return null;
-            }
-            tableNameList.add(tableName);
-            if (checkTokenIgnoreCase("as", false)) {
-                nextToken(true);
-                alias = getAttributeName();
-                if (alias == null) {
-                    return null;
-                }
-                tableNameMap.put(tableName, alias);
-            }
-        }
-        if (!checkTokenIgnoreCase("where", true)) {
-            printErrorMessage("Expect keyword WHERE after table list.");
+        return true;
+    }
+    
+    private String getAliasName() {
+        String name = nextToken(true);
+        if (!name.matches("[a-zA-Z_][0-9a-zA-Z_]*")) {
+            printErrorMessage("Invalid alias '" + name + "'.");
             return null;
+        } else if (SQLKeyWords.isSQLKeyword(name)) {
+            printErrorMessage("Invalid alias '" + name + "'.");
+            return null;
+        } else {
+            return name;
         }
-        
-        return result;
     }
     
     /**
