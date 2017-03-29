@@ -93,36 +93,69 @@ public class DBManager implements DiskWritable {
         	}
         }
         for (Condition condition : parameter.getConditions()) {
+        	if (condition.getOperator() != null) {
+        		continue;
+        	}
         	DataTypeIdentifier leftType = null;
         	DataTypeIdentifier rightType = null;
         	if (condition.getLeftConstant() == null) {
-        		if (!mTables.containsKey(condition.getLeftTableName())) {
-        			System.out.println("Table '" + condition.getLeftTableName() + "' doesn't exist.");
-        			return;
+        		if (condition.getLeftTableName() == null) {
+	        		int notFound = 0;
+        			for (String tableName : parameter.getTablenames()) {
+        				if (!mTables.get(tableName).getAttributeNames().contains(condition.getLeftAttribute())) {
+        					notFound++;
+        				}
+        			}
+        			if (notFound == parameter.getTablenames().size()) {
+        				System.out.println("Attribute '" + condition.getLeftAttribute() + "' don't exist in any tables.");
+        				return;
+        			}
+        			// redefine condition ????
         		}
-        		if (!mTables.get(condition.getLeftTableName()).getAttributeNames().contains(condition.getLeftAttribute())) {
-        			System.out.println("Attribute '" + condition.getLeftAttribute() + "' of Table " + 
-        							condition.getLeftTableName() + " doesn't exist.");
-        			return;
+        		else {
+        			if (!mTables.containsKey(condition.getLeftTableName())) {
+	        			System.out.println("Table '" + condition.getLeftTableName() + "' doesn't exist.");
+	        			return;
+	        		}
+	        		if (!mTables.get(condition.getLeftTableName()).getAttributeNames().contains(condition.getLeftAttribute())) {
+	        			System.out.println("Attribute '" + condition.getLeftAttribute() + "' of Table " + 
+	        							condition.getLeftTableName() + " doesn't exist.");
+	        			return;
+	        		}
+	        		leftType = mTables.get(condition.getLeftTableName()).getAttributeTypes().get(
+	        				mTables.get(condition.getLeftTableName()).getAttributeNames().indexOf(condition.getLeftAttribute())).getType();
         		}
-        		leftType = mTables.get(condition.getLeftTableName()).getAttributeTypes().get(
-        				mTables.get(condition.getLeftTableName()).getAttributeNames().indexOf(condition.getLeftAttribute())).getType();
         	}
         	else {
         		leftType = (new DataChecker().isValidInteger(condition.getLeftConstant())) ? DataTypeIdentifier.INT : DataTypeIdentifier.VARCHAR;
         	}
         	if (condition.getRightConstant() == null) {
-        		if (!mTables.containsKey(condition.getRightTableName())) {
-        			System.out.println("Table '" + condition.getRightTableName() + "' doesn't exist.");
-        			return;
+        		if (condition.getRightTableName() == null) {
+        			int notFound = 0;
+        			for (String tableName : parameter.getTablenames()) {
+        				if (!mTables.get(tableName).getAttributeNames().contains(condition.getRightAttribute())) {
+        					notFound++;
+        				}
+        			}
+        			if (notFound == parameter.getTablenames().size()) {
+        				System.out.println("Attribute '" + condition.getRightAttribute() + "' don't exist in any tables.");
+        				return;
+        			}
+        			// redefine again ?????
         		}
-        		if (!mTables.get(condition.getRightTableName()).getAttributeNames().contains(condition.getRightAttribute())) {
-        			System.out.println("Attribute '" + condition.getRightAttribute() + "' of Table" +
-        							condition.getRightTableName() + " doesn't exist.");
-        			return;
+        		else {
+        			if (!mTables.containsKey(condition.getRightTableName())) {
+            			System.out.println("Table '" + condition.getRightTableName() + "' doesn't exist.");
+            			return;
+            		}
+            		if (!mTables.get(condition.getRightTableName()).getAttributeNames().contains(condition.getRightAttribute())) {
+            			System.out.println("Attribute '" + condition.getRightAttribute() + "' of Table" +
+            							condition.getRightTableName() + " doesn't exist.");
+            			return;
+            		}
+            		rightType = mTables.get(condition.getRightTableName()).getAttributeTypes().get(
+            				mTables.get(condition.getLeftTableName()).getAttributeNames().indexOf(condition.getRightAttribute())).getType();
         		}
-        		rightType = mTables.get(condition.getRightTableName()).getAttributeTypes().get(
-        				mTables.get(condition.getLeftTableName()).getAttributeNames().indexOf(condition.getRightAttribute())).getType();
         	}
         	else {
         		rightType = (new DataChecker().isValidInteger(condition.getRightConstant())) ? DataTypeIdentifier.INT : DataTypeIdentifier.VARCHAR;
