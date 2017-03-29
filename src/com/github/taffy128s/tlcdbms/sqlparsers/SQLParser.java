@@ -196,20 +196,21 @@ public class SQLParser {
         }
         result.setTargets(targets);
         result.setTablenames(tableNameList);
-        if (!checkTokenIgnoreCase("where", true)) {
+        if (!checkTokenIgnoreCase("where", false)) {
             if (isEnded()) {
                 return result;
             } else {
-                printErrorMessage("Expect keyword WHERE after table list.");
+                System.out.println("Expect keyword WHERE after table list.");
                 return null;
             }
         } else {
+            nextToken(true);
             Condition conLeft, conRight, opCon;
             conLeft = getCondition(tableNameList, aliasMap);
             if (conLeft == null) {
                 return null;
             }
-            String operand = nextToken(true);
+            String operand = nextToken(false);
             if (!operand.equalsIgnoreCase("AND") && !operand.equalsIgnoreCase("OR")) {
                 if (isEnded()) {
                     ArrayList<Condition> conditions = new ArrayList<>();
@@ -217,13 +218,18 @@ public class SQLParser {
                     result.setConditions(conditions);
                     return result;
                 } else {
-                    printErrorMessage("Expect keyword AND/OR after statement.");
+                    System.out.println("Expect keyword AND/OR after statement.");
                     return null;
                 }
             } else {
+                nextToken(true);
                 opCon = new Condition(null, null, null, null, null, null, toBinaryOperator(operand));
                 conRight = getCondition(tableNameList, aliasMap);
                 if (conRight == null) {
+                    return null;
+                }
+                if (!isEnded()) {
+                    System.out.println("Unexpected strings at end of line.");
                     return null;
                 }
                 ArrayList<Condition> conditions = new ArrayList<>();
@@ -387,7 +393,6 @@ public class SQLParser {
                 }
             }
         } else {
-            System.out.println("splits length: " + splits.length);
             System.out.println("Multiple dots near: " + input);
             return null;
         }
