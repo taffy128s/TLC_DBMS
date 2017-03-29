@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import javax.management.Attribute;
-
 /**
  * SQL parser for this project.
  */
@@ -105,6 +103,8 @@ public class SQLParser {
             return parseQuit();
         } else if (command.equalsIgnoreCase("exit")) {
             return parseExit();
+        } else if (command.equalsIgnoreCase("select")) {
+            return parseSelect();
         } else {
             printErrorMessage("Unexpected command '" + command + "'.");
             return null;
@@ -114,13 +114,14 @@ public class SQLParser {
     private SQLParseResult parseSelect() {
         SQLParseResult result = new SQLParseResult();
         result.setCommandType(CommandType.SELECT);
+        ArrayList<String> targets = new ArrayList<>();
         if (checkTokenIgnoreCase("sum", false)) {
             nextToken(true);
             if (!checkTokenIgnoreCase("(", true)) {
                 printErrorMessage("Missing left parenthesis.");
                 return null;
             }
-            String attributeName = getAttributeNameWithPossibleDot();
+            String attributeName = getAttrNameWithPossibleDot();
             if (attributeName == null) {
                 return null;
             }
@@ -129,7 +130,6 @@ public class SQLParser {
                 return null;
             }
             result.setQueryType(QueryType.SUM);
-            ArrayList<String> targets = new ArrayList<>();
             targets.add(attributeName);
         } else if (checkTokenIgnoreCase("count", false)) {
             nextToken(true);
@@ -142,7 +142,7 @@ public class SQLParser {
                 nextToken(true);
                 attributeName = "*";
             } else {
-                attributeName = getAttributeNameWithPossibleDot();
+                attributeName = getAttrNameWithPossibleDot();
                 if (attributeName == null) {
                     return null;
                 }
@@ -152,60 +152,248 @@ public class SQLParser {
                 return null;
             }
             result.setQueryType(QueryType.COUNT);
-            ArrayList<String> targets = new ArrayList<>();
             targets.add(attributeName);
         } else if (checkTokenIgnoreCase("*", false)) {
             nextToken(true);
             result.setQueryType(QueryType.NORMAL);
-            ArrayList<String> targets = new ArrayList<>();
             targets.add("*");
         } else {
-            ArrayList<String> targets = new ArrayList<>();
-            String attrName = getAttributeNameWithPossibleDot();
+            String attrName = getAttrNameWithPossibleDot();
             if (attrName == null) {
                 return null;
             }
             targets.add(attrName);
             while (checkTokenIgnoreCase(",", false)) {
                 nextToken(true);
-                attrName = getAttributeNameWithPossibleDot();
+                attrName = getAttrNameWithPossibleDot();
                 if (attrName == null) {
                     return null;
                 }
+                targets.add(attrName);
             }
             result.setQueryType(QueryType.NORMAL);
-            //TODO: replace prefix using map...
         }
         if (!checkTokenIgnoreCase("from", true)) {
             printErrorMessage("Expect keyword FROM after query type.");
             return null;
         }
         ArrayList<String> tableNameList = new ArrayList<>();
-        HashMap<String, String> tableNameMap = new HashMap<>();
-        if (!getTableNameAndAlias(tableNameList, tableNameMap)) {
+        HashMap<String, String> aliasMap = new HashMap<>();
+        if (!getTableNameAndAlias(tableNameList, aliasMap)) {
             return null;
         }
         while (checkTokenIgnoreCase(",", false)) {
             nextToken(true);
-            if (!getTableNameAndAlias(tableNameList, tableNameMap)) {
+            if (!getTableNameAndAlias(tableNameList, aliasMap)) {
                 return null;
             }
         }
-        if (!checkTokenIgnoreCase("where", false)) {
+        for (int i = 0; i < targets.size(); i++) {
+            targets.set(i, handlePrefixUsingMap(targets.get(i), tableNameList, aliasMap));
+            if (targets.get(i) == null) {
+                return null;
+            }
+        }
+        result.setTargets(targets);
+        result.setTablenames(tableNameList);
+        if (!checkTokenIgnoreCase("where", true)) {
             if (isEnded()) {
-                
+                return result;
             } else {
                 printErrorMessage("Expect keyword WHERE after table list.");
                 return null;
             }
         } else {
-            nextToken(true);
-            
+            Condition conLeft, conRight, opCon;
+            conLeft = getCondition(tableNameList, aliasMap);
+            if (conLeft == null) {
+                return null;
+            }
+            String operand = nextToken(true);
+            if (!operand.equalsIgnoreCase("AND") && !operand.equalsIgnoreCase("OR")) {
+                if (isEnded()) {
+                    ArrayList<Condition> conditions = new ArrayList<>();
+                    conditions.add(conLeft);
+                    result.setConditions(conditions);
+                    return result;
+                } else {
+                    printErrorMessage("Expect keyword AND/OR after statement.");
+                    return null;
+                }
+            } else {
+                opCon = new Condition(null, null, null, null, null, null, toBinaryOperator(operand));
+                conRight = getCondition(tableNameList, aliasMap);
+                if (conRight == null) {
+                    return null;
+                }
+                ArrayList<Condition> conditions = new ArrayList<>();
+                conditions.add(conLeft);
+                conditions.add(conRight);
+                conditions.add(opCon);
+                result.setConditions(conditions);
+                return result;
+            }
         }
-        return result;
     }
     
-    private String getAttributeNameWithPossibleDot() {
+    private Condition getCondition(ArrayList<String> tableNameList, HashMap<String, String> aliasMap) {
+        String leftOperand, rightOperand, operator;
+        leftOperand = nextToken(true);
+        operator = nextToken(true);
+        rightOperand = nextToken(true);
+        if (!isValidOp(operator)) {
+            System.out.println("Invalid operand: "
+                    + leftOperand + " " + operator + " " + rightOperand);
+            return null;
+        }
+        if (isCompareOp(operator)) {
+            if (DataChecker.isValidQuotedVarChar(leftOperand)
+                    || DataChecker.isValidQuotedVarChar(rightOperand)) {
+                System.out.println("Invalid statement: "
+                        + leftOperand + " " + operator + " " + rightOperand);
+                return null;
+            }
+        }
+        if (DataChecker.isValidInteger(leftOperand) || DataChecker.isValidQuotedVarChar(leftOperand)) {
+            if (DataChecker.isValidInteger(rightOperand) || DataChecker.isValidQuotedVarChar(rightOperand)) {
+                Condition retCon = new Condition(leftOperand, null, null, rightOperand, null, null, toBinaryOperator(operator));
+                return retCon;
+            } else if (rightOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*")
+                    || rightOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")) {
+                rightOperand = handlePrefixUsingMap(rightOperand, tableNameList, aliasMap);
+                if (rightOperand == null) {
+                    return null;
+                }
+                String[] splits = rightOperand.split("\\.");
+                Condition retCon;
+                if (splits.length == 1) {
+                    retCon = new Condition(leftOperand, null, null, null, null, rightOperand, toBinaryOperator(operator));
+                    return retCon;
+                } else {
+                    retCon = new Condition(leftOperand, null, null, null, splits[0], splits[1], toBinaryOperator(operator));
+                    return retCon;
+                }
+            } else {
+                System.out.println("Invalid statement: "
+                        + leftOperand + " " + operator + " " + rightOperand);
+                return null;
+            }
+        } else if (leftOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*")
+                || leftOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")) {
+            if (DataChecker.isValidInteger(rightOperand) || DataChecker.isValidQuotedVarChar(rightOperand)) {
+                leftOperand = handlePrefixUsingMap(leftOperand, tableNameList, aliasMap);
+                if (leftOperand == null) {
+                    return null;
+                }
+                String[] splits = leftOperand.split("\\.");
+                Condition retCon;
+                if (splits.length == 1) {
+                    retCon = new Condition(null, null, leftOperand, rightOperand, null, null, toBinaryOperator(operator));
+                    return retCon;
+                } else {
+                    retCon = new Condition(null, splits[0], splits[1], rightOperand, null, null, toBinaryOperator(operator));
+                    return retCon;
+                }
+            } else if (rightOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*")
+                    || rightOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")) {
+                leftOperand = handlePrefixUsingMap(leftOperand, tableNameList, aliasMap);
+                if (leftOperand == null) {
+                    return null;
+                }
+                rightOperand = handlePrefixUsingMap(rightOperand, tableNameList, aliasMap);
+                if (rightOperand == null) {
+                    return null;
+                }
+                String[] splitsLeft = leftOperand.split("\\.");
+                String[] splitsRight = rightOperand.split("\\.");
+                Condition retCon;
+                if (splitsLeft.length == 1) {
+                    if (splitsRight.length == 1) {
+                        retCon = new Condition(null, null, leftOperand, null, null, rightOperand, toBinaryOperator(operator));
+                        return retCon;
+                    } else {
+                        retCon = new Condition(null, null, leftOperand, null, splitsRight[0], splitsRight[1], toBinaryOperator(operator));
+                        return retCon;
+                    }
+                } else {
+                    if (splitsRight.length == 1) {
+                        retCon = new Condition(null, splitsLeft[0], splitsLeft[1], null, null, rightOperand, toBinaryOperator(operator));
+                        return retCon;
+                    } else {
+                        retCon = new Condition(null, splitsLeft[0], splitsLeft[1], null, splitsRight[0], splitsRight[1], toBinaryOperator(operator));
+                        return retCon;
+                    }
+                }
+            } else {
+                System.out.println("Invalid statement: "
+                        + leftOperand + " " + operator + " " + rightOperand);
+                return null;
+            }
+        } else {
+            System.out.println("Invalid statement: "
+                    + leftOperand + " " + operator + " " + rightOperand);
+            return null;
+        }
+    }
+    
+    private BinaryOperator toBinaryOperator(String input) {
+        if (input.equals(">=")) {
+            return BinaryOperator.GREATER_EQUAL;
+        } else if (input.equals(">")) {
+            return BinaryOperator.GREATER_THAN;
+        } else if (input.equals("<")) {
+            return BinaryOperator.LESS_THAN;
+        } else if (input.equals("<=")) {
+            return BinaryOperator.LESS_EQUAL;
+        } else if (input.equals("<>")) {
+            return BinaryOperator.NOT_EQUAL;
+        } else if (input.equals("=")) {
+            return BinaryOperator.EQUAL;
+        } else if (input.equals("AND")) {
+            return BinaryOperator.AND;
+        } else {
+            return BinaryOperator.OR;
+        }
+    }
+    
+    private boolean isCompareOp(String input) {
+        if (input.equals(">") || input.equals(">=") || input.equals("<") || input.equals("<=")) {
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean isValidOp(String input) {
+        if (input.equals("<>") || input.equals("=") || input.equals(">") 
+                || input.equals(">=") || input.equals("<") || input.equals("<=")) {
+            return true;
+        }
+        return false;
+    }
+    
+    private String handlePrefixUsingMap(String input, ArrayList<String> tableNameList, HashMap<String, String> aliasMap) {
+        String[] splits = input.split("\\.");
+        if (splits.length == 1) {
+            return input;
+        } else if (splits.length == 2) {
+            if (aliasMap.containsKey(splits[0])) {
+                return aliasMap.get(splits[0]) + "." + splits[1];
+            } else {
+                if (tableNameList.contains(splits[0])) {
+                    return input;
+                } else {
+                    System.out.println("Prefix is not in table list: " + input);
+                    return null;
+                }
+            }
+        } else {
+            System.out.println("splits length: " + splits.length);
+            System.out.println("Multiple dots near: " + input);
+            return null;
+        }
+    }
+    
+    private String getAttrNameWithPossibleDot() {
         String name = nextToken(true);
         if (!name.matches("[a-zA-Z_][0-9a-zA-Z_]*") 
                 && !name.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")) {
@@ -219,7 +407,7 @@ public class SQLParser {
         }
     }
     
-    private boolean getTableNameAndAlias(ArrayList<String> tableNameList, HashMap<String, String> tableNameMap) {
+    private boolean getTableNameAndAlias(ArrayList<String> tableNameList, HashMap<String, String> aliasMap) {
         String tableName, alias;
         tableName = getTableName();
         if (tableName == null) {
@@ -232,7 +420,7 @@ public class SQLParser {
             if (alias == null) {
                 return false;
             }
-            tableNameMap.put(tableName, alias);
+            aliasMap.put(alias, tableName);
         }
         return true;
     }
@@ -286,7 +474,7 @@ public class SQLParser {
                 return null;
             }
             if (attrNameSet.contains(attributeName)) {
-                printErrorMessage("Duplicated attribute name.");
+                printErrorMessage("Duplicate attribute name.");
                 return null;
             }
             attrNameSet.add(attributeName);
@@ -389,7 +577,7 @@ public class SQLParser {
                     return null;
                 }
                 if (attrNameSet.contains(attrName)) {
-                    printErrorMessage("Duplicated attribute name.");
+                    printErrorMessage("Duplicate attribute name.");
                     return null;
                 }
                 attrNameSet.add(attrName);
