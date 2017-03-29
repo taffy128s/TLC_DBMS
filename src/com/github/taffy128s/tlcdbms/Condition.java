@@ -2,32 +2,33 @@ package com.github.taffy128s.tlcdbms;
 
 public class Condition {
 	private String mLeftTableName; 
-	private String mLeftValue;
+	private String mLeftAttribute;
 	private String mRightTableName;
-	private String mRightValue;
+	private String mRightAttribute;
 	private BinaryOperator mOperator;
-	private Boolean mLeftConstant;
-	private Boolean mRightConstant;
-	public Condition(Boolean leftConstant, String leftTableName, String leftValue, Boolean rightConstant, String rightTableName, String rightValue, BinaryOperator operator) {
+	private Object mLeftConstant;
+	private Object mRightConstant;
+	public Condition(Object leftConstant, String leftTableName, String leftAttribute, 
+			Object rightConstant, String rightTableName, String rightAttribute, BinaryOperator operator) {
 		mLeftConstant = leftConstant;
 		mRightConstant = rightConstant;
 		mLeftTableName = leftTableName;
-		mLeftValue = leftValue;
+		mLeftAttribute = leftAttribute;
 		mRightTableName = rightTableName;
-		mRightValue = rightValue;
+		mRightAttribute = rightAttribute;
 		mOperator = operator;
 	}
 	public String getLeftTableName() {
 		return mLeftTableName;
 	}
-	public String getLeftValue() {
-		return mLeftValue;
+	public String getLeftAttribute() {
+		return mLeftAttribute;
 	}
 	public String getRightTableName() {
 		return mRightTableName;
 	}
-	public String getRightValue() {
-		return mRightValue;
+	public String getRightAttribute() {
+		return mRightAttribute;
 	}
 	public BinaryOperator getOperator() {
 		return mOperator;
