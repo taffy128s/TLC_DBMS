@@ -280,19 +280,39 @@ public class SQLParseResult {
     public SortingType getShowSortType() {
         return mShowSortType;
     }
-
+    
+    /**
+     * QueryType getter.
+     * 
+     * @return query type.
+     */
     public QueryType getQueryType() {
         return mQueryType;
     }
 
+    /**
+     * QueryType setter.
+     * 
+     * @param mQueryType query type to set.
+     */
     public void setQueryType(QueryType mQueryType) {
         this.mQueryType = mQueryType;
     }
 
+    /**
+     * Targets getter.
+     * 
+     * @return targets.
+     */
     public ArrayList<Target> getTargets() {
         return mTargets;
     }
 
+    /**
+     * Targets setter.
+     * 
+     * @param originTargets targets to deal with.
+     */
     public void setTargets(ArrayList<String> originTargets) {
         mTargets = new ArrayList<>();
         for (String originTarget : originTargets) {
@@ -309,14 +329,27 @@ public class SQLParseResult {
         }
     }
 
+    /**
+     * Conditions getter.
+     * 
+     * @return conditions.
+     */
     public ArrayList<Condition> getConditions() {
         return mConditions;
     }
 
+    /**
+     * Conditions setter.
+     * 
+     * @param mConditions conditions to set.
+     */
     public void setConditions(ArrayList<Condition> mConditions) {
         this.mConditions = mConditions;
     }
 
+    /**
+     * Transform this class to a string.
+     */
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
