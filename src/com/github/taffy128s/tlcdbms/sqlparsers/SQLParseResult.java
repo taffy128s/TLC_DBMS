@@ -294,8 +294,9 @@ public class SQLParseResult {
 	}
 
 	public void setTargets(ArrayList<String> originTargets) {
+	    mTargets = new ArrayList<>();
 		for (String originTarget : originTargets) {
-		    String[] splits = originTarget.split(".");
+		    String[] splits = originTarget.split("\\.");
 		    if (splits.length == 1) {
 		        Target target = new Target(null, originTarget);
 		        mTargets.add(target);
