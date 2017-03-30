@@ -63,3 +63,5 @@ lib/
 out/
 src/META-INF/
 .DS_STORE
+.euml2
+.umlproject

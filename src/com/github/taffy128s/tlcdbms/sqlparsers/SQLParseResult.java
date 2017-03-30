@@ -22,7 +22,7 @@ public class SQLParseResult {
     private boolean mShowFullInfo;
     private SortingType mShowSortType;
     private QueryType mQueryType;
-    private ArrayList<String> mTargets;
+    private ArrayList<Target> mTargets;
     private ArrayList<Condition> mConditions;
     
     /**
@@ -289,12 +289,23 @@ public class SQLParseResult {
 		this.mQueryType = mQueryType;
 	}
 
-	public ArrayList<String> getTargets() {
+	public ArrayList<Target> getTargets() {
 		return mTargets;
 	}
 
-	public void setTargets(ArrayList<String> mTargets) {
-		this.mTargets = mTargets;
+	public void setTargets(ArrayList<String> originTargets) {
+		for (String originTarget : originTargets) {
+		    String[] splits = originTarget.split(".");
+		    if (splits.length == 1) {
+		        Target target = new Target(null, originTarget);
+		        mTargets.add(target);
+		    } else if (splits.length == 2) {
+		        Target target = new Target(splits[0], splits[1]);
+		        mTargets.add(target);
+		    } else {
+		        System.out.println("Parsing select needs debugging!");
+		    }
+		}
 	}
 
 	public ArrayList<Condition> getConditions() {
@@ -352,7 +363,7 @@ public class SQLParseResult {
                 stringBuilder.append("NORMAL").append("\n");
             }
             stringBuilder.append("Targets:\n");
-            for (String target : mTargets) {
+            for (Target target : mTargets) {
                 stringBuilder.append("  ").append(target).append("\n");
             }
             stringBuilder.append("Table names:\n");
