@@ -111,6 +111,11 @@ public class SQLParser {
         }
     }
 
+    /**
+     * Parse SELECT.
+     *
+     * @return parse result, null if failed.
+     */
     private SQLParseResult parseSelect() {
         SQLParseResult result = new SQLParseResult();
         result.setCommandType(CommandType.SELECT);
@@ -242,6 +247,16 @@ public class SQLParser {
         }
     }
     
+    /**
+     * Get condition.
+     * 
+     * @param tableNameList: list used for checking the presence of attributes.
+     * @param aliasMap: map used for replacing the prefixes of attributes.
+     * @return condition, null if failed.
+     * 
+     * Expected condition format:
+     * [valid attribute] [valid operator] [valid attribute]
+     */
     private Condition getCondition(ArrayList<String> tableNameList, HashMap<String, String> aliasMap) {
         String leftOperand, rightOperand, operator;
         leftOperand = nextToken(true);
@@ -342,6 +357,12 @@ public class SQLParser {
         }
     }
     
+    /**
+     * Transform String operator to BinaryOperator.
+     * 
+     * @param input: string to transform.
+     * @return BinaryOperator.
+     */
     private BinaryOperator toBinaryOperator(String input) {
         if (input.equalsIgnoreCase(">=")) {
             return BinaryOperator.GREATER_EQUAL;
@@ -362,6 +383,12 @@ public class SQLParser {
         }
     }
     
+    /**
+     * Check if the given String is a comparison operator or not. 
+     * 
+     * @param input: String to check.
+     * @return true if it is a comparison operator, false if not.
+     */
     private boolean isCompareOp(String input) {
         if (input.equals(">") || input.equals(">=") || input.equals("<") || input.equals("<=")) {
             return true;
@@ -369,6 +396,12 @@ public class SQLParser {
         return false;
     }
     
+    /**
+     * Check if the given String is a valid operator or not.
+     * 
+     * @param input: String to check.
+     * @return true if it is valid, false if not.
+     */
     private boolean isValidOp(String input) {
         if (input.equals("<>") || input.equals("=") || input.equals(">") 
                 || input.equals(">=") || input.equals("<") || input.equals("<=")) {
@@ -377,6 +410,14 @@ public class SQLParser {
         return false;
     }
     
+    /**
+     * Replace the prefix of input if it uses an alias.
+     * 
+     * @param input: String to modify.
+     * @param tableNameList: table list available now.
+     * @param aliasMap: provide an alias-tableName mapping.
+     * @return string modified.
+     */
     private String handlePrefixUsingMap(String input, ArrayList<String> tableNameList, HashMap<String, String> aliasMap) {
         String[] splits = input.split("\\.");
         if (splits.length == 1) {
@@ -398,6 +439,11 @@ public class SQLParser {
         }
     }
     
+    /**
+     * Get an attribute name with a possible dot.
+     * 
+     * @return a valid target name.
+     */
     private String getAttrNameWithPossibleDot() {
         String name = nextToken(true);
         if (!name.matches("[a-zA-Z_][0-9a-zA-Z_]*") 
@@ -412,6 +458,16 @@ public class SQLParser {
         }
     }
     
+    /**
+     * Get table name and its alias, and add them into list and map.
+     * 
+     * @param tableNameList: list to add into.
+     * @param aliasMap: map to store the relations.
+     * @return true if succeed, false if fail.
+     * 
+     * Expected format:
+     * [valid table name] [a|As|S] [valid alias]
+     */
     private boolean getTableNameAndAlias(ArrayList<String> tableNameList, HashMap<String, String> aliasMap) {
         String tableName, alias;
         tableName = getTableName();
@@ -430,6 +486,11 @@ public class SQLParser {
         return true;
     }
     
+    /**
+     * Get alias.
+     * 
+     * @return alias if succeed, null if fail.
+     */
     private String getAliasName() {
         String name = nextToken(true);
         if (!name.matches("[a-zA-Z_][0-9a-zA-Z_]*")) {
