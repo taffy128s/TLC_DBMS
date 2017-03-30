@@ -282,42 +282,42 @@ public class SQLParseResult {
     }
 
     public QueryType getQueryType() {
-		return mQueryType;
-	}
+        return mQueryType;
+    }
 
-	public void setQueryType(QueryType mQueryType) {
-		this.mQueryType = mQueryType;
-	}
+    public void setQueryType(QueryType mQueryType) {
+        this.mQueryType = mQueryType;
+    }
 
-	public ArrayList<Target> getTargets() {
-		return mTargets;
-	}
+    public ArrayList<Target> getTargets() {
+        return mTargets;
+    }
 
-	public void setTargets(ArrayList<String> originTargets) {
-	    mTargets = new ArrayList<>();
-		for (String originTarget : originTargets) {
-		    String[] splits = originTarget.split("\\.");
-		    if (splits.length == 1) {
-		        Target target = new Target(null, originTarget);
-		        mTargets.add(target);
-		    } else if (splits.length == 2) {
-		        Target target = new Target(splits[0], splits[1]);
-		        mTargets.add(target);
-		    } else {
-		        System.out.println("Parsing select needs debugging!");
-		    }
-		}
-	}
+    public void setTargets(ArrayList<String> originTargets) {
+        mTargets = new ArrayList<>();
+        for (String originTarget : originTargets) {
+            String[] splits = originTarget.split("\\.");
+            if (splits.length == 1) {
+                Target target = new Target(null, originTarget);
+                mTargets.add(target);
+            } else if (splits.length == 2) {
+                Target target = new Target(splits[0], splits[1]);
+                mTargets.add(target);
+            } else {
+                System.out.println("Parsing select needs debugging!");
+            }
+        }
+    }
 
-	public ArrayList<Condition> getConditions() {
-		return mConditions;
-	}
+    public ArrayList<Condition> getConditions() {
+        return mConditions;
+    }
 
-	public void setConditions(ArrayList<Condition> mConditions) {
-		this.mConditions = mConditions;
-	}
+    public void setConditions(ArrayList<Condition> mConditions) {
+        this.mConditions = mConditions;
+    }
 
-	@Override
+    @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         if (mCommandType == CommandType.CREATE) {
