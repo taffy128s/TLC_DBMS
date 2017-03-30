@@ -237,7 +237,7 @@ public abstract class Table implements DiskWritable {
             case GREATER_EQUAL:
                 return queryGreaterEqual(columnIndex, key);
         }
-        return null;
+        return new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
     }
 
     /**
