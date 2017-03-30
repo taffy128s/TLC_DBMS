@@ -100,17 +100,21 @@ public class DBManager implements DiskWritable {
         	DataTypeIdentifier rightType = null;
         	if (condition.getLeftConstant() == null) {
         		if (condition.getLeftTableName() == null) {
-	        		int notFound = 0;
+	        		Boolean found = false;
         			for (String tableName : parameter.getTablenames()) {
-        				if (!mTables.get(tableName).getAttributeNames().contains(condition.getLeftAttribute())) {
-        					notFound++;
+        				if (mTables.get(tableName).getAttributeNames().contains(condition.getLeftAttribute())) {
+        					if (found) {
+        						System.out.println("Attribute '" + condition.getLeftAttribute() + "' is ambiguous.");
+        						return;
+        					}
+        					condition.setLeftTableName(tableName);
+        					found = true;
         				}
         			}
-        			if (notFound == parameter.getTablenames().size()) {
+        			if (!found) {
         				System.out.println("Attribute '" + condition.getLeftAttribute() + "' don't exist in any tables.");
         				return;
         			}
-        			// redefine condition ????
         		}
         		else {
         			if (!mTables.containsKey(condition.getLeftTableName())) {
@@ -127,21 +131,25 @@ public class DBManager implements DiskWritable {
         		}
         	}
         	else {
-        		leftType = (new DataChecker().isValidInteger(condition.getLeftConstant())) ? DataTypeIdentifier.INT : DataTypeIdentifier.VARCHAR;
+        		leftType = (DataChecker.isValidInteger(condition.getLeftConstant())) ? DataTypeIdentifier.INT : DataTypeIdentifier.VARCHAR;
         	}
         	if (condition.getRightConstant() == null) {
         		if (condition.getRightTableName() == null) {
-        			int notFound = 0;
+        			Boolean found = false;
         			for (String tableName : parameter.getTablenames()) {
-        				if (!mTables.get(tableName).getAttributeNames().contains(condition.getRightAttribute())) {
-        					notFound++;
+        				if (mTables.get(tableName).getAttributeNames().contains(condition.getRightAttribute())) {
+        					if (found) {
+        						System.out.println("Attribute '" + condition.getRightAttribute() + "' is ambiguous.");
+        						return;
+        					}
+        					condition.setRightTableName(tableName);
+        					found = true;
         				}
         			}
-        			if (notFound == parameter.getTablenames().size()) {
+        			if (!found) {
         				System.out.println("Attribute '" + condition.getRightAttribute() + "' don't exist in any tables.");
         				return;
         			}
-        			// redefine again ?????
         		}
         		else {
         			if (!mTables.containsKey(condition.getRightTableName())) {
@@ -149,7 +157,7 @@ public class DBManager implements DiskWritable {
             			return;
             		}
             		if (!mTables.get(condition.getRightTableName()).getAttributeNames().contains(condition.getRightAttribute())) {
-            			System.out.println("Attribute '" + condition.getRightAttribute() + "' of Table" +
+            			System.out.println("Attribute '" + condition.getRightAttribute() + "' of Table " +
             							condition.getRightTableName() + " doesn't exist.");
             			return;
             		}
@@ -158,7 +166,30 @@ public class DBManager implements DiskWritable {
         		}
         	}
         	else {
-        		rightType = (new DataChecker().isValidInteger(condition.getRightConstant())) ? DataTypeIdentifier.INT : DataTypeIdentifier.VARCHAR;
+        		rightType = (DataChecker.isValidInteger(condition.getRightConstant())) ? DataTypeIdentifier.INT : DataTypeIdentifier.VARCHAR;
+        	}
+        }
+        for (Target target : parameter.getTargets()) {
+        	if (target.getTableName() == null) {
+        		Boolean found = false;
+	        	for (String tableName : parameter.getTablenames()) {
+	        		if (mTables.get(tableName).getAttributeNames().contains(target.getAttribute())) {
+	        			if (found) {
+	        				System.out.println("Attribute '" + target.getAttribute() + "' is ambiguous.");
+	        			}
+	        			target.setTableName(tableName);
+	        			found = true;
+	        		}
+	        	}
+        	}
+        	else {
+        		if (!mTables.containsKey(target.getTableName())) {
+	        		System.out.println("Table '" + target.getTableName() + "' doesn't exist.");
+	        		return;
+	        	}
+	        	if (!mTables.get(target.getTableName()).getAttributeNames().contains(target.getAttribute())) {
+	        		System.out.println("Attribute '" + target.getAttribute() + "' of Table " + target.getTableName() + " doesn't exist.");
+	        	}
         	}
         }
     }
