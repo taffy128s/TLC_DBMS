@@ -180,30 +180,124 @@ public abstract class Table implements DiskWritable {
     protected abstract boolean insertAll(ArrayList<DataRecord> dataRecords);
 
     /**
+     * Get all data which satisfy the condition given in parameter.
+     * Note that the condition should be set correctly in DBManager.
+     *
+     * @param condition condition as filter.
+     * @return a table include all DataRecords as result.
+     */
+    public Table query(Condition condition) {
+        if (condition.getLeftConstant() != null && condition.getRightConstant() != null) {
+            Object left = getConstant(condition.getLeftConstant());
+            Object right = getConstant(condition.getRightConstant());
+            boolean result = calculateResult(left, right, condition.getOperator());
+            Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+            if (result) {
+                table.insertAll(getAllRecords());
+                return table;
+            } else {
+                return table;
+            }
+        } else if (condition.getLeftConstant() != null && condition.getRightConstant() == null) {
+            int columnIndex = condition.getRightAttributeIndex();
+            Object right = getConstant(condition.getLeftConstant());
+            BinaryOperator operator = reverseOperator(condition.getOperator());
+            return query(columnIndex, right, operator);
+        } else if (condition.getLeftConstant() == null && condition.getRightConstant() != null) {
+            int columnIndex = condition.getLeftAttributeIndex();
+            Object right = getConstant(condition.getRightConstant());
+            BinaryOperator operator = condition.getOperator();
+            return query(columnIndex, right, operator);
+        } else {
+            // TODO not implemented.
+            return null;
+        }
+    }
+
+    /**
+     * Get all data which satisfy the condition given in parameter.
+     *
+     * @param columnIndex column (or field) index to check.
+     * @param key key to be compared.
+     * @param operator a binary operator (like EQUAL).
+     * @return a table with all DataRecords as result.
+     */
+    public Table query(int columnIndex, Object key, BinaryOperator operator) {
+        switch (operator) {
+            case EQUAL:
+                return queryEqual(columnIndex, key);
+            case NOT_EQUAL:
+                return queryNotEqual(columnIndex, key);
+            case LESS_THAN:
+                return queryLess(columnIndex, key);
+            case LESS_EQUAL:
+                return queryLessEqual(columnIndex, key);
+            case GREATER_THAN:
+                return queryGreater(columnIndex, key);
+            case GREATER_EQUAL:
+                return queryGreaterEqual(columnIndex, key);
+        }
+        return null;
+    }
+
+    /**
      * Get all data which has the same value as key of specified column index.
      * (i.e. = ).
      *
      * @param columnIndex column (or field) index to check.
      * @param key key to get.
-     * @return an array list of DataRecords as result.
+     * @return a table with all DataRecords as result.
      */
-    public ArrayList<DataRecord> query(int columnIndex, Object key) {
+    public Table queryEqual(int columnIndex, Object key) {
         ArrayList<DataRecord> result = new ArrayList<>();
         ArrayList<DataRecord> allRecords = getAllRecords();
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (key == null) {
             for (DataRecord record : allRecords) {
                 if (record.get(columnIndex) == null) {
                     result.add(record);
                 }
             }
-            return result;
+            table.insertAll(result);
+            return table;
         }
         for (DataRecord record : allRecords) {
             if (key.equals(record.get(columnIndex))) {
                 result.add(record);
             }
         }
-        return result;
+        table.insertAll(result);
+        return table;
+    }
+
+    /**
+     * Get all data which has different value as key of specified column index.
+     * (i.e. = ).
+     *
+     * @param columnIndex column (or field) index to check.
+     * @param key key to get.
+     * @return a table with all DataRecords as result.
+     */
+    public Table queryNotEqual(int columnIndex, Object key) {
+        ArrayList<DataRecord> result = new ArrayList<>();
+        ArrayList<DataRecord> allRecords = getAllRecords();
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+        if (key == null) {
+            for (DataRecord record : allRecords) {
+                if (record.get(columnIndex) != null) {
+                    result.add(record);
+                }
+            }
+            table.insertAll(result);
+            return table;
+        }
+        for (DataRecord record : allRecords) {
+            if (!key.equals(record.get(columnIndex))) {
+                result.add(record);
+            }
+        }
+        table.insertAll(result);
+        return table;
     }
 
     /**
@@ -212,11 +306,12 @@ public abstract class Table implements DiskWritable {
      *
      * @param columnIndex column (or field) index to check.
      * @param key key to get.
-     * @return an array list of DataRecords as result.
+     * @return a table with all DataRecords as result.
      */
-    public ArrayList<DataRecord> queryLess(int columnIndex, Object key) {
+    public Table queryLess(int columnIndex, Object key) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (key == null) {
-            return new ArrayList<>();
+            return table;
         }
         ArrayList<DataRecord> allRecords = getAllRecords();
         ArrayList<DataRecord> result = new ArrayList<>();
@@ -225,7 +320,8 @@ public abstract class Table implements DiskWritable {
                 result.add(record);
             }
         }
-        return result;
+        table.insertAll(result);
+        return table;
     }
 
     /**
@@ -234,11 +330,12 @@ public abstract class Table implements DiskWritable {
      *
      * @param columnIndex column (or field) index to check.
      * @param key key to get.
-     * @return an array list of DataRecords as result.
+     * @return a table with all DataRecords as result.
      */
-    public ArrayList<DataRecord> queryLessEqual(int columnIndex, Object key) {
+    public Table queryLessEqual(int columnIndex, Object key) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (key == null) {
-            return new ArrayList<>();
+            return table;
         }
         ArrayList<DataRecord> allRecords = getAllRecords();
         ArrayList<DataRecord> result = new ArrayList<>();
@@ -247,7 +344,8 @@ public abstract class Table implements DiskWritable {
                 result.add(record);
             }
         }
-        return result;
+        table.insertAll(result);
+        return table;
     }
 
     /**
@@ -256,11 +354,12 @@ public abstract class Table implements DiskWritable {
      *
      * @param columnIndex column (or field) index to check.
      * @param key key to get.
-     * @return an array list of DataRecords as result.
+     * @return a table with all DataRecords as result.
      */
-    public ArrayList<DataRecord> queryGreater(int columnIndex, Object key) {
+    public Table queryGreater(int columnIndex, Object key) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (key == null) {
-            return new ArrayList<>();
+            return table;
         }
         ArrayList<DataRecord> allRecords = getAllRecords();
         ArrayList<DataRecord> result = new ArrayList<>();
@@ -269,7 +368,8 @@ public abstract class Table implements DiskWritable {
                 result.add(record);
             }
         }
-        return result;
+        table.insertAll(result);
+        return table;
     }
 
     /**
@@ -278,11 +378,12 @@ public abstract class Table implements DiskWritable {
      *
      * @param columnIndex column (or field) index to check.
      * @param key key to get.
-     * @return an array list of DataRecords as result.
+     * @return a table with all DataRecords as result.
      */
-    public ArrayList<DataRecord> queryGreaterEqual(int columnIndex, Object key) {
+    public Table queryGreaterEqual(int columnIndex, Object key) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (key == null) {
-            return new ArrayList<>();
+            return table;
         }
         ArrayList<DataRecord> allRecords = getAllRecords();
         ArrayList<DataRecord> result = new ArrayList<>();
@@ -291,7 +392,8 @@ public abstract class Table implements DiskWritable {
                 result.add(record);
             }
         }
-        return result;
+        table.insertAll(result);
+        return table;
     }
 
     /**
@@ -300,11 +402,12 @@ public abstract class Table implements DiskWritable {
      * @param columnIndex column (or field) index to check.
      * @param fromKey key to start. (lower bound).
      * @param toKey key to end. (upper bound).
-     * @return an array list of DataRecords as result.
+     * @return a table with all DataRecords as result.
      */
-    public ArrayList<DataRecord> queryRange(int columnIndex, Object fromKey, Object toKey) {
+    public Table queryRange(int columnIndex, Object fromKey, Object toKey) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (fromKey == null || toKey == null) {
-            return new ArrayList<>();
+            return table;
         }
         ArrayList<DataRecord> allRecords = getAllRecords();
         ArrayList<DataRecord> result = new ArrayList<>();
@@ -317,7 +420,8 @@ public abstract class Table implements DiskWritable {
                 result.add(record);
             }
         }
-        return result;
+        table.insertAll(result);
+        return table;
     }
 
     /**
@@ -329,11 +433,12 @@ public abstract class Table implements DiskWritable {
      * @param fromInclusive whether fromKey is inclusive or not.
      * @param toKey key to end. (upper bound).
      * @param toInclusive whether toKey is inclusive or not.
-     * @return an array list of DataRecords as result.
+     * @return a table with all DataRecords as result.
      */
-    public ArrayList<DataRecord> queryRange(int columnIndex, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive) {
+    public Table queryRange(int columnIndex, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (fromKey == null || toKey == null) {
-            return new ArrayList<>();
+            return table;
         }
         ArrayList<DataRecord> allRecords = getAllRecords();
         ArrayList<DataRecord> result = new ArrayList<>();
@@ -363,7 +468,58 @@ public abstract class Table implements DiskWritable {
             }
             result.add(record);
         }
-        return result;
+        table.insertAll(result);
+        return table;
+    }
+
+    private BinaryOperator reverseOperator(BinaryOperator operator) {
+        switch (operator) {
+            case EQUAL:
+                return BinaryOperator.EQUAL;
+            case NOT_EQUAL:
+                return BinaryOperator.NOT_EQUAL;
+            case LESS_THAN:
+                return BinaryOperator.GREATER_THAN;
+            case LESS_EQUAL:
+                return BinaryOperator.GREATER_EQUAL;
+            case GREATER_THAN:
+                return BinaryOperator.LESS_THAN;
+            case GREATER_EQUAL:
+                return BinaryOperator.LESS_EQUAL;
+            default:
+                return BinaryOperator.EQUAL;
+        }
+    }
+
+    private Object getConstant(String constant) {
+        if (DataChecker.isStringNull(constant)) {
+            return "null";
+        } else if (DataChecker.isValidInteger(constant)) {
+            return Integer.parseInt(constant);
+        } else if (DataChecker.isValidQuotedVarChar(constant)) {
+            return constant;
+        } else {
+            return constant;
+        }
+    }
+
+    private boolean calculateResult(Object left, Object right, BinaryOperator operator) {
+        switch (operator) {
+            case EQUAL:
+                return left.equals(right);
+            case NOT_EQUAL:
+                return !left.equals(right);
+            case LESS_THAN:
+                return ((Comparable) left).compareTo(right) < 0;
+            case LESS_EQUAL:
+                return ((Comparable) left).compareTo(right) <= 0;
+            case GREATER_THAN:
+                return ((Comparable) left).compareTo(right) > 0;
+            case GREATER_EQUAL:
+                return ((Comparable) left).compareTo(right) >= 0;
+            default:
+                return false;
+        }
     }
 
     /**
@@ -381,6 +537,14 @@ public abstract class Table implements DiskWritable {
      * @return an array list of all records.
      */
     public abstract ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType);
+
+    public static Table join(Table firstTable, Table secondTable, Condition condition) {
+        if (condition.getLeftConstant() != null || condition.getRightConstant() != null) {
+            return new SetTable();
+        }
+        // TODO not implemented.
+        return null;
+    }
 
     /**
      * Get union (OR) of two lists.

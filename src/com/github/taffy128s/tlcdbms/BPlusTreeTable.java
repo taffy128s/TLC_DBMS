@@ -109,118 +109,132 @@ public class BPlusTreeTable extends Table {
     }
 
     @Override
-    public ArrayList<DataRecord> query(int columnIndex, Object key) {
+    public Table queryEqual(int columnIndex, Object key) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (mKeyIndex == columnIndex) {
-            ArrayList<DataRecord> result = new ArrayList<>();
             if (key == null) {
-                result.addAll(mNullTable);
-                return result;
+                table.insertAll(mNullTable);
             } else {
-                result.addAll(mTable.get(key));
-                return result;
+                table.insertAll(mTable.get(key));
             }
+            return table;
         } else {
-            return super.query(columnIndex, key);
+            return super.queryEqual(columnIndex, key);
         }
     }
 
     @Override
-    public ArrayList<DataRecord> queryLess(int columnIndex, Object key) {
+    public Table queryNotEqual(int columnIndex, Object key) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+        if (mKeyIndex == columnIndex) {
+            if (key == null) {
+                table.insertAll(getAllRecords());
+                return table;
+            } else {
+                return super.queryNotEqual(columnIndex, key);
+            }
+        } else {
+            return super.queryNotEqual(columnIndex, key);
+        }
+    }
+
+    @Override
+    public Table queryLess(int columnIndex, Object key) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (key == null) {
-            return new ArrayList<>();
+            return table;
         }
         if (mKeyIndex == columnIndex) {
             ArrayList<ArrayList<DataRecord>> records = mTable.getValuesLess(key);
-            ArrayList<DataRecord> result = new ArrayList<>();
             for (ArrayList<DataRecord> recordArrayList : records) {
-                result.addAll(recordArrayList);
+                table.insertAll(recordArrayList);
             }
-            return result;
+            return table;
         } else {
             return super.queryLess(columnIndex, key);
         }
     }
 
     @Override
-    public ArrayList<DataRecord> queryLessEqual(int columnIndex, Object key) {
+    public Table queryLessEqual(int columnIndex, Object key) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (key == null) {
-            return new ArrayList<>();
+            return table;
         }
         if (mKeyIndex == columnIndex) {
             ArrayList<ArrayList<DataRecord>> records = mTable.getValuesLessEqual(key);
-            ArrayList<DataRecord> result = new ArrayList<>();
             for (ArrayList<DataRecord> recordArrayList : records) {
-                result.addAll(recordArrayList);
+                table.insertAll(recordArrayList);
             }
-            return result;
+            return table;
         } else {
             return super.queryLessEqual(columnIndex, key);
         }
     }
 
     @Override
-    public ArrayList<DataRecord> queryGreater(int columnIndex, Object key) {
+    public Table queryGreater(int columnIndex, Object key) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (key == null) {
-            return new ArrayList<>();
+            return table;
         }
         if (mKeyIndex == columnIndex) {
             ArrayList<ArrayList<DataRecord>> records = mTable.getValuesGreater(key);
-            ArrayList<DataRecord> result = new ArrayList<>();
             for (ArrayList<DataRecord> recordArrayList : records) {
-                result.addAll(recordArrayList);
+                table.insertAll(recordArrayList);
             }
-            return result;
+            return table;
         } else {
             return super.queryGreater(columnIndex, key);
         }
     }
 
     @Override
-    public ArrayList<DataRecord> queryGreaterEqual(int columnIndex, Object key) {
+    public Table queryGreaterEqual(int columnIndex, Object key) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (key == null) {
-            return new ArrayList<>();
+            return table;
         }
         if (mKeyIndex == columnIndex) {
             ArrayList<ArrayList<DataRecord>> records = mTable.getValuesGreaterEqual(key);
-            ArrayList<DataRecord> result = new ArrayList<>();
             for (ArrayList<DataRecord> recordArrayList : records) {
-                result.addAll(recordArrayList);
+                table.insertAll(recordArrayList);
             }
-            return result;
+            return table;
         } else {
             return super.queryGreaterEqual(columnIndex, key);
         }
     }
 
     @Override
-    public ArrayList<DataRecord> queryRange(int columnIndex, Object fromKey, Object toKey) {
+    public Table queryRange(int columnIndex, Object fromKey, Object toKey) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (fromKey == null || toKey == null) {
-            return new ArrayList<>();
+            return table;
         }
         if (mKeyIndex == columnIndex) {
             ArrayList<ArrayList<DataRecord>> records = mTable.getValues(fromKey, toKey);
-            ArrayList<DataRecord> result = new ArrayList<>();
             for (ArrayList<DataRecord> recordArrayList : records) {
-                result.addAll(recordArrayList);
+                table.insertAll(recordArrayList);
             }
-            return result;
+            return table;
         } else {
             return super.queryRange(columnIndex, fromKey, toKey);
         }
     }
 
     @Override
-    public ArrayList<DataRecord> queryRange(int columnIndex, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive) {
+    public Table queryRange(int columnIndex, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive) {
+        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (fromKey == null || toKey == null) {
-            return new ArrayList<>();
+            return table;
         }
         if (mKeyIndex == columnIndex) {
             ArrayList<ArrayList<DataRecord>> records = mTable.getValues(fromKey, fromInclusive, toKey, toInclusive);
-            ArrayList<DataRecord> result = new ArrayList<>();
             for (ArrayList<DataRecord> recordArrayList : records) {
-                result.addAll(recordArrayList);
+                table.insertAll(recordArrayList);
             }
-            return result;
+            return table;
         } else {
             return super.queryRange(columnIndex, fromKey, fromInclusive, toKey, toInclusive);
         }
