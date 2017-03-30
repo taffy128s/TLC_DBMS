@@ -93,7 +93,7 @@ public class DBManager implements DiskWritable {
         	}
         }
         for (Condition condition : parameter.getConditions()) {
-        	if (condition.getOperator() != null) {
+        	if (condition.getLeftAttribute() == null && condition.getRightAttribute() == null) {
         		continue;
         	}
         	DataTypeIdentifier leftType = null;
