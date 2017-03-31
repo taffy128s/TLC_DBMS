@@ -245,13 +245,15 @@ public class Condition {
      */
     public static boolean calculateCondition(Condition condition, DataRecord left, int leftIndex, DataRecord right, int rightIndex) {
         Object leftObject = (leftIndex != -1) ? left.get(leftIndex) : null;
+        Object leftConstant = getConstant(condition.getLeftConstant());
         Object rightObject = (rightIndex != -1) ? right.get(rightIndex) : null;
+        Object rightConstant = getConstant(condition.getRightConstant());
         if (condition.getLeftConstant() != null && condition.getRightConstant() != null) {
-            return calculateResult(condition.getLeftConstant(), condition.getRightConstant(), condition.getOperator());
+            return calculateResult(leftConstant, rightConstant, condition.getOperator());
         } else if (condition.getLeftConstant() != null && condition.getRightConstant() == null) {
-            return calculateResult(condition.getLeftConstant(), rightObject, condition.getOperator());
+            return calculateResult(leftConstant, rightObject, condition.getOperator());
         } else if (condition.getLeftConstant() == null && condition.getRightConstant() != null) {
-            return calculateResult(leftObject, condition.getRightConstant(), condition.getOperator());
+            return calculateResult(leftObject, rightConstant, condition.getOperator());
         } else {
             return calculateResult(leftObject, rightObject, condition.getOperator());
         }

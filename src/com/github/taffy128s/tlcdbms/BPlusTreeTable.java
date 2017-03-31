@@ -110,7 +110,7 @@ public class BPlusTreeTable extends Table {
 
     @Override
     public Table queryEqual(int columnIndex, Object key) {
-        Table table = new ArrayListTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
         if (mKeyIndex == columnIndex) {
             if (key == null) {
                 table.insertAll(mNullTable);
@@ -125,7 +125,7 @@ public class BPlusTreeTable extends Table {
 
     @Override
     public Table queryNotEqual(int columnIndex, Object key) {
-        Table table = new ArrayListTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
         if (mKeyIndex == columnIndex) {
             if (key == null) {
                 table.insertAll(getAllRecords());
@@ -140,7 +140,7 @@ public class BPlusTreeTable extends Table {
 
     @Override
     public Table queryLess(int columnIndex, Object key) {
-        Table table = new ArrayListTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
         if (key == null) {
             return table;
         }
@@ -157,7 +157,7 @@ public class BPlusTreeTable extends Table {
 
     @Override
     public Table queryLessEqual(int columnIndex, Object key) {
-        Table table = new ArrayListTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
         if (key == null) {
             return table;
         }
@@ -174,7 +174,7 @@ public class BPlusTreeTable extends Table {
 
     @Override
     public Table queryGreater(int columnIndex, Object key) {
-        Table table = new ArrayListTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
         if (key == null) {
             return table;
         }
@@ -191,7 +191,7 @@ public class BPlusTreeTable extends Table {
 
     @Override
     public Table queryGreaterEqual(int columnIndex, Object key) {
-        Table table = new ArrayListTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
         if (key == null) {
             return table;
         }
@@ -208,7 +208,7 @@ public class BPlusTreeTable extends Table {
 
     @Override
     public Table queryRange(int columnIndex, Object fromKey, Object toKey) {
-        Table table = new ArrayListTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
         if (fromKey == null || toKey == null) {
             return table;
         }
@@ -225,7 +225,7 @@ public class BPlusTreeTable extends Table {
 
     @Override
     public Table queryRange(int columnIndex, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive) {
-        Table table = new ArrayListTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
         if (fromKey == null || toKey == null) {
             return table;
         }
