@@ -166,7 +166,7 @@ public class HashTable extends Table {
 
     @Override
     public Table queryEqual(int columnIndex, Object key) {
-        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = new ArrayListTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (mKeyIndex == columnIndex) {
             if (key == null) {
                 table.insertAll(mNullTable);
@@ -181,7 +181,7 @@ public class HashTable extends Table {
 
     @Override
     public Table queryNotEqual(int columnIndex, Object key) {
-        Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = new ArrayListTable("result", mAttributeNames, mAttributeTypes, -1, -1);
         if (mKeyIndex == columnIndex) {
             if (key == null) {
                 Collection<ArrayList<DataRecord>> values = mTable.values();
