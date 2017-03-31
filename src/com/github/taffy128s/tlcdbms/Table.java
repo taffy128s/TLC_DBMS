@@ -199,12 +199,12 @@ public abstract class Table implements DiskWritable {
                 return table;
             }
         } else if (condition.getLeftConstant() != null && condition.getRightConstant() == null) {
-            int columnIndex = condition.getRightAttributeIndex();
+            int columnIndex = mAttributeNames.indexOf(condition.getRightAttribute());
             Object right = Condition.getConstant(condition.getLeftConstant());
             BinaryOperator operator = Condition.reverseOperator(condition.getOperator());
             return query(columnIndex, right, operator);
         } else if (condition.getLeftConstant() == null && condition.getRightConstant() != null) {
-            int columnIndex = condition.getLeftAttributeIndex();
+            int columnIndex = mAttributeNames.indexOf(condition.getLeftAttribute());
             Object right = Condition.getConstant(condition.getRightConstant());
             BinaryOperator operator = condition.getOperator();
             return query(columnIndex, right, operator);
