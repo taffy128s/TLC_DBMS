@@ -1,7 +1,6 @@
 package com.github.taffy128s.tlcdbms;
 
 import com.github.taffy128s.tlcdbms.sqlparsers.SQLParseResult;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -93,11 +92,12 @@ public class DBManager implements DiskWritable {
         	}
         }
         for (Condition condition : parameter.getConditions()) {
-        	if (condition.getLeftAttribute() == null && condition.getRightAttribute() == null) {
+        	if (condition.getLeftAttribute() == null && condition.getRightAttribute() == null && 
+        			condition.getLeftConstant() == null && condition.getRightConstant() == null) {
         		continue;
         	}
-        	DataTypeIdentifier leftType = null;
-        	DataTypeIdentifier rightType = null;
+        	DataTypeIdentifier leftType = null; 
+        	DataTypeIdentifier rightType = null; 
         	if (condition.getLeftConstant() == null) {
         		if (condition.getLeftTableName() == null) {
 	        		Boolean found = false;
@@ -107,6 +107,8 @@ public class DBManager implements DiskWritable {
         						System.out.println("Attribute '" + condition.getLeftAttribute() + "' is ambiguous.");
         						return;
         					}
+        					leftType = mTables.get(tableName).getAttributeTypes().get( 
+    								mTables.get(tableName).getAttributeNames().indexOf(condition.getLeftAttribute())).getType();
         					condition.setLeftTableName(tableName);
         					found = true;
         				}
@@ -142,6 +144,8 @@ public class DBManager implements DiskWritable {
         						System.out.println("Attribute '" + condition.getRightAttribute() + "' is ambiguous.");
         						return;
         					}
+        					rightType = mTables.get(tableName).getAttributeTypes().get(
+    								mTables.get(tableName).getAttributeNames().indexOf(condition.getRightAttribute())).getType();
         					condition.setRightTableName(tableName);
         					found = true;
         				}
@@ -168,14 +172,28 @@ public class DBManager implements DiskWritable {
         	else {
         		rightType = (DataChecker.isValidInteger(condition.getRightConstant())) ? DataTypeIdentifier.INT : DataTypeIdentifier.VARCHAR;
         	}
+        	if (leftType != rightType) {
+        		System.out.println("There is unequal type of the condition.");
+        		return;
+        	}
         }
+        Boolean selectAll = false;
         for (Target target : parameter.getTargets()) {
         	if (target.getTableName() == null) {
         		Boolean found = false;
+        		if (target.getAttribute().equals("*")) {
+        			if (selectAll) {
+        				System.out.println("Duplicate * query.");
+        				return;
+        			}
+        			selectAll = true;
+        			continue;
+        		}
 	        	for (String tableName : parameter.getTablenames()) {
 	        		if (mTables.get(tableName).getAttributeNames().contains(target.getAttribute())) {
 	        			if (found) {
 	        				System.out.println("Attribute '" + target.getAttribute() + "' is ambiguous.");
+	        				return;
 	        			}
 	        			target.setTableName(tableName);
 	        			found = true;
@@ -183,14 +201,66 @@ public class DBManager implements DiskWritable {
 	        	}
         	}
         	else {
+        		if (selectAll) {
+        			System.out.println("Duplicate * query.");
+        			return;
+        		}
+        		if (target.getAttribute().equals("*")) { 
+        			selectAll = true;
+        			continue;
+        		}
         		if (!mTables.containsKey(target.getTableName())) {
 	        		System.out.println("Table '" + target.getTableName() + "' doesn't exist.");
 	        		return;
 	        	}
 	        	if (!mTables.get(target.getTableName()).getAttributeNames().contains(target.getAttribute())) {
 	        		System.out.println("Attribute '" + target.getAttribute() + "' of Table " + target.getTableName() + " doesn't exist.");
+	        		return;
 	        	}
         	}
+        }
+        
+        ArrayList<Table> selectTables = new ArrayList<Table>();
+        for (Condition condition : parameter.getConditions()) {
+        	if (condition.getLeftConstant() != null && condition.getLeftAttribute() == null &&
+        			condition.getRightConstant() != null && condition.getRightAttribute() == null) {
+        		selectTables.add(mTables.get(parameter.getTablenames().get(0)).query(condition));
+        	}
+        	if (condition.getLeftConstant() != null && condition.getLeftAttribute() == null &&
+        			condition.getRightConstant() == null && condition.getRightAttribute() != null) {
+        		
+        		selectTables.add(mTables.get(condition.getRightTableName()).query(condition));
+        	}
+        	if (condition.getLeftConstant() == null && condition.getLeftAttribute() != null &&
+        			condition.getRightConstant() != null && condition.getRightAttribute() == null) {
+        		selectTables.add(mTables.get(condition.getLeftTableName()).query(condition));
+        	}
+        	if (condition.getLeftConstant() == null && condition.getLeftAttribute() != null && 
+        			condition.getRightConstant() == null && condition.getRightAttribute() != null) {
+        		if (!condition.getLeftTableName().equals(condition.getRightTableName())) {
+        			selectTables.add(Table.join(mTables.get(condition.getLeftTableName()), 
+        						mTables.get(condition.getRightTableName()), condition));
+        		}
+        		else {
+        			selectTables.add(mTables.get(condition.getLeftTableName()).query(condition));
+        		}
+        	}
+        	if (condition.getLeftConstant() == null && condition.getLeftAttribute() == null &&
+        			condition.getRightConstant() == null && condition.getRightAttribute() == null) {
+        		if (condition.getOperator() == BinaryOperator.AND) {
+        			selectTables.add(Table.intersect(selectTables.get(0), selectTables.get(1)));
+        			selectTables.remove(0);
+        			selectTables.remove(1);
+        		}
+        		else if (condition.getOperator() == BinaryOperator.OR) {
+        			selectTables.add(Table.union(selectTables.get(0), selectTables.get(1)));
+        			selectTables.remove(0);
+        			selectTables.remove(1);
+        		}
+        	}	
+        }
+        for (int i = 0; i < parameter.getTargets().size(); i++) {
+        	
         }
     }
 
