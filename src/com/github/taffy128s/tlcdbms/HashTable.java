@@ -203,36 +203,6 @@ public class HashTable extends Table {
     }
 
     @Override
-    public Table queryLess(int columnIndex, Object key) {
-        return super.queryLess(columnIndex, key);
-    }
-
-    @Override
-    public Table queryLessEqual(int columnIndex, Object key) {
-        return super.queryLessEqual(columnIndex, key);
-    }
-
-    @Override
-    public Table queryGreater(int columnIndex, Object key) {
-        return super.queryGreater(columnIndex, key);
-    }
-
-    @Override
-    public Table queryGreaterEqual(int columnIndex, Object key) {
-        return super.queryGreaterEqual(columnIndex, key);
-    }
-
-    @Override
-    public Table queryRange(int columnIndex, Object fromKey, Object toKey) {
-        return super.queryRange(columnIndex, fromKey, toKey);
-    }
-
-    @Override
-    public Table queryRange(int columnIndex, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive) {
-        return super.queryRange(columnIndex, fromKey, fromInclusive, toKey, toInclusive);
-    }
-
-    @Override
     public ArrayList<DataRecord> getAllRecords() {
         ArrayList<DataRecord> allRecord = new ArrayList<>();
         allRecord.addAll(getNullTableRecords());
