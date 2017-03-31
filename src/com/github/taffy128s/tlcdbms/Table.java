@@ -536,17 +536,11 @@ public abstract class Table implements DiskWritable {
         Table table = new SetTable("result", newAttrNames, newAttrTypes, -1, -1);
         int leftKeyIndex = firstTable.getAttributeNames().indexOf(condition.getLeftAttribute());
         int rightKeyIndex = secondTable.getAttributeNames().indexOf(condition.getRightAttribute());
-        if (leftKeyIndex == -1 || rightKeyIndex == -1) {
-            return table;
-        }
-        if (condition.getLeftConstant() != null || condition.getRightConstant() != null) {
-            return table;
-        }
         ArrayList<DataRecord> firstRecords = firstTable.getAllRecords();
         ArrayList<DataRecord> secondRecords = secondTable.getAllRecords();
         for (DataRecord firstRecord : firstRecords) {
             for (DataRecord secondRecord : secondRecords) {
-                if (Condition.calculateResult(firstRecord.get(leftKeyIndex), secondRecord.get(rightKeyIndex), condition.getOperator())) {
+                if (Condition.calculateCondition(condition, firstRecord, leftKeyIndex, secondRecord, rightKeyIndex)) {
                     DataRecord newRecord = new DataRecord();
                     newRecord.appendAll(firstRecord.getAllFields());
                     newRecord.appendAll(secondRecord.getAllFields());
