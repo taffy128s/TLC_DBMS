@@ -126,7 +126,7 @@ public class SQLParser {
                 printErrorMessage("Missing left parenthesis.");
                 return null;
             }
-            String attributeName = getAttrNameWithPossibleDot();
+            String attributeName = getTargetNameWithPossibleDot();
             if (attributeName == null) {
                 return null;
             }
@@ -147,12 +147,12 @@ public class SQLParser {
                 nextToken(true);
                 attributeName = "*";
             } else {
-                attributeName = getAttrNameWithPossibleDot();
+                attributeName = getTargetNameWithPossibleDot();
                 if (attributeName == null) {
                     return null;
                 }
             }
-            if (checkTokenIgnoreCase(")", true)) {
+            if (!checkTokenIgnoreCase(")", true)) {
                 printErrorMessage("Missing right parenthesis");
                 return null;
             }
@@ -163,14 +163,14 @@ public class SQLParser {
             result.setQueryType(QueryType.NORMAL);
             targets.add("*");
         } else {
-            String attrName = getAttrNameWithPossibleDot();
+            String attrName = getTargetNameWithPossibleDot();
             if (attrName == null) {
                 return null;
             }
             targets.add(attrName);
             while (checkTokenIgnoreCase(",", false)) {
                 nextToken(true);
-                attrName = getAttrNameWithPossibleDot();
+                attrName = getTargetNameWithPossibleDot();
                 if (attrName == null) {
                     return null;
                 }
@@ -444,10 +444,11 @@ public class SQLParser {
      * 
      * @return a valid target name.
      */
-    private String getAttrNameWithPossibleDot() {
+    private String getTargetNameWithPossibleDot() {
         String name = nextToken(true);
         if (!name.matches("[a-zA-Z_][0-9a-zA-Z_]*") 
-                && !name.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")) {
+                && !name.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")
+                && !name.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][*]")) {
             printErrorMessage("Invalid target name '" + name + "'.");
             return null;
         } else if (SQLKeyWords.isSQLKeyword(name)) {
@@ -1181,9 +1182,6 @@ public class SQLParser {
                     break;
                 case '=':
                     preProcessCommand += "\0=\0";
-                    break;
-                case '*':
-                    preProcessCommand += "\0*\0";
                     break;
                 case '(':
                     preProcessCommand += "\0(\0";
