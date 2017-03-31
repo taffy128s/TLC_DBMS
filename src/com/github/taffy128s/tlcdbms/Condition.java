@@ -157,9 +157,7 @@ public class Condition {
         mOperator = operator;
     }
 
-    /**
-     * Transform this class to a string.
-     */
+    @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(mLeftConstant).append(" ");
@@ -190,6 +188,14 @@ public class Condition {
         return stringBuilder.toString();
     }
 
+    /**
+     * Reverse a operator. Used to reverse a condition.
+     * For example, a > b --> b < a.
+     * So reverseOperator(>) will return <. (Not <= !!).
+     *
+     * @param operator operator to reverse.
+     * @return reversed operator.
+     */
     public static BinaryOperator reverseOperator(BinaryOperator operator) {
         switch (operator) {
             case EQUAL:
@@ -209,6 +215,12 @@ public class Condition {
         }
     }
 
+    /**
+     * Get constant with correct class (String or Integer).
+     *
+     * @param constant constant to check.
+     * @return a object of constant.
+     */
     public static Object getConstant(String constant) {
         if (DataChecker.isStringNull(constant)) {
             return "null";
@@ -221,6 +233,16 @@ public class Condition {
         }
     }
 
+    /**
+     * Calculate condition given in parameter.
+     *
+     * @param condition condition to calculate.
+     * @param left a data record as left value, cannot be null.
+     * @param leftIndex left index of leftAttribute in condition, -1 if not exists.
+     * @param right a data record as right value, cannnot be null.
+     * @param rightIndex right index of rightAttribute in condition, -1 if not exists.
+     * @return a boolean as result.
+     */
     public static boolean calculateCondition(Condition condition, DataRecord left, int leftIndex, DataRecord right, int rightIndex) {
         Object leftObject = (leftIndex != -1) ? left.get(leftIndex) : null;
         Object rightObject = (rightIndex != -1) ? right.get(rightIndex) : null;
@@ -235,6 +257,15 @@ public class Condition {
         }
     }
 
+    /**
+     * Calculate result of left op right,
+     * where op is >, <, etc.
+     *
+     * @param left left value.
+     * @param right right value.
+     * @param operator operator.
+     * @return a boolean as result.
+     */
     public static boolean calculateResult(Object left, Object right, BinaryOperator operator) {
         switch (operator) {
             case EQUAL:
