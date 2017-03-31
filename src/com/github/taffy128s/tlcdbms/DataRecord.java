@@ -21,38 +21,6 @@ public class DataRecord implements DiskWritable, StringWritable {
     }
 
     /**
-     * Initialize a new data record with a list of data.
-     *
-     * @param datas an array list of data.
-     */
-    public DataRecord(ArrayList<Object> datas) {
-        mDataList = datas;
-    }
-
-    /**
-     * Initialize a new data record with same data as record given.
-     * Will copy all the data.
-     *
-     * @param that data to initialize.
-     */
-    public DataRecord(DataRecord that) {
-        mDataList = new ArrayList<>();
-        for (Object object : that.getAllFields()) {
-            if (object == null) {
-                mDataList.add(null);
-            } else if (DataChecker.isValidInteger(object.toString())) {
-                Integer data = Integer.parseInt(object.toString());
-                mDataList.add(data);
-            } else if (DataChecker.isValidQuotedVarChar(object.toString())) {
-                String data = object.toString();
-                mDataList.add(data);
-            } else {
-                System.err.println("You should not go here! @DataRecord.DataRecord(DaraRecord)");
-            }
-        }
-    }
-
-    /**
      * Append a new data into data record.<br>
      * ** NEED TO CALL WITH RIGHT ORDER. **<br>
      * For example,<br>

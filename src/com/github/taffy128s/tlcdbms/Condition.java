@@ -8,8 +8,6 @@ public class Condition {
     private String mRightTableName;
     private String mRightAttribute;
     private BinaryOperator mOperator;
-    private int mLeftAttributeIndex;
-    private int mRightAttributeIndex;
 
     /**
      * Constructor.
@@ -31,8 +29,6 @@ public class Condition {
         mRightTableName = rightTableName;
         mRightAttribute = rightAttribute;
         mOperator = operator;
-        mLeftAttributeIndex = -1;
-        mRightAttributeIndex = -1;
     }
 
     /**
@@ -159,42 +155,6 @@ public class Condition {
      */
     public void setOperator(BinaryOperator operator) {
         mOperator = operator;
-    }
-
-    /**
-     * Left attribute index getter.
-     *
-     * @return left attribute index.
-     */
-    public int getLeftAttributeIndex() {
-        return mLeftAttributeIndex;
-    }
-
-    /**
-     * Left attribute index setter.
-     *
-     * @param index index to set.
-     */
-    public void setLeftAttributeIndex(int index) {
-        mLeftAttributeIndex = index;
-    }
-
-    /**
-     * Right attribute index getter.
-     *
-     * @return right attribute index.
-     */
-    public int getRightAttributeIndex() {
-        return mRightAttributeIndex;
-    }
-
-    /**
-     * Right attribute index setter.
-     *
-     * @param index index to set.
-     */
-    public void setRightAttributeIndex(int index) {
-        mRightAttributeIndex = index;
     }
 
     /**
