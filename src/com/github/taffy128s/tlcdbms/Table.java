@@ -2,6 +2,7 @@ package com.github.taffy128s.tlcdbms;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Database Table.
@@ -560,80 +561,86 @@ public abstract class Table implements DiskWritable {
      * Get union (OR) of two lists.
      * Set union.
      *
-     * @param records list 1.
-     * @param another list 2.
-     * @return a list of result
+     * @param first first table.
+     * @param second second table.
+     * @return a table of result.
      */
-    public static ArrayList<DataRecord> union(ArrayList<DataRecord> records, ArrayList<DataRecord> another) {
+    public static Table union(Table first, Table second) {
+        Table table = new ArrayListTable("result", first.getAttributeNames(), first.getAttributeTypes(), -1, -1);
+        ArrayList<DataRecord> records = first.getAllRecords();
+        ArrayList<DataRecord> another = second.getAllRecords();
         HashSet<DataRecord> recordHashSet = new HashSet<>(records);
         recordHashSet.addAll(another);
         ArrayList<DataRecord> result = new ArrayList<>();
         for (DataRecord record : recordHashSet) {
             result.add(record);
         }
-        return result;
+        table.insertAll(result);
+        return table;
     }
 
     /**
      * Get union (OR) of lists given.
      * Set union.
      *
-     * @param records lists.
-     * @return a list of result.
+     * @param tables a list of tables.
+     * @return a table of result.
      */
-    public static ArrayList<DataRecord> union(ArrayList<ArrayList<DataRecord>> records) {
-        if (records.isEmpty()) {
-            return new ArrayList<>();
+    public static Table union(List<Table> tables) {
+        if (tables.isEmpty()) {
+            return new ArrayListTable();
         }
-        HashSet<DataRecord> recordHashSet = new HashSet<>(records.get(0));
-        for (int i = 1; i < records.size(); ++i) {
-            recordHashSet.addAll(records.get(i));
+        Table table = new ArrayListTable("result", tables.get(0).getAttributeNames(), tables.get(0).getAttributeTypes(), -1, -1);
+        HashSet<DataRecord> recordHashSet = new HashSet<>(tables.get(0).getAllRecords());
+        for (int i = 1; i < tables.size(); ++i) {
+            recordHashSet.addAll(tables.get(i).getAllRecords());
         }
         ArrayList<DataRecord> result = new ArrayList<>();
         for (DataRecord record : recordHashSet) {
             result.add(record);
         }
-        return result;
+        table.insertAll(result);
+        return table;
     }
 
     /**
      * Get intersection (AND) of two lists.
      * Set intersection.
      *
-     * @param records list 1.
-     * @param another list 2.
-     * @return a list of result.
+     * @param first first table.
+     * @param second second table.
+     * @return a table of result.
      */
-    public static ArrayList<DataRecord> intersect(ArrayList<DataRecord> records, ArrayList<DataRecord> another) {
-        HashSet<DataRecord> recordHashSet = new HashSet<>(records);
+    public static Table intersect(Table first, Table second) {
+        Table table = new ArrayListTable("result", first.getAttributeNames(), first.getAttributeTypes(), -1, -1);
+        HashSet<DataRecord> recordHashSet = new HashSet<>(first.getAllRecords());
         ArrayList<DataRecord> result = new ArrayList<>();
-        for (DataRecord record : another) {
+        for (DataRecord record : second.getAllRecords()) {
             if (recordHashSet.contains(record)) {
                 result.add(record);
             }
         }
-        return result;
+        table.insertAll(result);
+        return table;
     }
 
     /**
      * Get intersection (AND) of lists given.
      * Set intersection.
      *
-     * @param records lists.
-     * @return a list of result.
+     * @param tables a list of tables.
+     * @return a table of result.
      */
-    public static ArrayList<DataRecord> intersect(ArrayList<ArrayList<DataRecord>> records) {
-        if (records.isEmpty()) {
-            return new ArrayList<>();
+    public static Table intersect(List<Table> tables) {
+        if (tables.isEmpty()) {
+            return new ArrayListTable();
         }
-        if (records.size() == 1) {
-            return records.get(0);
+        Table table = new ArrayListTable("result", tables.get(0).getAttributeNames(), tables.get(0).getAttributeTypes(), -1, -1);
+        table.insertAll(tables.get(0).getAllRecords());
+        for (int i = 1; i < tables.size(); ++i) {
+            table = intersect(table, tables.get(i));
         }
-        ArrayList<DataRecord> result = records.get(0);
-        for (int i = 1; i < records.size(); ++i) {
-            result = intersect(result, records.get(i));
-        }
-        return result;
+        return table;
     }
 
     @Override
