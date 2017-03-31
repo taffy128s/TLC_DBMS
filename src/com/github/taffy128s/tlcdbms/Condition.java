@@ -13,7 +13,7 @@ public class Condition {
 
     /**
      * Constructor.
-     * 
+     *
      * @param leftConstant left constant to set.
      * @param leftTableName left table name to set.
      * @param leftAttribute left attribute to set.
@@ -37,7 +37,7 @@ public class Condition {
 
     /**
      * Left table name getter.
-     * 
+     *
      * @return left table name.
      */
     public String getLeftTableName() {
@@ -46,7 +46,7 @@ public class Condition {
 
     /**
      * Left table name setter.
-     * 
+     *
      * @param tableName table name to set.
      */
     public void setLeftTableName(String tableName) {
@@ -55,7 +55,7 @@ public class Condition {
 
     /**
      * Left attribute getter.
-     * 
+     *
      * @return left attribute.
      */
     public String getLeftAttribute() {
@@ -64,7 +64,7 @@ public class Condition {
 
     /**
      * Left attribute setter.
-     * 
+     *
      * @param leftAttribute left attribute to set.
      */
     public void setLeftAttribute(String leftAttribute) {
@@ -73,7 +73,7 @@ public class Condition {
 
     /**
      * Right table name getter.
-     * 
+     *
      * @return right table name.
      */
     public String getRightTableName() {
@@ -82,7 +82,7 @@ public class Condition {
 
     /**
      * Right table name setter.
-     * 
+     *
      * @param tableName table name to set.
      */
     public void setRightTableName(String tableName) {
@@ -91,7 +91,7 @@ public class Condition {
 
     /**
      * Right attribute getter.
-     * 
+     *
      * @return right attribute.
      */
     public String getRightAttribute() {
@@ -100,7 +100,7 @@ public class Condition {
 
     /**
      * Right attribute setter.
-     * 
+     *
      * @param rightAttribute right attribute to set.
      */
     public void setRightAttribute(String rightAttribute) {
@@ -109,7 +109,7 @@ public class Condition {
 
     /**
      * Left constant getter.
-     * 
+     *
      * @return left constant.
      */
     public String getLeftConstant() {
@@ -118,7 +118,7 @@ public class Condition {
 
     /**
      * Left constant setter.
-     * 
+     *
      * @param constant constant to set.
      */
     public void setLeftConstant(String constant) {
@@ -127,7 +127,7 @@ public class Condition {
 
     /**
      * Right constant getter.
-     * 
+     *
      * @return right constant.
      */
     public String getRightConstant() {
@@ -136,7 +136,7 @@ public class Condition {
 
     /**
      * Right constant setter.
-     * 
+     *
      * @param constant constant to set.
      */
     public void setRightConstant(String constant) {
@@ -145,7 +145,7 @@ public class Condition {
 
     /**
      * Operator getter.
-     * 
+     *
      * @return operator.
      */
     public BinaryOperator getOperator() {
@@ -154,7 +154,7 @@ public class Condition {
 
     /**
      * Operator setter.
-     * 
+     *
      * @param operator operator to set.
      */
     public void setOperator(BinaryOperator operator) {
@@ -163,7 +163,7 @@ public class Condition {
 
     /**
      * Left attribute index getter.
-     * 
+     *
      * @return left attribute index.
      */
     public int getLeftAttributeIndex() {
@@ -172,7 +172,7 @@ public class Condition {
 
     /**
      * Left attribute index setter.
-     * 
+     *
      * @param index index to set.
      */
     public void setLeftAttributeIndex(int index) {
@@ -181,7 +181,7 @@ public class Condition {
 
     /**
      * Right attribute index getter.
-     * 
+     *
      * @return right attribute index.
      */
     public int getRightAttributeIndex() {
@@ -190,7 +190,7 @@ public class Condition {
 
     /**
      * Right attribute index setter.
-     * 
+     *
      * @param index index to set.
      */
     public void setRightAttributeIndex(int index) {
@@ -230,4 +230,53 @@ public class Condition {
         return stringBuilder.toString();
     }
 
+    public static BinaryOperator reverseOperator(BinaryOperator operator) {
+        switch (operator) {
+            case EQUAL:
+                return BinaryOperator.EQUAL;
+            case NOT_EQUAL:
+                return BinaryOperator.NOT_EQUAL;
+            case LESS_THAN:
+                return BinaryOperator.GREATER_THAN;
+            case LESS_EQUAL:
+                return BinaryOperator.GREATER_EQUAL;
+            case GREATER_THAN:
+                return BinaryOperator.LESS_THAN;
+            case GREATER_EQUAL:
+                return BinaryOperator.LESS_EQUAL;
+            default:
+                return BinaryOperator.EQUAL;
+        }
+    }
+
+    public static Object getConstant(String constant) {
+        if (DataChecker.isStringNull(constant)) {
+            return "null";
+        } else if (DataChecker.isValidInteger(constant)) {
+            return Integer.parseInt(constant);
+        } else if (DataChecker.isValidQuotedVarChar(constant)) {
+            return constant;
+        } else {
+            return constant;
+        }
+    }
+
+    public static boolean calculateResult(Object left, Object right, BinaryOperator operator) {
+        switch (operator) {
+            case EQUAL:
+                return left.equals(right);
+            case NOT_EQUAL:
+                return !left.equals(right);
+            case LESS_THAN:
+                return ((Comparable) left).compareTo(right) < 0;
+            case LESS_EQUAL:
+                return ((Comparable) left).compareTo(right) <= 0;
+            case GREATER_THAN:
+                return ((Comparable) left).compareTo(right) > 0;
+            case GREATER_EQUAL:
+                return ((Comparable) left).compareTo(right) >= 0;
+            default:
+                return false;
+        }
+    }
 }

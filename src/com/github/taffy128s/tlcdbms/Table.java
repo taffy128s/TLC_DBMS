@@ -188,9 +188,9 @@ public abstract class Table implements DiskWritable {
      */
     public Table query(Condition condition) {
         if (condition.getLeftConstant() != null && condition.getRightConstant() != null) {
-            Object left = getConstant(condition.getLeftConstant());
-            Object right = getConstant(condition.getRightConstant());
-            boolean result = calculateResult(left, right, condition.getOperator());
+            Object left = Condition.getConstant(condition.getLeftConstant());
+            Object right = Condition.getConstant(condition.getRightConstant());
+            boolean result = Condition.calculateResult(left, right, condition.getOperator());
             Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
             if (result) {
                 table.insertAll(getAllRecords());
@@ -200,17 +200,31 @@ public abstract class Table implements DiskWritable {
             }
         } else if (condition.getLeftConstant() != null && condition.getRightConstant() == null) {
             int columnIndex = condition.getRightAttributeIndex();
-            Object right = getConstant(condition.getLeftConstant());
-            BinaryOperator operator = reverseOperator(condition.getOperator());
+            Object right = Condition.getConstant(condition.getLeftConstant());
+            BinaryOperator operator = Condition.reverseOperator(condition.getOperator());
             return query(columnIndex, right, operator);
         } else if (condition.getLeftConstant() == null && condition.getRightConstant() != null) {
             int columnIndex = condition.getLeftAttributeIndex();
-            Object right = getConstant(condition.getRightConstant());
+            Object right = Condition.getConstant(condition.getRightConstant());
             BinaryOperator operator = condition.getOperator();
             return query(columnIndex, right, operator);
         } else {
-            // TODO not implemented.
-            return null;
+            Table table = new SetTable("result", mAttributeNames, mAttributeTypes, -1, -1);
+            if (!condition.getLeftTableName().equals(condition.getRightTableName())) {
+                return table;
+            }
+            ArrayList<DataRecord> allRecords = getAllRecords();
+            int leftIndex = mAttributeNames.indexOf(condition.getLeftAttribute());
+            int rightIndex = mAttributeNames.indexOf(condition.getRightAttribute());
+            if (leftIndex == -1 || rightIndex == -1) {
+                return table;
+            }
+            for (DataRecord record : allRecords) {
+                if (Condition.calculateResult(record.get(leftIndex), record.get(rightIndex), condition.getOperator())) {
+                    table.insert(record);
+                }
+            }
+            return table;
         }
     }
 
@@ -222,7 +236,7 @@ public abstract class Table implements DiskWritable {
      * @param operator a binary operator (like EQUAL).
      * @return a table with all DataRecords as result.
      */
-    public Table query(int columnIndex, Object key, BinaryOperator operator) {
+    private Table query(int columnIndex, Object key, BinaryOperator operator) {
         switch (operator) {
             case EQUAL:
                 return queryEqual(columnIndex, key);
@@ -472,56 +486,6 @@ public abstract class Table implements DiskWritable {
         return table;
     }
 
-    private BinaryOperator reverseOperator(BinaryOperator operator) {
-        switch (operator) {
-            case EQUAL:
-                return BinaryOperator.EQUAL;
-            case NOT_EQUAL:
-                return BinaryOperator.NOT_EQUAL;
-            case LESS_THAN:
-                return BinaryOperator.GREATER_THAN;
-            case LESS_EQUAL:
-                return BinaryOperator.GREATER_EQUAL;
-            case GREATER_THAN:
-                return BinaryOperator.LESS_THAN;
-            case GREATER_EQUAL:
-                return BinaryOperator.LESS_EQUAL;
-            default:
-                return BinaryOperator.EQUAL;
-        }
-    }
-
-    private Object getConstant(String constant) {
-        if (DataChecker.isStringNull(constant)) {
-            return "null";
-        } else if (DataChecker.isValidInteger(constant)) {
-            return Integer.parseInt(constant);
-        } else if (DataChecker.isValidQuotedVarChar(constant)) {
-            return constant;
-        } else {
-            return constant;
-        }
-    }
-
-    private boolean calculateResult(Object left, Object right, BinaryOperator operator) {
-        switch (operator) {
-            case EQUAL:
-                return left.equals(right);
-            case NOT_EQUAL:
-                return !left.equals(right);
-            case LESS_THAN:
-                return ((Comparable) left).compareTo(right) < 0;
-            case LESS_EQUAL:
-                return ((Comparable) left).compareTo(right) <= 0;
-            case GREATER_THAN:
-                return ((Comparable) left).compareTo(right) > 0;
-            case GREATER_EQUAL:
-                return ((Comparable) left).compareTo(right) >= 0;
-            default:
-                return false;
-        }
-    }
-
     /**
      * Get all records in the table.
      *
@@ -538,12 +502,58 @@ public abstract class Table implements DiskWritable {
      */
     public abstract ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType);
 
+    /**
+     * Join two table given in parameter. Condition in parameter should be set correctly,
+     * that is, left value and right value should not be null, and tablename of them should
+     * be equals to firstTable and secondTable, respectively. Wrong condition will get an
+     * empty table.<br>
+     * Note that properties of result table:<br>
+     *     tablename: result<br>
+     *     attribute names: name of firstTable append name of secondTable<br>
+     *     attribute types: type of firstTable append type of secondTable<br>
+     *     primary key: -1 (i.e. not exists)<br>
+     *     key index: -1 (i.e. not exists)<br>
+     *
+     * @param firstTable a table to join.
+     * @param secondTable another table to join.
+     * @param condition join condition.
+     * @return a table as result of joining two tables.
+     */
     public static Table join(Table firstTable, Table secondTable, Condition condition) {
-        if (condition.getLeftConstant() != null || condition.getRightConstant() != null) {
-            return new SetTable();
+        ArrayList<String> newAttrNames = new ArrayList<>();
+        ArrayList<DataType> newAttrTypes = new ArrayList<>();
+        newAttrNames.addAll(firstTable.getAttributeNames());
+        newAttrNames.addAll(secondTable.getAttributeNames());
+        newAttrTypes.addAll(firstTable.getAttributeTypes());
+        newAttrTypes.addAll(secondTable.getAttributeTypes());
+        for (int i = 0; i < firstTable.getAttributeNames().size(); ++i) {
+            newAttrNames.set(i, firstTable.getTablename() + "." + newAttrNames.get(i));
         }
-        // TODO not implemented.
-        return null;
+        for (int i = firstTable.getAttributeNames().size(); i < newAttrNames.size(); ++i) {
+            newAttrNames.set(i, secondTable.getTablename() + "." + newAttrNames.get(i));
+        }
+        Table table = new SetTable("result", newAttrNames, newAttrTypes, -1, -1);
+        int leftKeyIndex = firstTable.getAttributeNames().indexOf(condition.getLeftAttribute());
+        int rightKeyIndex = secondTable.getAttributeNames().indexOf(condition.getRightAttribute());
+        if (leftKeyIndex == -1 || rightKeyIndex == -1) {
+            return table;
+        }
+        if (condition.getLeftConstant() != null || condition.getRightConstant() != null) {
+            return table;
+        }
+        ArrayList<DataRecord> firstRecords = firstTable.getAllRecords();
+        ArrayList<DataRecord> secondRecords = secondTable.getAllRecords();
+        for (DataRecord firstRecord : firstRecords) {
+            for (DataRecord secondRecord : secondRecords) {
+                if (Condition.calculateResult(firstRecord.get(leftKeyIndex), secondRecord.get(rightKeyIndex), condition.getOperator())) {
+                    DataRecord newRecord = new DataRecord();
+                    newRecord.appendAll(firstRecord.getAllFields());
+                    newRecord.appendAll(secondRecord.getAllFields());
+                    table.insert(newRecord);
+                }
+            }
+        }
+        return table;
     }
 
     /**

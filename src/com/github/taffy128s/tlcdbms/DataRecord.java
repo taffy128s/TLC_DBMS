@@ -69,6 +69,15 @@ public class DataRecord implements DiskWritable, StringWritable {
     }
 
     /**
+     * Append a list of new data into data record.
+     *
+     * @param data a list of data to be inserted.
+     */
+    public void appendAll(ArrayList<Object> data) {
+        mDataList.addAll(data);
+    }
+
+    /**
      * Update data with column index given.<br>
      *
      * For example,<br>
