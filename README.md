@@ -30,6 +30,12 @@ INSERT INTO table_name[(attr_name[, attr_name ...])] VALUES(data[, data...]);
 SELECT Syntax
 ```
 SELECT select_expr [, select_expr ...] FROM table_references [WHERE where_condition];
+
+select_expr:
+    [prefix.]* | [prefix.]attr_name
+
+table_references:
+    table_name [AS table_alias]
 ```
 
 DROP Syntax
