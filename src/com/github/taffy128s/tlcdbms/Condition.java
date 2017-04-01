@@ -189,6 +189,15 @@ public class Condition {
     }
 
     /**
+     * Get a condition that always equals to true.
+     *
+     * @return a condition which always gets true.
+     */
+    public static Condition getAlwaysTrueCondition() {
+        return new Condition("0", null, null, "0", null, null, BinaryOperator.EQUAL);
+    }
+
+    /**
      * Reverse a operator. Used to reverse a condition.
      * For example, a > b --> b < a.
      * So reverseOperator(>) will return <. (Not <= !!).

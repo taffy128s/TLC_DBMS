@@ -3,6 +3,7 @@ package com.github.taffy128s.tlcdbms;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Database Table.
@@ -506,7 +507,11 @@ public abstract class Table implements DiskWritable {
         ArrayList<String> attributes = new ArrayList<>();
         ArrayList<DataType> types = new ArrayList<>();
         for (String attr : mAttributeNames) {
-            attributes.add(mTablename + "." + attr);
+            if (mTablename.equalsIgnoreCase("$result")) {
+                attributes.add(attr);
+            } else {
+                attributes.add(mTablename + "." + attr);
+            }
         }
         for (DataType type : mAttributeTypes) {
             types.add(type);
@@ -554,11 +559,15 @@ public abstract class Table implements DiskWritable {
         newAttrNames.addAll(secondTable.getAttributeNames());
         newAttrTypes.addAll(firstTable.getAttributeTypes());
         newAttrTypes.addAll(secondTable.getAttributeTypes());
-        for (int i = 0; i < firstTable.getAttributeNames().size(); ++i) {
-            newAttrNames.set(i, firstTable.getTablename() + "." + newAttrNames.get(i));
+        if (!firstTable.mTablename.equalsIgnoreCase("$result")) {
+            for (int i = 0; i < firstTable.getAttributeNames().size(); ++i) {
+                newAttrNames.set(i, firstTable.getTablename() + "." + newAttrNames.get(i));
+            }
         }
-        for (int i = firstTable.getAttributeNames().size(); i < newAttrNames.size(); ++i) {
-            newAttrNames.set(i, secondTable.getTablename() + "." + newAttrNames.get(i));
+        if (!secondTable.mTablename.equalsIgnoreCase("$result")) {
+            for (int i = firstTable.getAttributeNames().size(); i < newAttrNames.size(); ++i) {
+                newAttrNames.set(i, secondTable.getTablename() + "." + newAttrNames.get(i));
+            }
         }
         Table table = new ArrayListTable("$result", newAttrNames, newAttrTypes, -1, -1);
         int leftKeyIndex = firstTable.getAttributeNames().indexOf(condition.getLeftAttribute());
@@ -632,17 +641,35 @@ public abstract class Table implements DiskWritable {
      * @param second second table.
      * @return a table of result.
      */
-    public static Table intersect(Table first, Table second) {
-        Table table = new ArrayListTable("$result", first.getAttributeNames(), first.getAttributeTypes(), -1, -1);
-        HashSet<DataRecord> recordHashSet = new HashSet<>(first.getAllRecords());
-        ArrayList<DataRecord> result = new ArrayList<>();
-        for (DataRecord record : second.getAllRecords()) {
-            if (recordHashSet.contains(record)) {
-                result.add(record);
+    public static Table intersect(Table first, Table second, Map<String, Table> tables) {
+        if (first.getAttributeNames().containsAll(second.getAttributeNames()) ||
+                second.getAttributeNames().containsAll(first.getAttributeNames())) {
+            if (first.getAttributeNames().size() < second.getAttributeNames().size()) {
+                Table temp = first;
+                first = second;
+                second = temp;
             }
+            Table table = new ArrayListTable("$result", first.getAttributeNames(), first.getAttributeTypes(), -1, -1);
+            HashSet<DataRecord> recordHashSet = new HashSet<>(second.getAllRecords());
+            ArrayList<Integer> indices = new ArrayList<>();
+            for (String attr : second.getAttributeNames()) {
+                indices.add(first.getAttributeNames().indexOf(attr));
+            }
+            ArrayList<DataRecord> result = new ArrayList<>();
+            for (DataRecord record : first.getAllRecords()) {
+                DataRecord toCheck = new DataRecord();
+                for (int index : indices) {
+                    toCheck.append(record.get(index));
+                }
+                if (recordHashSet.contains(toCheck)) {
+                    result.add(record);
+                }
+            }
+            table.insertAll(result);
+            return table;
+        } else {
+            return join(first, second, Condition.getAlwaysTrueCondition());
         }
-        table.insertAll(result);
-        return table;
     }
 
     /**
@@ -652,14 +679,14 @@ public abstract class Table implements DiskWritable {
      * @param tables a list of tables.
      * @return a table of result.
      */
-    public static Table intersect(List<Table> tables) {
+    public static Table intersect(List<Table> tables, Map<String, Table> tableMap) {
         if (tables.isEmpty()) {
             return new ArrayListTable();
         }
         Table table = new ArrayListTable("$result", tables.get(0).getAttributeNames(), tables.get(0).getAttributeTypes(), -1, -1);
         table.insertAll(tables.get(0).getAllRecords());
         for (int i = 1; i < tables.size(); ++i) {
-            table = intersect(table, tables.get(i));
+            table = intersect(table, tables.get(i), tableMap);
         }
         return table;
     }

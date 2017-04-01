@@ -108,7 +108,7 @@ public class DBManager implements DiskWritable {
             if (condition.getOperator() == BinaryOperator.AND) {
                 Table second = selectedTables.pop();
                 Table first = selectedTables.pop();
-                selectedTables.push(Table.intersect(first, second));
+                selectedTables.push(Table.intersect(first, second, mTables));
             } else if (condition.getOperator() == BinaryOperator.OR) {
                 Table second = selectedTables.pop();
                 Table first = selectedTables.pop();
