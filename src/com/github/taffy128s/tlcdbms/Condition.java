@@ -237,7 +237,7 @@ public class Condition {
      */
     public static Object getConstant(String constant) {
         if (DataChecker.isStringNull(constant)) {
-            return "null";
+            return null;
         } else if (DataChecker.isValidInteger(constant)) {
             return Integer.parseInt(constant);
         } else if (DataChecker.isValidQuotedVarChar(constant)) {
@@ -283,6 +283,16 @@ public class Condition {
      * @return a boolean as result.
      */
     public static boolean calculateResult(Object left, Object right, BinaryOperator operator) {
+        if (left == null) {
+            switch (operator) {
+                case EQUAL:
+                    return right == null;
+                case NOT_EQUAL:
+                    return right != null;
+                default:
+                    return false;
+            }
+        }
         switch (operator) {
             case EQUAL:
                 return left.equals(right);

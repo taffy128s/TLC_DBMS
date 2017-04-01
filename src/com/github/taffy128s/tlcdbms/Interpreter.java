@@ -99,6 +99,7 @@ public class Interpreter {
                 manager.insert(sqlParseResult);
                 break;
             case SELECT:
+                System.out.println(sqlParseResult);
                 manager.select(sqlParseResult);
                 break;
             case DROP:

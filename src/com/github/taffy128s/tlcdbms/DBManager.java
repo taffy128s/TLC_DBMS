@@ -431,6 +431,8 @@ public class DBManager implements DiskWritable {
     private boolean setConditionParameters(Condition condition, SQLParseResult parameter) {
         DataTypeIdentifier leftType = null;
         DataTypeIdentifier rightType = null;
+        boolean leftIsNull = false;
+        boolean rightIsNull = false;
         if (condition.getLeftConstant() == null) {
             if (condition.getLeftTableName() == null) {
                 int found = -1;
@@ -466,6 +468,7 @@ public class DBManager implements DiskWritable {
             }
         }
         else {
+            leftIsNull = DataChecker.isStringNull(condition.getLeftConstant());
             leftType = (DataChecker.isValidInteger(condition.getLeftConstant())) ? DataTypeIdentifier.INT : DataTypeIdentifier.VARCHAR;
         }
         if (condition.getRightConstant() == null) {
@@ -503,7 +506,13 @@ public class DBManager implements DiskWritable {
             }
         }
         else {
+            rightIsNull = DataChecker.isStringNull(condition.getRightConstant());
             rightType = (DataChecker.isValidInteger(condition.getRightConstant())) ? DataTypeIdentifier.INT : DataTypeIdentifier.VARCHAR;
+        }
+        if (leftIsNull && !rightIsNull) {
+            leftType = rightType;
+        } else if (!leftIsNull && rightIsNull) {
+            rightType = leftType;
         }
         if (leftType != rightType) {
             System.out.println("The types in the condition are different.");
