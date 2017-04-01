@@ -90,8 +90,8 @@ public class Interpreter {
                 manager.insert(sqlParseResult);
                 break;
             case SELECT:
-                //manager.select(sqlParseResult);
                 System.out.println(sqlParseResult);
+                manager.select(sqlParseResult);
                 break;
             case DROP:
                 manager.drop(sqlParseResult);

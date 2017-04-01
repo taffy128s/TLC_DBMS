@@ -245,9 +245,9 @@ public class Condition {
      */
     public static boolean calculateCondition(Condition condition, DataRecord left, int leftIndex, DataRecord right, int rightIndex) {
         Object leftObject = (leftIndex != -1) ? left.get(leftIndex) : null;
-        Object leftConstant = getConstant(condition.getLeftConstant());
+        Object leftConstant = (condition.getLeftConstant() != null) ? getConstant(condition.getLeftConstant()) : null;
         Object rightObject = (rightIndex != -1) ? right.get(rightIndex) : null;
-        Object rightConstant = getConstant(condition.getRightConstant());
+        Object rightConstant = (condition.getRightConstant() != null) ? getConstant(condition.getRightConstant()) : null;
         if (condition.getLeftConstant() != null && condition.getRightConstant() != null) {
             return calculateResult(leftConstant, rightConstant, condition.getOperator());
         } else if (condition.getLeftConstant() != null && condition.getRightConstant() == null) {
