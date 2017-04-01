@@ -532,12 +532,12 @@ public class DBManager implements DiskWritable {
                 }
             }
             else {
-                if (selectAll) {
-                    System.out.println("Duplicate * query.");
-                    return false;
-                }
                 if (target.getAttribute().equals("*")) {
-                    selectAll = true;
+                	if (selectAll) {
+                        System.out.println("Duplicate * query.");
+                        return false;
+                    }
+                	selectAll = true;
                     continue;
                 }
                 if (!mTables.containsKey(target.getTableName())) {
