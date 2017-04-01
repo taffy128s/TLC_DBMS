@@ -300,6 +300,12 @@ public class MultiIndexTable extends Table {
                 return false;
             }
             insertAll(records);
+            for (Table table : mTables) {
+                if (table != null) {
+                    mFirstTable = table;
+                    break;
+                }
+            }
             reader.close();
             return true;
         } catch (FileNotFoundException e) {
