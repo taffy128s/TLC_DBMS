@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import javax.xml.crypto.Data;
+
 /**
  * SQL parser for this project.
  */
@@ -275,8 +277,8 @@ public class SQLParser {
                 return null;
             }
         }
-        if (DataChecker.isValidInteger(leftOperand) || DataChecker.isValidQuotedVarChar(leftOperand)) {
-            if (DataChecker.isValidInteger(rightOperand) || DataChecker.isValidQuotedVarChar(rightOperand)) {
+        if (DataChecker.isValidInteger(leftOperand) || DataChecker.isValidQuotedVarChar(leftOperand) || DataChecker.isStringNull(leftOperand)) {
+            if (DataChecker.isValidInteger(rightOperand) || DataChecker.isValidQuotedVarChar(rightOperand) || DataChecker.isStringNull(rightOperand)) {
                 Condition retCon = new Condition(leftOperand, null, null, rightOperand, null, null, toBinaryOperator(operator));
                 return retCon;
             } else if (rightOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*")
@@ -301,7 +303,7 @@ public class SQLParser {
             }
         } else if (leftOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*")
                 || leftOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")) {
-            if (DataChecker.isValidInteger(rightOperand) || DataChecker.isValidQuotedVarChar(rightOperand)) {
+            if (DataChecker.isValidInteger(rightOperand) || DataChecker.isValidQuotedVarChar(rightOperand) || DataChecker.isStringNull(rightOperand)) {
                 leftOperand = handlePrefixUsingMap(leftOperand, tableNameList, aliasMap);
                 if (leftOperand == null) {
                     return null;
