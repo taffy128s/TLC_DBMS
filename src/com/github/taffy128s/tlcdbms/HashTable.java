@@ -171,7 +171,10 @@ public class HashTable extends Table {
             if (key == null) {
                 table.insertAll(mNullTable);
             } else {
-                table.insertAll(mTable.get(key));
+                ArrayList<DataRecord> result = mTable.get(key);
+                if (result != null) {
+                    table.insertAll(mTable.get(key));
+                }
             }
             return table;
         } else {
