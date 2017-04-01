@@ -5,6 +5,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * Database manager.
@@ -92,176 +93,46 @@ public class DBManager implements DiskWritable {
         	}
         }
         for (Condition condition : parameter.getConditions()) {
-        	if (condition.getLeftAttribute() == null && condition.getRightAttribute() == null && 
-        			condition.getLeftConstant() == null && condition.getRightConstant() == null) {
-        		continue;
-        	}
-        	DataTypeIdentifier leftType = null; 
-        	DataTypeIdentifier rightType = null; 
-        	if (condition.getLeftConstant() == null) {
-        		if (condition.getLeftTableName() == null) {
-	        		Boolean found = false;
-        			for (String tableName : parameter.getTablenames()) {
-        				if (mTables.get(tableName).getAttributeNames().contains(condition.getLeftAttribute())) {
-        					if (found) {
-        						System.out.println("Attribute '" + condition.getLeftAttribute() + "' is ambiguous.");
-        						return;
-        					}
-        					leftType = mTables.get(tableName).getAttributeTypes().get( 
-    								mTables.get(tableName).getAttributeNames().indexOf(condition.getLeftAttribute())).getType();
-        					condition.setLeftTableName(tableName);
-        					found = true;
-        				}
-        			}
-        			if (!found) {
-        				System.out.println("Attribute '" + condition.getLeftAttribute() + "' don't exist in any tables.");
-        				return;
-        			}
-        		}
-        		else {
-        			if (!mTables.containsKey(condition.getLeftTableName())) {
-	        			System.out.println("Table '" + condition.getLeftTableName() + "' doesn't exist.");
-	        			return;
-	        		}
-	        		if (!mTables.get(condition.getLeftTableName()).getAttributeNames().contains(condition.getLeftAttribute())) {
-	        			System.out.println("Attribute '" + condition.getLeftAttribute() + "' of Table " + 
-	        							condition.getLeftTableName() + " doesn't exist.");
-	        			return;
-	        		}
-	        		leftType = mTables.get(condition.getLeftTableName()).getAttributeTypes().get(
-	        				mTables.get(condition.getLeftTableName()).getAttributeNames().indexOf(condition.getLeftAttribute())).getType();
-        		}
-        	}
-        	else {
-        		leftType = (DataChecker.isValidInteger(condition.getLeftConstant())) ? DataTypeIdentifier.INT : DataTypeIdentifier.VARCHAR;
-        	}
-        	if (condition.getRightConstant() == null) {
-        		if (condition.getRightTableName() == null) {
-        			Boolean found = false;
-        			for (String tableName : parameter.getTablenames()) {
-        				if (mTables.get(tableName).getAttributeNames().contains(condition.getRightAttribute())) {
-        					if (found) {
-        						System.out.println("Attribute '" + condition.getRightAttribute() + "' is ambiguous.");
-        						return;
-        					}
-        					rightType = mTables.get(tableName).getAttributeTypes().get(
-    								mTables.get(tableName).getAttributeNames().indexOf(condition.getRightAttribute())).getType();
-        					condition.setRightTableName(tableName);
-        					found = true;
-        				}
-        			}
-        			if (!found) {
-        				System.out.println("Attribute '" + condition.getRightAttribute() + "' don't exist in any tables.");
-        				return;
-        			}
-        		}
-        		else {
-        			if (!mTables.containsKey(condition.getRightTableName())) {
-            			System.out.println("Table '" + condition.getRightTableName() + "' doesn't exist.");
-            			return;
-            		}
-            		if (!mTables.get(condition.getRightTableName()).getAttributeNames().contains(condition.getRightAttribute())) {
-            			System.out.println("Attribute '" + condition.getRightAttribute() + "' of Table " +
-            							condition.getRightTableName() + " doesn't exist.");
-            			return;
-            		}
-            		rightType = mTables.get(condition.getRightTableName()).getAttributeTypes().get(
-            				mTables.get(condition.getLeftTableName()).getAttributeNames().indexOf(condition.getRightAttribute())).getType();
-        		}
-        	}
-        	else {
-        		rightType = (DataChecker.isValidInteger(condition.getRightConstant())) ? DataTypeIdentifier.INT : DataTypeIdentifier.VARCHAR;
-        	}
-        	if (leftType != rightType) {
-        		System.out.println("There is unequal type of the condition.");
-        		return;
-        	}
+            if (condition.getOperator() == BinaryOperator.AND || condition.getOperator() == BinaryOperator.OR) {
+                continue;
+            }
+            if (!setConditionParameters(condition, parameter)) {
+                return;
+            }
         }
-        Boolean selectAll = false;
-        for (Target target : parameter.getTargets()) {
-        	if (target.getTableName() == null) {
-        		Boolean found = false;
-        		if (target.getAttribute().equals("*")) {
-        			if (selectAll) {
-        				System.out.println("Duplicate * query.");
-        				return;
-        			}
-        			selectAll = true;
-        			continue;
-        		}
-	        	for (String tableName : parameter.getTablenames()) {
-	        		if (mTables.get(tableName).getAttributeNames().contains(target.getAttribute())) {
-	        			if (found) {
-	        				System.out.println("Attribute '" + target.getAttribute() + "' is ambiguous.");
-	        				return;
-	        			}
-	        			target.setTableName(tableName);
-	        			found = true;
-	        		}
-	        	}
-        	}
-        	else {
-        		if (selectAll) {
-        			System.out.println("Duplicate * query.");
-        			return;
-        		}
-        		if (target.getAttribute().equals("*")) { 
-        			selectAll = true;
-        			continue;
-        		}
-        		if (!mTables.containsKey(target.getTableName())) {
-	        		System.out.println("Table '" + target.getTableName() + "' doesn't exist.");
-	        		return;
-	        	}
-	        	if (!mTables.get(target.getTableName()).getAttributeNames().contains(target.getAttribute())) {
-	        		System.out.println("Attribute '" + target.getAttribute() + "' of Table " + target.getTableName() + " doesn't exist.");
-	        		return;
-	        	}
-        	}
+        if (!setTargetsParameters(parameter)) {
+            return;
         }
-        
-        ArrayList<Table> selectTables = new ArrayList<Table>();
+        Stack<Table> selectedTables = new Stack<>();
         for (Condition condition : parameter.getConditions()) {
-        	if (condition.getLeftConstant() != null && condition.getLeftAttribute() == null &&
-        			condition.getRightConstant() != null && condition.getRightAttribute() == null) {
-        		selectTables.add(mTables.get(parameter.getTablenames().get(0)).query(condition));
-        	}
-        	if (condition.getLeftConstant() != null && condition.getLeftAttribute() == null &&
-        			condition.getRightConstant() == null && condition.getRightAttribute() != null) {
-        		
-        		selectTables.add(mTables.get(condition.getRightTableName()).query(condition));
-        	}
-        	if (condition.getLeftConstant() == null && condition.getLeftAttribute() != null &&
-        			condition.getRightConstant() != null && condition.getRightAttribute() == null) {
-        		selectTables.add(mTables.get(condition.getLeftTableName()).query(condition));
-        	}
-        	if (condition.getLeftConstant() == null && condition.getLeftAttribute() != null && 
-        			condition.getRightConstant() == null && condition.getRightAttribute() != null) {
+            if (condition.getOperator() == BinaryOperator.AND) {
+                Table second = selectedTables.pop();
+                Table first = selectedTables.pop();
+                selectedTables.push(Table.intersect(first, second));
+            } else if (condition.getOperator() == BinaryOperator.OR) {
+                Table second = selectedTables.pop();
+                Table first = selectedTables.pop();
+                selectedTables.push(Table.union(first, second));
+            } else if (condition.getLeftConstant() != null && condition.getRightConstant() != null) {
+        		selectedTables.push(mTables.get(parameter.getTablenames().get(0)).query(condition));
+        	} else if (condition.getLeftConstant() != null && condition.getRightConstant() == null) {
+        		selectedTables.push(mTables.get(condition.getRightTableName()).query(condition));
+        	} else if (condition.getLeftConstant() == null && condition.getRightConstant() != null) {
+        		selectedTables.push(mTables.get(condition.getLeftTableName()).query(condition));
+        	} else if (condition.getLeftConstant() == null && condition.getRightConstant() == null) {
         		if (!condition.getLeftTableName().equals(condition.getRightTableName())) {
-        			selectTables.add(Table.join(mTables.get(condition.getLeftTableName()), 
-        						mTables.get(condition.getRightTableName()), condition));
+        		    selectedTables.push(Table.join(mTables.get(condition.getLeftTableName()), mTables.get(condition.getRightTableName()), condition));
         		}
         		else {
-        			selectTables.add(mTables.get(condition.getLeftTableName()).query(condition));
+        			selectedTables.push(mTables.get(condition.getLeftTableName()).query(condition));
         		}
         	}
-        	if (condition.getLeftConstant() == null && condition.getLeftAttribute() == null &&
-        			condition.getRightConstant() == null && condition.getRightAttribute() == null) {
-        		if (condition.getOperator() == BinaryOperator.AND) {
-        			selectTables.add(Table.intersect(selectTables.get(0), selectTables.get(1)));
-        			selectTables.remove(0);
-        			selectTables.remove(1);
-        		}
-        		else if (condition.getOperator() == BinaryOperator.OR) {
-        			selectTables.add(Table.union(selectTables.get(0), selectTables.get(1)));
-        			selectTables.remove(0);
-        			selectTables.remove(1);
-        		}
-        	}	
         }
         for (int i = 0; i < parameter.getTargets().size(); i++) {
-        	
+
         }
+        Table result = selectedTables.pop();
+        printTable(result.getAttributeNames(), result.getAttributeTypes(), result.getAllRecords());
     }
 
     /**
@@ -484,6 +355,134 @@ public class DBManager implements DiskWritable {
             ++tableAttrIndex;
         }
         return dataRecord;
+    }
+
+    private boolean setConditionParameters(Condition condition, SQLParseResult parameter) {
+        DataTypeIdentifier leftType = null;
+        DataTypeIdentifier rightType = null;
+        if (condition.getLeftConstant() == null) {
+            if (condition.getLeftTableName() == null) {
+                int found = -1;
+                for (String tableName : parameter.getTablenames()) {
+                    int index = mTables.get(tableName).getAttributeNames().indexOf(condition.getLeftAttribute());
+                    if (index != -1 && found != -1) {
+                        System.out.println("Attribute '" + condition.getLeftAttribute() + "' is ambiguous.");
+                        return false;
+                    }
+                    leftType = mTables.get(tableName).getAttributeTypes().get(index).getType();
+                    condition.setLeftTableName(tableName);
+                    found = index;
+                }
+                if (found == -1) {
+                    System.out.println("Attribute '" + condition.getLeftAttribute() + "' don't exist in any tables.");
+                    return false;
+                }
+            }
+            else {
+                if (!mTables.containsKey(condition.getLeftTableName())) {
+                    System.out.println("Table '" + condition.getLeftTableName() + "' doesn't exist.");
+                    return false;
+                }
+                int index = mTables.get(condition.getLeftTableName()).getAttributeNames().indexOf(condition.getLeftAttribute());
+                if (index == -1) {
+                    System.out.println("Attribute '" + condition.getLeftAttribute() + "' of Table " +
+                                               condition.getLeftTableName() + " doesn't exist.");
+                    return false;
+                }
+                leftType = mTables.get(condition.getLeftTableName()).getAttributeTypes().get(index).getType();
+            }
+        }
+        else {
+            leftType = (DataChecker.isValidInteger(condition.getLeftConstant())) ? DataTypeIdentifier.INT : DataTypeIdentifier.VARCHAR;
+        }
+        if (condition.getRightConstant() == null) {
+            if (condition.getRightTableName() == null) {
+                int found = -1;
+                for (String tableName : parameter.getTablenames()) {
+                    int index = mTables.get(tableName).getAttributeNames().indexOf(condition.getRightAttribute());
+                    if (index != -1 && found != -1) {
+                        System.out.println("Attribute '" + condition.getRightAttribute() + "' is ambiguous.");
+                        return false;
+                    }
+                    rightType = mTables.get(tableName).getAttributeTypes().get(index).getType();
+                    condition.setRightTableName(tableName);
+                    found = index;
+                }
+                if (found == -1) {
+                    System.out.println("Attribute '" + condition.getRightAttribute() + "' don't exist in any tables.");
+                    return false;
+                }
+            }
+            else {
+                if (!mTables.containsKey(condition.getRightTableName())) {
+                    System.out.println("Table '" + condition.getRightTableName() + "' doesn't exist.");
+                    return false;
+                }
+                int index = mTables.get(condition.getRightTableName()).getAttributeNames().indexOf(condition.getRightAttribute());
+                if (index == -1) {
+                    System.out.println("Attribute '" + condition.getRightAttribute() + "' of Table " +
+                                               condition.getRightTableName() + " doesn't exist.");
+                    return false;
+                }
+                rightType = mTables.get(condition.getRightTableName()).getAttributeTypes().get(index).getType();
+            }
+        }
+        else {
+            rightType = (DataChecker.isValidInteger(condition.getRightConstant())) ? DataTypeIdentifier.INT : DataTypeIdentifier.VARCHAR;
+        }
+        if (leftType != rightType) {
+            System.out.println("The types in the condition are different.");
+            System.out.println("Left: " + (leftType == DataTypeIdentifier.INT ? "INT" : "VARCHAR"));
+            System.out.println("Right: " + (rightType == DataTypeIdentifier.INT ? "INT" : "VARCHAR"));
+            return false;
+        }
+        return true;
+    }
+
+    private boolean setTargetsParameters(SQLParseResult parameter) {
+        boolean selectAll = false;
+        for (Target target : parameter.getTargets()) {
+            if (target.getTableName() == null) {
+                boolean found = false;
+                if (target.getAttribute().equals("*")) {
+                    if (selectAll) {
+                        System.out.println("Duplicate * query.");
+                        return false;
+                    }
+                    selectAll = true;
+                    continue;
+                }
+                for (String tableName : parameter.getTablenames()) {
+                    if (mTables.get(tableName).getAttributeNames().contains(target.getAttribute())) {
+                        if (found) {
+                            System.out.println("Attribute '" + target.getAttribute() + "' is ambiguous.");
+                            return false;
+                        }
+                        target.setTableName(tableName);
+                        found = true;
+                    }
+                }
+            }
+            else {
+                if (selectAll) {
+                    System.out.println("Duplicate * query.");
+                    return false;
+                }
+                if (target.getAttribute().equals("*")) {
+                    selectAll = true;
+                    continue;
+                }
+                if (!mTables.containsKey(target.getTableName())) {
+                    System.out.println("Table '" + target.getTableName() + "' doesn't exist.");
+                    return false;
+                }
+                if (!mTables.get(target.getTableName()).getAttributeNames().contains(target.getAttribute())) {
+                    System.out.println("Attribute '" + target.getAttribute() + "' of Table " + target.getTableName() + " doesn't exist.");
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
