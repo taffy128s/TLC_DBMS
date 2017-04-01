@@ -1,6 +1,7 @@
 package com.github.taffy128s.tlcdbms;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -605,11 +606,46 @@ public abstract class Table implements DiskWritable {
      * @return a table of result.
      */
     public static Table union(Table first, Table second, Map<String, Table> tables) {
+        if (first.getAttributeNames().containsAll(second.getAttributeNames()) ||
+                second.getAttributeNames().containsAll(first.getAttributeNames())) {
+            if (first.getAttributeNames().size() < second.getAttributeNames().size()) {
+                int joinIndex = Arrays.asList(second.getSourceTables()).indexOf(first.getSourceTables()[0]);
+                if (joinIndex == 0) {
+                    first = join(first, tables.get(second.getSourceTables()[1]), Condition.getAlwaysTrueCondition());
+                } else {
+                    first = join(tables.get(second.getSourceTables()[0]), first, Condition.getAlwaysTrueCondition());
+                }
+            } else if (first.getAttributeNames().size() > second.getAttributeNames().size()) {
+                int joinIndex = Arrays.asList(first.getSourceTables()).indexOf(second.getSourceTables()[0]);
+                if (joinIndex == 0) {
+                    second = join(second, tables.get(first.getSourceTables()[1]), Condition.getAlwaysTrueCondition());
+                } else {
+                    second = join(tables.get(first.getSourceTables()[0]), second, Condition.getAlwaysTrueCondition());
+                }
+            }
+        } else {
+            String firstSource = first.getSourceTables()[0];
+            String secondSource = second.getSourceTables()[0];
+            first = join(first, tables.get(secondSource), Condition.getAlwaysTrueCondition());
+            second = join(tables.get(firstSource), second, Condition.getAlwaysTrueCondition());
+        }
         Table table = new ArrayListTable("$result", first.getAttributeNames(), first.getAttributeTypes(), -1, -1);
         ArrayList<DataRecord> records = first.getAllRecords();
         ArrayList<DataRecord> another = second.getAllRecords();
+        ArrayList<Integer> indices = new ArrayList<>();
+        for (String attr : second.getAttributeNames()) {
+            indices.add(first.getAttributeNames().indexOf(attr));
+        }
+        System.out.println(first.getAttributeNames());
+        System.out.println(second.getAttributeNames());
         HashSet<DataRecord> recordHashSet = new HashSet<>(records);
-        recordHashSet.addAll(another);
+        for (DataRecord record : another) {
+            DataRecord toCheck = new DataRecord();
+            for (int index : indices) {
+                toCheck.append(record.get(index));
+            }
+            recordHashSet.add(toCheck);
+        }
         ArrayList<DataRecord> result = new ArrayList<>();
         for (DataRecord record : recordHashSet) {
             result.add(record);
