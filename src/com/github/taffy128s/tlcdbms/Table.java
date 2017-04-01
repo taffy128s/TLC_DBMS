@@ -1,7 +1,6 @@
 package com.github.taffy128s.tlcdbms;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -49,6 +48,7 @@ public abstract class Table implements DiskWritable {
         mAttributeNames = attributeNames;
         mAttributeTypes = attributeTypes;
         mPrimaryKey = primaryKey;
+        mSourceTables.add(mTablename);
     }
 
     /**
@@ -637,8 +637,6 @@ public abstract class Table implements DiskWritable {
         for (String attr : second.getAttributeNames()) {
             indices.add(first.getAttributeNames().indexOf(attr));
         }
-        System.out.println(first.getAttributeNames());
-        System.out.println(second.getAttributeNames());
         HashSet<DataRecord> recordHashSet = new HashSet<>(records);
         for (DataRecord record : another) {
             DataRecord toCheck = new DataRecord();
@@ -652,6 +650,8 @@ public abstract class Table implements DiskWritable {
             result.add(record);
         }
         table.insertAll(result);
+        table.mSourceTables = new ArrayList<>();
+        table.mSourceTables.addAll(first.getSourceTables());
         return table;
     }
 
@@ -688,6 +688,8 @@ public abstract class Table implements DiskWritable {
                 }
             }
             table.insertAll(result);
+            table.mSourceTables = new ArrayList<>();
+            table.mSourceTables.addAll(first.getSourceTables());
             return table;
         } else {
             return join(first, second, Condition.getAlwaysTrueCondition());

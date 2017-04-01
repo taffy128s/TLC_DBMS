@@ -274,6 +274,7 @@ public class MultiIndexTable extends Table {
             for (int i = 0; i < attrSize; ++i) {
                 mTables.add(null);
             }
+            mSourceTables.add(mTablename);
             mPrimaryKey = Integer.parseInt(reader.readLine());
             int indicesSize = Integer.parseInt(reader.readLine());
             for (int i = 0; i < indicesSize; ++i) {

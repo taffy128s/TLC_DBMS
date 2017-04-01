@@ -188,6 +188,7 @@ public class SetTable extends Table {
                     mAttributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, limit));
                 }
             }
+            mSourceTables.add(mTablename);
             mPrimaryKey = Integer.parseInt(reader.readLine());
             int recordSize = Integer.parseInt(reader.readLine());
             ArrayList<DataRecord> records = new ArrayList<>();

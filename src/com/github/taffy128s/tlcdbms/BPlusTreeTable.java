@@ -427,6 +427,7 @@ public class BPlusTreeTable extends Table {
                     mAttributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, limit));
                 }
             }
+            mSourceTables.add(mTablename);
             mPrimaryKey = Integer.parseInt(reader.readLine());
             mKeyIndex = Integer.parseInt(reader.readLine());
             mIndexDataType = mAttributeTypes.get(mKeyIndex).getType();
