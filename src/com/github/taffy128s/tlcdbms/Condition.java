@@ -283,12 +283,12 @@ public class Condition {
      * @return a boolean as result.
      */
     public static boolean calculateResult(Object left, Object right, BinaryOperator operator) {
-        if (left == null) {
+        if (left == null || right == null) {
             switch (operator) {
                 case EQUAL:
-                    return right == null;
+                    return left == right;
                 case NOT_EQUAL:
-                    return right != null;
+                    return left != right;
                 default:
                     return false;
             }
