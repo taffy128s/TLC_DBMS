@@ -137,6 +137,11 @@ public abstract class Table implements DiskWritable {
         return mAttributeTypes;
     }
 
+    /**
+     * Get source tablenames.
+     *
+     * @return a list of all source tablenames.
+     */
     public ArrayList<String> getSourceTables() {
         return mSourceTables;
     }
@@ -508,6 +513,13 @@ public abstract class Table implements DiskWritable {
         return table;
     }
 
+    /**
+     * Generate an empty table to be used as return table.
+     * Set its tablename to "$result", and add tablename prefix
+     * to all of its attribute names if necessary.
+     *
+     * @return an empty table to be used as result.
+     */
     protected Table generateEmptyResultTable() {
         ArrayList<String> attributes = new ArrayList<>();
         ArrayList<DataType> types = new ArrayList<>();

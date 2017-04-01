@@ -1,5 +1,8 @@
 package com.github.taffy128s.tlcdbms;
 
+/**
+ * Binary operator used in this project.
+ */
 public enum BinaryOperator {
     GREATER_THAN,
     GREATER_EQUAL,

@@ -1,5 +1,10 @@
 package com.github.taffy128s.tlcdbms;
 
+/**
+ * A condition represents an equation such as a < 5 or b > 6.
+ * Basic form:<br>
+ * leftTablename leftAttribute operator rightTablename rightAttribute.
+ */
 public class Condition {
     private String mLeftConstant;
     private String mLeftTableName;

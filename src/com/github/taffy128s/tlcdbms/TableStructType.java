@@ -1,7 +1,7 @@
 package com.github.taffy128s.tlcdbms;
 
 /**
- * Created by littlebird on 2017/03/18.
+ * Table type, such as b plus tree table, hash table.
  */
 public enum TableStructType {
     NONE,

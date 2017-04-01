@@ -14,11 +14,23 @@ import java.util.ArrayList;
 public class ArrayListTable extends Table {
     private ArrayList<DataRecord> mTable;
 
+    /**
+     * Initialize an arraylist table.
+     */
     public ArrayListTable() {
         super();
         mTable = new ArrayList<>();
     }
 
+    /**
+     * Initialize an arraylist table with attribute names, types and
+     * primary key (-1 if no primary key).
+     *
+     * @param attributeNames an array list of names.
+     * @param attributeTypes an array list of types.
+     * @param primaryKey primary key index, -1 if none.
+     * @param keyIndex column index of this table, -1 if none.
+     */
     public ArrayListTable(String tablename, ArrayList<String> attributeNames, ArrayList<DataType> attributeTypes, int primaryKey, int keyIndex) {
         super(tablename, attributeNames, attributeTypes, primaryKey);
         mTable = new ArrayList<>();

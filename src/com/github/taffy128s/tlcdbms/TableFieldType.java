@@ -1,7 +1,7 @@
 package com.github.taffy128s.tlcdbms;
 
 /**
- * Created by littlebird on 2017/03/21.
+ * Table field type.
  */
 public enum TableFieldType {
     NORMAL,
