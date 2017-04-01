@@ -522,7 +522,9 @@ public abstract class Table implements DiskWritable {
         for (DataType type : mAttributeTypes) {
             types.add(type);
         }
-        return new ArrayListTable("$result", attributes, types, -1, -1);
+        Table result = new ArrayListTable("$result", attributes, types, -1, -1);
+        result.mSourceTables = new String[] { mTablename } ;
+        return result;
     }
 
     /**
