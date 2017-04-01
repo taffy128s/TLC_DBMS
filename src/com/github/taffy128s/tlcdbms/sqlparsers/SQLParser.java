@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import javax.xml.crypto.Data;
-
 /**
  * SQL parser for this project.
  */
@@ -271,7 +269,9 @@ public class SQLParser {
         }
         if (isCompareOp(operator)) {
             if (DataChecker.isValidQuotedVarChar(leftOperand)
-                    || DataChecker.isValidQuotedVarChar(rightOperand)) {
+                    || DataChecker.isValidQuotedVarChar(rightOperand)
+                    || DataChecker.isStringNull(leftOperand)
+                    || DataChecker.isStringNull(rightOperand)) {
                 System.out.println("Invalid statement: "
                         + leftOperand + " " + operator + " " + rightOperand);
                 return null;
