@@ -23,23 +23,9 @@ public class SQLParserTest {
     @Test
     public void parse() throws Exception {
         ArrayList<String> testcases = new ArrayList<>();
-        testcases.add("cReate accc(ss int PRiMArY kEy, scv varchar(-10))");
-        testcases.add("cReate table accc(ss int PRiMArY kEy, scv varchar(40));");
-        testcases.add("cReate table accc(ss int PRiMArY kEy, scv varohar(40))");
-        testcases.add("cReate table (ss int, scv varchar(40))");
-        testcases.add("cReate table as ss int, scv varchar(40))");
-        testcases.add("cREATE table ss(ss INTS, scv VARCHAR(40))");
-        testcases.add("Create table ss(ss INT, VARCHAR(40))");
-        testcases.add("create table ss(ss INT, scv VARCHAR(-1))");
-        testcases.add("create table ss(ss INT PRIMARY KEY, scv INT PRIMARY KEY)");
-        testcases.add("Create table f(_ INT PRIMARY KEY, scv INT,)");
-        testcases.add("Create table f();");
-        testcases.add("Create table F(a int,)");
-        testcases.add("insert into fuck values(a16546");
-        testcases.add("insert into fuck values(123456, 'test')");
-        testcases.add("insert into fuck values(,,,,,,,,,");
-        testcases.add("insert into fuck values(''");
-        testcases.add("insert into fuck(fuck, you) values(1,2)");
+        testcases.add("create table fuck(a int);");
+        testcases.add("create table fuckk(b int);");
+        testcases.add("select fuck.*, fuckk.* from fuck, fuckk;");
         SQLParser parser = new SQLParser();
         for (String test : testcases) {
             System.out.println("-----------------------------------");

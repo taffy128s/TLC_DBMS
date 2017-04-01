@@ -509,11 +509,12 @@ public class DBManager implements DiskWritable {
 
     private boolean setTargetsParameters(SQLParseResult parameter) {
         boolean selectAll = false;
+        boolean selectPart = false;
         for (Target target : parameter.getTargets()) {
             if (target.getTableName() == null) {
                 boolean found = false;
                 if (target.getAttribute().equals("*")) {
-                    if (selectAll) {
+                    if (selectAll || selectPart) {
                         System.out.println("Duplicate * query.");
                         return false;
                     }
@@ -537,7 +538,7 @@ public class DBManager implements DiskWritable {
                         System.out.println("Duplicate * query.");
                         return false;
                     }
-                	selectAll = true;
+                	selectPart = true;
                     continue;
                 }
                 if (!mTables.containsKey(target.getTableName())) {
