@@ -34,8 +34,6 @@ public class DBManager implements DiskWritable {
         ArrayList<String> attributeNames = parameter.getAttributeNames();
         ArrayList<DataType> attributeTypes = parameter.getAttributeTypes();
         ArrayList<TableStructure> attributeIndices = parameter.getAttributeIndices();
-        attributeNames.add(Table.AUTO_PRIMARY_KEY_NAME);
-        attributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
         int primaryKey = parameter.getPrimaryKeyIndex();
         if (mTables.containsKey(tablename)) {
             System.out.println("Table '" + tablename + "' already exists.");
@@ -143,7 +141,7 @@ public class DBManager implements DiskWritable {
         					Table second = mTables.get(tableName);
         					Table first = selectedTables.pop();
         					selectedTables.push(Table.join(first, second, Condition.getAlwaysTrueCondition()));
-        				}	
+        				}
         			}
         		}
         		if (parameter.getQueryType() == QueryType.NORMAL) {
@@ -209,12 +207,12 @@ public class DBManager implements DiskWritable {
         			Table first = selectedTables.pop();
         			Table second = mTables.get(parameter.getTargets().get(i).getTableName());
         			if (first.equals(second)) {
-        				
-        				
+
+
         			}
         		}
         	}
-        	
+
         }
         Table result = selectedTables.pop();
         printTable(result.getAttributeNames(), result.getAttributeTypes(), result.getAllRecords());
@@ -338,17 +336,12 @@ public class DBManager implements DiskWritable {
         showType.add(new DataType(DataTypeIdentifier.VARCHAR, 40));
         ArrayList<DataRecord> records = new ArrayList<>();
         for (int i = 0; i < attributeNames.size(); ++i) {
-            if (!parameter.getShowFullInfo() && attributeNames.get(i).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
-                continue;
-            }
             DataRecord record = new DataRecord();
             record.append(attributeNames.get(i));
             record.append(attributeTypes.get(i));
             TableFieldType fieldType = mTables.get(tablename).getFieldType(i);
             if (fieldType == TableFieldType.PRIMARY_KEY) {
                 record.append("PRI");
-            } else if (attributeNames.get(i).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
-                record.append("AUTO_PRI");
             } else if (fieldType == TableFieldType.KEY) {
                 record.append("KEY");
             } else {
@@ -372,18 +365,14 @@ public class DBManager implements DiskWritable {
         ArrayList<String> attributeStrings = new ArrayList<>();
         ArrayList<Integer> orderIndex = new ArrayList<>();
         for (int i = 0; i < attributeNames.size(); ++i) {
-            if (attributeNames.get(i).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
-                continue;
-            }
             if (i == table.getPrimaryKey()) {
                 attributeStrings.add(attributeNames.get(i) + " " + attributeTypes.get(i) + " PRI");
             } else {
                 attributeStrings.add(attributeNames.get(i) + " " + attributeTypes.get(i));
             }
         }
-        parameter.getBlocks().add(null);
-        int expectedSize = attributeNames.size() - 1;
-        int gotSize = parameter.getBlocks().size() - 1;
+        int expectedSize = attributeNames.size();
+        int gotSize = parameter.getBlocks().size();
         if (!parameter.isCustomOrder() && expectedSize != gotSize) {
             System.out.println("Input data tuple size doesn't match table attributes.");
             System.out.println("Table '" + parameter.getTablename() + "' attributes: " + String.join(", ", attributeStrings));
@@ -595,28 +584,18 @@ public class DBManager implements DiskWritable {
             System.out.println(" (empty set.)");
             return;
         }
-        boolean containAutoPrimaryKey = attribute.get(attribute.size() - 1).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME);
         ArrayList<Integer> columnMaxLength = new ArrayList<>();
         for (String anAttribute : attribute) {
-            if (hideAutoPrimaryKey && anAttribute.equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
-                continue;
-            }
             columnMaxLength.add(anAttribute.length() + 1);
         }
         for (DataRecord record : records) {
             ArrayList<Object> blocks = record.getAllFieldsForOutput();
             for (int i = 0; i < blocks.size(); ++i) {
-                if (containAutoPrimaryKey && hideAutoPrimaryKey && i == blocks.size() - 1) {
-                    continue;
-                }
                 columnMaxLength.set(i, Math.max(columnMaxLength.get(i), blocks.get(i).toString().length() + 1));
             }
         }
         String attrOutput = "";
         for (int i = 0; i < attribute.size(); ++i) {
-            if (hideAutoPrimaryKey && attribute.get(i).equalsIgnoreCase(Table.AUTO_PRIMARY_KEY_NAME)) {
-                continue;
-            }
             attrOutput += " | ";
             attrOutput += attribute.get(i);
             for (int j = 0; j < columnMaxLength.get(i) - attribute.get(i).length() - 1; ++j) {
@@ -630,9 +609,6 @@ public class DBManager implements DiskWritable {
         for (DataRecord record : records) {
             ArrayList<Object> blocks = record.getAllFieldsForOutput();
             for (int i = 0; i < blocks.size(); ++i) {
-                if (containAutoPrimaryKey && hideAutoPrimaryKey && i == blocks.size() - 1) {
-                    continue;
-                }
                 System.out.print(" |");
                 if (type.get(i).getType() == DataTypeIdentifier.INT) {
                     for (int j = 0; j < columnMaxLength.get(i) - blocks.get(i).toString().length(); ++j) {

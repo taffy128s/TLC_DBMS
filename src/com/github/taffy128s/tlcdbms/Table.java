@@ -12,8 +12,6 @@ import java.util.Map;
  * including CREATE, INSERT, SELECT...
  */
 public abstract class Table implements DiskWritable {
-    public static final String AUTO_PRIMARY_KEY_NAME = "$__AUTO_PRIMARY_KEY__";
-
     protected String mTablename;
     protected ArrayList<String> mAttributeNames;
     protected ArrayList<DataType> mAttributeTypes;
