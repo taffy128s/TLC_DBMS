@@ -33,27 +33,36 @@ public class Interpreter {
         String singleIns = "";
         Reader reader = new InputStreamReader(System.in);
         int temp;
-        boolean printOnce = false;
+        boolean justExecuted = false;
+        boolean haveOneQuote = false;
         try {
             while ((temp = reader.read()) != -1) {
                 char c = (char) temp;
-                if (printOnce && !(c == '\t' || c == '\n' || c == '\r' || c == ' ')) {
-                    printOnce = false;
+                if (justExecuted && !(c == '\t' || c == '\n' || c == '\r' || c == ' ')) {
+                    justExecuted = false;
                 }
-                if (c == ';') {
-                    singleIns = noSpaceAtBeginning(singleIns);
-                    if (!singleIns.equals("")) {
-                        execute(singleIns);
-                        singleIns = "";
-                    }
-                    printOnce = true;
-                } else if (c == '\n') {
+                if (haveOneQuote) {
+                    if (c == '\'') haveOneQuote = false;
                     singleIns += c;
-                    if (printOnce) {
-                        System.out.print(">> ");
-                        printOnce = false;
-                    } else System.out.print("-> ");
-                } else singleIns += c;
+                } else {
+                    if (c == ';') {
+                        singleIns = noSpaceAtBeginning(singleIns);
+                        if (!singleIns.equals("")) {
+                            execute(singleIns);
+                            singleIns = "";
+                        }
+                        justExecuted = true;
+                    } else if (c == '\n') {
+                        singleIns += c;
+                        if (justExecuted) {
+                            System.out.print(">> ");
+                            justExecuted = false;
+                        } else System.out.print("-> ");
+                    } else if (c == '\'') {
+                        haveOneQuote = !haveOneQuote;
+                        singleIns += c;
+                    } else singleIns += c;
+                }
             }
         } catch (IOException e) {
             System.out.println("Goodbye...");

@@ -25,26 +25,35 @@ public class FileInterpreter extends Interpreter {
     public void start() {
         try {
             String singleIns = "";
-            boolean haveOne = false;
             int temp;
+            boolean haveOneQuote = false;
             while ((temp = inputStream.read()) != -1) {
                 char c = (char) temp;
-                if (c == '#' && !haveOne) {
-                    ignoreTillNewLine();
-                    singleIns += ' ';
-                    continue;
-                }
-                if (c == ';') {
-                    singleIns = noSpaceAtBeginning(singleIns);
-                    System.out.println(">> " + singleIns);
-                    if (!singleIns.equals("")) {
-                        execute(singleIns);
-                        singleIns = "";
-                    }
-                } else if (c == '\'') {
+                if (haveOneQuote) {
+                    if (c == '\'') haveOneQuote = false;
                     singleIns += c;
-                    haveOne = !haveOne;
-                } else singleIns += c;
+                } else {
+                    if (c == '#') {
+                        ignoreTillNewLine();
+                        singleIns += ' ';
+                    } else if (c == ';') {
+                        singleIns = noSpaceAtBeginning(singleIns);
+                        System.out.println(">> " + singleIns);
+                        if (!singleIns.equals("")) {
+                            execute(singleIns);
+                            singleIns = "";
+                        }
+                    } else if (c == '\'') {
+                        singleIns += c;
+                        haveOneQuote = true;
+                    } else singleIns += c;
+                }
+            }
+            singleIns = noSpaceAtBeginning(singleIns);
+            if (haveOneQuote) {
+                System.out.println("Quotes not matched, file: " + mFilename);
+            } else if (!singleIns.equals("")) {
+                System.out.println("Missing semicolon in the end, file: " + mFilename);
             }
         } catch (Exception e) {
             System.out.println(mFilename + ": read file error.");
