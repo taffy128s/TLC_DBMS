@@ -524,9 +524,11 @@ public class DBManager implements DiskWritable {
                         System.out.println("Attribute '" + condition.getLeftAttribute() + "' is ambiguous.");
                         return false;
                     }
-                    leftType = mTables.get(tableName).getAttributeTypes().get(index).getType();
-                    condition.setLeftTableName(tableName);
-                    found = index;
+                    if (index != -1) {
+                    	leftType = mTables.get(tableName).getAttributeTypes().get(index).getType();
+                        condition.setLeftTableName(tableName);
+                        found = index;
+                    }
                 }
                 if (found == -1) {
                     System.out.println("Attribute '" + condition.getLeftAttribute() + "' don't exist in any tables.");
