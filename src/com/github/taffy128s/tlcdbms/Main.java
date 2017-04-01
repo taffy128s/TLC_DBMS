@@ -13,11 +13,13 @@ public class Main {
         if (args.length == 0) {
             Interpreter interpreter = new Interpreter();
             interpreter.start();
-        } else if (args.length == 1) {
-            FileInterpreter fileInterpreter = new FileInterpreter(args[0]);
-            fileInterpreter.start();
+        } else if (args.length > 0) {
+            for (String arg : args) {
+                FileInterpreter fileInterpreter = new FileInterpreter(arg);
+                fileInterpreter.start();
+            }
         } else {
-            System.out.println("usage: executable [file]");
+            System.out.println("usage: executable [file1] [file2] [file3] ...");
         }
     }
 }
