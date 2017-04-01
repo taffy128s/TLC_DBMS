@@ -29,13 +29,25 @@ INSERT INTO table_name[(attr_name[, attr_name ...])] VALUES(data[, data...]);
 
 SELECT Syntax
 ```
-SELECT select_expr [, select_expr ...] FROM table_references [WHERE where_condition];
+SELECT select_target FROM table_references [WHERE where_condition];
 
-select_expr:
-    [prefix.]* | [prefix.]attr_name
+select_target:
+    * | target [, target ...]
+
+target:
+    attr_name | prefix.{* | attr_name}
 
 table_references:
-    table_name [AS table_alias]
+    table_name [AS table_alias] [, table_name [AS table_alias] ...]
+    
+where_condition:
+    {operand operator operand [{AND | OR} operand operator operand]
+
+operand:
+    [prefix.]attr_name | constant
+
+operator:
+    > | >= | < | <= | <> | =
 ```
 
 DROP Syntax
