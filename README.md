@@ -27,6 +27,11 @@ INSERT Syntax
 INSERT INTO table_name[(attr_name[, attr_name ...])] VALUES(data[, data...]);
 ```
 
+SELECT Syntax
+```
+SELECT select_expr [, select_expr ...] FROM table_references [WHERE where_condition];
+```
+
 DROP Syntax
 ```
 DROP TABLE table_name[, table_name...];
