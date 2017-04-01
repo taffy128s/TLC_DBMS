@@ -2,7 +2,6 @@ package com.github.taffy128s.tlcdbms;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,6 +20,8 @@ public abstract class Table implements DiskWritable {
     protected int mPrimaryKey;
     protected int mAutoPrimaryKeyCounter;
 
+    protected String[] mSourceTables;
+
     /**
      * Initialize a Table.
      * Note that this constructor should only be called when restoring from disk.
@@ -32,6 +33,7 @@ public abstract class Table implements DiskWritable {
         mAutoPrimaryKeyTable = new HashSet<>();
         mPrimaryKey = -1;
         mAutoPrimaryKeyCounter = 0;
+        mSourceTables = null;
     }
 
     /**
@@ -134,6 +136,10 @@ public abstract class Table implements DiskWritable {
      */
     public ArrayList<DataType> getAttributeTypes() {
         return mAttributeTypes;
+    }
+
+    public String[] getSourceTables() {
+        return mSourceTables;
     }
 
     /**
@@ -584,18 +590,19 @@ public abstract class Table implements DiskWritable {
                 }
             }
         }
+        table.mSourceTables = new String[] { firstTable.getTablename(), secondTable.getTablename() };
         return table;
     }
 
     /**
-     * Get union (OR) of two lists.
+     * Get union (OR) of two tables.
      * Set union.
      *
      * @param first first table.
      * @param second second table.
      * @return a table of result.
      */
-    public static Table union(Table first, Table second) {
+    public static Table union(Table first, Table second, Map<String, Table> tables) {
         Table table = new ArrayListTable("$result", first.getAttributeNames(), first.getAttributeTypes(), -1, -1);
         ArrayList<DataRecord> records = first.getAllRecords();
         ArrayList<DataRecord> another = second.getAllRecords();
@@ -610,7 +617,7 @@ public abstract class Table implements DiskWritable {
     }
 
     /**
-     * Get intersection (AND) of two lists.
+     * Get intersection (AND) of two tables.
      * Set intersection.
      *
      * @param first first table.

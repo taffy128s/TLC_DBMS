@@ -112,7 +112,7 @@ public class DBManager implements DiskWritable {
             } else if (condition.getOperator() == BinaryOperator.OR) {
                 Table second = selectedTables.pop();
                 Table first = selectedTables.pop();
-                selectedTables.push(Table.union(first, second));
+                selectedTables.push(Table.union(first, second, mTables));
             } else if (condition.getLeftConstant() != null && condition.getRightConstant() != null) {
         		selectedTables.push(mTables.get(parameter.getTablenames().get(0)).query(condition));
         	} else if (condition.getLeftConstant() != null && condition.getRightConstant() == null) {
