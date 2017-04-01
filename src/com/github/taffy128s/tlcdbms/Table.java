@@ -193,7 +193,7 @@ public abstract class Table implements DiskWritable {
             Object left = Condition.getConstant(condition.getLeftConstant());
             Object right = Condition.getConstant(condition.getRightConstant());
             boolean result = Condition.calculateResult(left, right, condition.getOperator());
-            Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
+            Table table = generateEmptyResultTable();
             if (result) {
                 table.insertAll(getAllRecords());
                 return table;
@@ -219,7 +219,7 @@ public abstract class Table implements DiskWritable {
             BinaryOperator operator = condition.getOperator();
             return query(columnIndex, right, operator);
         } else {
-            Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
+            Table table = generateEmptyResultTable();
             if (!condition.getLeftTableName().equals(condition.getRightTableName())) {
                 return table;
             }
@@ -267,7 +267,7 @@ public abstract class Table implements DiskWritable {
             case GREATER_EQUAL:
                 return queryGreaterEqual(columnIndex, key);
         }
-        return new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
+        return generateEmptyResultTable();
     }
 
     /**
@@ -281,7 +281,7 @@ public abstract class Table implements DiskWritable {
     public Table queryEqual(int columnIndex, Object key) {
         ArrayList<DataRecord> result = new ArrayList<>();
         ArrayList<DataRecord> allRecords = getAllRecords();
-        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = generateEmptyResultTable();
         if (key == null) {
             for (DataRecord record : allRecords) {
                 if (record.get(columnIndex) == null) {
@@ -311,7 +311,7 @@ public abstract class Table implements DiskWritable {
     public Table queryNotEqual(int columnIndex, Object key) {
         ArrayList<DataRecord> result = new ArrayList<>();
         ArrayList<DataRecord> allRecords = getAllRecords();
-        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = generateEmptyResultTable();
         if (key == null) {
             for (DataRecord record : allRecords) {
                 if (record.get(columnIndex) != null) {
@@ -339,7 +339,7 @@ public abstract class Table implements DiskWritable {
      * @return a table with all DataRecords as result.
      */
     public Table queryLess(int columnIndex, Object key) {
-        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = generateEmptyResultTable();
         if (key == null) {
             return table;
         }
@@ -363,7 +363,7 @@ public abstract class Table implements DiskWritable {
      * @return a table with all DataRecords as result.
      */
     public Table queryLessEqual(int columnIndex, Object key) {
-        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = generateEmptyResultTable();
         if (key == null) {
             return table;
         }
@@ -387,7 +387,7 @@ public abstract class Table implements DiskWritable {
      * @return a table with all DataRecords as result.
      */
     public Table queryGreater(int columnIndex, Object key) {
-        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = generateEmptyResultTable();
         if (key == null) {
             return table;
         }
@@ -411,7 +411,7 @@ public abstract class Table implements DiskWritable {
      * @return a table with all DataRecords as result.
      */
     public Table queryGreaterEqual(int columnIndex, Object key) {
-        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = generateEmptyResultTable();
         if (key == null) {
             return table;
         }
@@ -435,7 +435,7 @@ public abstract class Table implements DiskWritable {
      * @return a table with all DataRecords as result.
      */
     public Table queryRange(int columnIndex, Object fromKey, Object toKey) {
-        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = generateEmptyResultTable();
         if (fromKey == null || toKey == null) {
             return table;
         }
@@ -466,7 +466,7 @@ public abstract class Table implements DiskWritable {
      * @return a table with all DataRecords as result.
      */
     public Table queryRange(int columnIndex, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive) {
-        Table table = new ArrayListTable("$result", mAttributeNames, mAttributeTypes, -1, -1);
+        Table table = generateEmptyResultTable();
         if (fromKey == null || toKey == null) {
             return table;
         }
@@ -500,6 +500,18 @@ public abstract class Table implements DiskWritable {
         }
         table.insertAll(result);
         return table;
+    }
+
+    protected Table generateEmptyResultTable() {
+        ArrayList<String> attributes = new ArrayList<>();
+        ArrayList<DataType> types = new ArrayList<>();
+        for (String attr : mAttributeNames) {
+            attributes.add(mTablename + "." + attr);
+        }
+        for (DataType type : mAttributeTypes) {
+            types.add(type);
+        }
+        return new ArrayListTable("$result", attributes, types, -1, -1);
     }
 
     /**
