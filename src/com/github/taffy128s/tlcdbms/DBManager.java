@@ -90,6 +90,9 @@ public class DBManager implements DiskWritable {
         		return;
         	}
         }
+        if (parameter.getConditions() == null) {
+            parameter.setConditions(new ArrayList<>());
+        }
         for (Condition condition : parameter.getConditions()) {
             if (condition.getOperator() == BinaryOperator.AND || condition.getOperator() == BinaryOperator.OR) {
                 continue;
@@ -102,120 +105,198 @@ public class DBManager implements DiskWritable {
             return;
         }
         Stack<Table> selectedTables = new Stack<>();
-        for (Condition condition : parameter.getConditions()) {
-            if (condition.getOperator() == BinaryOperator.AND) {
-                Table second = selectedTables.pop();
-                Table first = selectedTables.pop();
-                selectedTables.push(Table.intersect(first, second, mTables));
-            } else if (condition.getOperator() == BinaryOperator.OR) {
-                Table second = selectedTables.pop();
-                Table first = selectedTables.pop();
-                selectedTables.push(Table.union(first, second, mTables));
-            } else if (condition.getLeftConstant() != null && condition.getRightConstant() != null) {
-        		selectedTables.push(mTables.get(parameter.getTablenames().get(0)).query(condition));
-        	} else if (condition.getLeftConstant() != null && condition.getRightConstant() == null) {
-        		selectedTables.push(mTables.get(condition.getRightTableName()).query(condition));
-        	} else if (condition.getLeftConstant() == null && condition.getRightConstant() != null) {
-        		selectedTables.push(mTables.get(condition.getLeftTableName()).query(condition));
-        	} else if (condition.getLeftConstant() == null && condition.getRightConstant() == null) {
-        		if (!condition.getLeftTableName().equals(condition.getRightTableName())) {
-        		    selectedTables.push(Table.join(mTables.get(condition.getLeftTableName()), mTables.get(condition.getRightTableName()), condition));
-        		}
-        		else {
-        			selectedTables.push(mTables.get(condition.getLeftTableName()).query(condition));
-        		}
-        	}
+        if (parameter.getConditions().isEmpty()) {
+            selectedTables.push(mTables.get(parameter.getTablenames().get(0)).query(Condition.getAlwaysTrueCondition()));
+        } else {
+            for (Condition condition : parameter.getConditions()) {
+                if (condition.getOperator() == BinaryOperator.AND) {
+                    Table second = selectedTables.pop();
+                    Table first = selectedTables.pop();
+                    selectedTables.push(Table.intersect(first, second, mTables));
+                } else if (condition.getOperator() == BinaryOperator.OR) {
+                    Table second = selectedTables.pop();
+                    Table first = selectedTables.pop();
+                    selectedTables.push(Table.union(first, second, mTables));
+                } else if (condition.getLeftConstant() != null && condition.getRightConstant() != null) {
+                    selectedTables.push(mTables.get(parameter.getTablenames().get(0)).query(condition));
+                } else if (condition.getLeftConstant() != null && condition.getRightConstant() == null) {
+                    selectedTables.push(mTables.get(condition.getRightTableName()).query(condition));
+                } else if (condition.getLeftConstant() == null && condition.getRightConstant() != null) {
+                    selectedTables.push(mTables.get(condition.getLeftTableName()).query(condition));
+                } else if (condition.getLeftConstant() == null && condition.getRightConstant() == null) {
+                    if (!condition.getLeftTableName().equals(condition.getRightTableName())) {
+                        selectedTables.push(Table.join(mTables.get(condition.getLeftTableName()), mTables.get(condition.getRightTableName()), condition));
+                    } else {
+                        selectedTables.push(mTables.get(condition.getLeftTableName()).query(condition));
+                    }
+                }
+            }
         }
-        for (int i = 0; i < parameter.getTargets().size(); i++) {
-        	if (parameter.getTargets().get(i).getTableName() == null && parameter.getTargets().get(i).getAttribute().equals("*")) {
-        		if (!selectedTables.isEmpty()) {
-        			Table result = selectedTables.pop();
-        			printTable(result.getAttributeNames(), result.getAttributeTypes(), result.getAllRecords());
-        		}
-        		else {
-        			for (String tableName : parameter.getTablenames()) {
-        				if (selectedTables.isEmpty()) {
-        					selectedTables.push(mTables.get(tableName));
-        				}
-        				else {
-        					Table second = mTables.get(tableName);
-        					Table first = selectedTables.pop();
-        					selectedTables.push(Table.join(first, second, Condition.getAlwaysTrueCondition()));
-        				}
-        			}
-        		}
-        		if (parameter.getQueryType() == QueryType.NORMAL) {
-        			Table result = selectedTables.pop();
-        			printTable(result.getAttributeNames(), result.getAttributeTypes(), result.getAllRecords());
-        			return;
-        		}
-        		else if (parameter.getQueryType() == QueryType.COUNT) {
-        			Table result = selectedTables.pop();
-        			ArrayList<String> attributes = new ArrayList<String>();
-        			ArrayList<DataType> types = new ArrayList<DataType>();
-        			ArrayList<DataRecord> records = new ArrayList<DataRecord>();
-        			attributes.add(new String("COUNT"));
-        			types.add(new DataType(DataTypeIdentifier.INT, 0));
-        			DataRecord record = new DataRecord();
-        			record.append(result.getAllRecords().size());
-        			records.add(record);
-        			printTable(attributes, types, records);
-        			return;
-        		}
-        		else {
-        			System.out.println("Invalid Aggregation function : SUM(*)");
-        			return;
-        		}
-        	}
-        	else if (parameter.getTargets().get(i).getTableName() != null && parameter.getTargets().get(i).getAttribute().equals("*")) {
-        		if (selectedTables.isEmpty()) {
-        			selectedTables.push(mTables.get(parameter.getTargets().get(i).getTableName()));
-        		}
-        		else {
-        			Table first = selectedTables.pop();
-        			Table second = mTables.get(parameter.getTargets().get(i).getTableName());
-        			if (first.equals(second)) {
-        				selectedTables.push(first);
-        			}
-        			else {
-        				selectedTables.push(Table.join(first, second, Condition.getAlwaysTrueCondition()));
-        			}
-        		}
-        		if (parameter.getQueryType() == QueryType.COUNT) {
-        			Table result = selectedTables.pop();
-        			ArrayList<String> attributes = new ArrayList<String>();
-        			ArrayList<DataType> types = new ArrayList<DataType>();
-        			ArrayList<DataRecord> records = new ArrayList<DataRecord>();
-        			attributes.add(new String("COUNT"));
-        			types.add(new DataType(DataTypeIdentifier.INT, 0));
-        			DataRecord record = new DataRecord();
-        			record.append(result.getAllRecords().size());
-        			records.add(record);
-        			printTable(attributes, types, records);
-        			return;
-        		}
-        		else if (parameter.getQueryType() == QueryType.SUM) {
-        			System.out.println("Invalid Aggregation function : SUM(*)");
-        			return;
-        		}
-        	}
-        	else {
-        		if (selectedTables.isEmpty()) {
-        			selectedTables.push(mTables.get(parameter.getTargets().get(i).getTableName()));
-        		}
-        		else {
-        			Table first = selectedTables.pop();
-        			Table second = mTables.get(parameter.getTargets().get(i).getTableName());
-        			if (first.equals(second)) {
-
-
-        			}
-        		}
-        	}
-
+        Table resultTable = selectedTables.pop();
+        for (String tablename : parameter.getTablenames()) {
+            if (!resultTable.getSourceTables().contains(tablename)) {
+                resultTable = Table.join(resultTable, mTables.get(tablename), Condition.getAlwaysTrueCondition());
+            }
         }
-        Table result = selectedTables.pop();
-        printTable(result.getAttributeNames(), result.getAttributeTypes(), result.getAllRecords());
+        if (parameter.getQueryType() == QueryType.COUNT) {
+            int answer = resultTable.getAllRecords().size();
+            ArrayList<String> attributes = new ArrayList<>();
+            ArrayList<DataType> types = new ArrayList<>();
+            ArrayList<DataRecord> records = new ArrayList<>();
+            DataRecord record = new DataRecord();
+            record.append(answer);
+            attributes.add("COUNT");
+            types.add(new DataType(DataTypeIdentifier.INT, -1));
+            records.add(record);
+            printTable(attributes, types, records);
+        } else if (parameter.getQueryType() == QueryType.SUM) {
+            String target = parameter.getTargets().get(0).getTableName() + "." + parameter.getTargets().get(0).getAttribute();
+            int index = resultTable.getAttributeNames().indexOf(target);
+            ArrayList<DataRecord> allRecords = resultTable.getAllRecords();
+            int answer = 0;
+            for (DataRecord record : allRecords) {
+                answer += (Integer) record.get(index);
+            }
+            ArrayList<String> attributes = new ArrayList<>();
+            ArrayList<DataType> types = new ArrayList<>();
+            ArrayList<DataRecord> records = new ArrayList<>();
+            DataRecord record = new DataRecord();
+            record.append(answer);
+            attributes.add("SUM");
+            types.add(new DataType(DataTypeIdentifier.INT, -1));
+            records.add(record);
+            printTable(attributes, types, records);
+        } else {
+            ArrayList<Integer> targetIndices = new ArrayList<>();
+            for (int i = 0; i < parameter.getTargets().size(); ++i) {
+                Target target = parameter.getTargets().get(i);
+                if (target.getAttribute().equals("*")) {
+                    if (target.getTableName() == null) {
+                        printTable(resultTable.getAttributeNames(), resultTable.getAttributeTypes(), resultTable.getAllRecords());
+                        return;
+                    } else {
+                        String tablename = target.getTableName();
+                        for (int j = 0; j < resultTable.getAttributeNames().size(); ++j) {
+                            if (resultTable.getAttributeNames().get(j).startsWith(tablename)) {
+                                targetIndices.add(j);
+                            }
+                        }
+                    }
+                } else {
+                    String tablename = target.getTableName();
+                    String attrName = target.getAttribute();
+                    String targetAttr = tablename + "." + attrName;
+                    targetIndices.add(resultTable.getAttributeNames().indexOf(targetAttr));
+                }
+            }
+            ArrayList<DataRecord> allRecords = resultTable.getAllRecords();
+            ArrayList<String> attributes = new ArrayList<>();
+            ArrayList<DataType> types = new ArrayList<>();
+            ArrayList<DataRecord> records = new ArrayList<>();
+            for (int index : targetIndices) {
+                attributes.add(resultTable.getAttributeNames().get(index));
+                types.add(resultTable.getAttributeTypes().get(index));
+            }
+            for (DataRecord record : allRecords) {
+                DataRecord newRecord = new DataRecord();
+                for (int index : targetIndices) {
+                    newRecord.append(record.get(index));
+                }
+                records.add(newRecord);
+            }
+            printTable(attributes,types, records);
+        }
+
+//        for (int i = 0; i < parameter.getTargets().size(); i++) {
+//        	if (parameter.getTargets().get(i).getTableName() == null && parameter.getTargets().get(i).getAttribute().equals("*")) {
+//        		if (!selectedTables.isEmpty()) {
+//        			Table result = selectedTables.pop();
+//        			printTable(result.getAttributeNames(), result.getAttributeTypes(), result.getAllRecords());
+//        		}
+//        		else {
+//        			for (String tableName : parameter.getTablenames()) {
+//        				if (selectedTables.isEmpty()) {
+//        					selectedTables.push(mTables.get(tableName));
+//        				}
+//        				else {
+//        					Table second = mTables.get(tableName);
+//        					Table first = selectedTables.pop();
+//        					selectedTables.push(Table.join(first, second, Condition.getAlwaysTrueCondition()));
+//        				}
+//        			}
+//        		}
+//        		if (parameter.getQueryType() == QueryType.NORMAL) {
+//        			Table result = selectedTables.pop();
+//        			printTable(result.getAttributeNames(), result.getAttributeTypes(), result.getAllRecords());
+//        			return;
+//        		}
+//        		else if (parameter.getQueryType() == QueryType.COUNT) {
+//        			Table result = selectedTables.pop();
+//        			ArrayList<String> attributes = new ArrayList<String>();
+//        			ArrayList<DataType> types = new ArrayList<DataType>();
+//        			ArrayList<DataRecord> records = new ArrayList<DataRecord>();
+//        			attributes.add(new String("COUNT"));
+//        			types.add(new DataType(DataTypeIdentifier.INT, 0));
+//        			DataRecord record = new DataRecord();
+//        			record.append(result.getAllRecords().size());
+//        			records.add(record);
+//        			printTable(attributes, types, records);
+//        			return;
+//        		}
+//        		else {
+//        			System.out.println("Invalid Aggregation function : SUM(*)");
+//        			return;
+//        		}
+//        	}
+//        	else if (parameter.getTargets().get(i).getTableName() != null && parameter.getTargets().get(i).getAttribute().equals("*")) {
+//        		if (selectedTables.isEmpty()) {
+//        			selectedTables.push(mTables.get(parameter.getTargets().get(i).getTableName()));
+//        		}
+//        		else {
+//        			Table first = selectedTables.pop();
+//        			Table second = mTables.get(parameter.getTargets().get(i).getTableName());
+//        			if (first.equals(second)) {
+//        				selectedTables.push(first);
+//        			}
+//        			else {
+//        				selectedTables.push(Table.join(first, second, Condition.getAlwaysTrueCondition()));
+//        			}
+//        		}
+//        		if (parameter.getQueryType() == QueryType.COUNT) {
+//        			Table result = selectedTables.pop();
+//        			ArrayList<String> attributes = new ArrayList<String>();
+//        			ArrayList<DataType> types = new ArrayList<DataType>();
+//        			ArrayList<DataRecord> records = new ArrayList<DataRecord>();
+//        			attributes.add(new String("COUNT"));
+//        			types.add(new DataType(DataTypeIdentifier.INT, 0));
+//        			DataRecord record = new DataRecord();
+//        			record.append(result.getAllRecords().size());
+//        			records.add(record);
+//        			printTable(attributes, types, records);
+//        			return;
+//        		}
+//        		else if (parameter.getQueryType() == QueryType.SUM) {
+//        			System.out.println("Invalid Aggregation function : SUM(*)");
+//        			return;
+//        		}
+//        	}
+//        	else {
+//        		if (selectedTables.isEmpty()) {
+//        			selectedTables.push(mTables.get(parameter.getTargets().get(i).getTableName()));
+//        		}
+//        		else {
+//        			Table first = selectedTables.pop();
+//        			Table second = mTables.get(parameter.getTargets().get(i).getTableName());
+//        			if (first.equals(second)) {
+//
+//
+//        			}
+//        		}
+//        	}
+//
+//        }
+//        Table result = selectedTables.pop();
+//        printTable(result.getAttributeNames(), result.getAttributeTypes(), result.getAllRecords());
     }
 
     /**
