@@ -19,7 +19,7 @@ public abstract class Table implements DiskWritable {
     protected int mPrimaryKey;
     protected int mAutoPrimaryKeyCounter;
 
-    protected String[] mSourceTables;
+    protected ArrayList<String> mSourceTables;
 
     /**
      * Initialize a Table.
@@ -32,7 +32,7 @@ public abstract class Table implements DiskWritable {
         mAutoPrimaryKeyTable = new HashSet<>();
         mPrimaryKey = -1;
         mAutoPrimaryKeyCounter = 0;
-        mSourceTables = null;
+        mSourceTables = new ArrayList<>();
     }
 
     /**
@@ -137,7 +137,7 @@ public abstract class Table implements DiskWritable {
         return mAttributeTypes;
     }
 
-    public String[] getSourceTables() {
+    public ArrayList<String> getSourceTables() {
         return mSourceTables;
     }
 
@@ -522,7 +522,8 @@ public abstract class Table implements DiskWritable {
             types.add(type);
         }
         Table result = new ArrayListTable("$result", attributes, types, -1, -1);
-        result.mSourceTables = new String[] { mTablename } ;
+        result.mSourceTables = new ArrayList<>();
+        result.mSourceTables.add(mTablename);
         return result;
     }
 
@@ -591,7 +592,9 @@ public abstract class Table implements DiskWritable {
                 }
             }
         }
-        table.mSourceTables = new String[] { firstTable.getTablename(), secondTable.getTablename() };
+        table.mSourceTables = new ArrayList<>();
+        table.mSourceTables.addAll(firstTable.getSourceTables());
+        table.mSourceTables.addAll(secondTable.getSourceTables());
         return table;
     }
 
@@ -607,23 +610,23 @@ public abstract class Table implements DiskWritable {
         if (first.getAttributeNames().containsAll(second.getAttributeNames()) ||
                 second.getAttributeNames().containsAll(first.getAttributeNames())) {
             if (first.getAttributeNames().size() < second.getAttributeNames().size()) {
-                int joinIndex = Arrays.asList(second.getSourceTables()).indexOf(first.getSourceTables()[0]);
+                int joinIndex = second.getSourceTables().indexOf(first.getSourceTables().get(0));
                 if (joinIndex == 0) {
-                    first = join(first, tables.get(second.getSourceTables()[1]), Condition.getAlwaysTrueCondition());
+                    first = join(first, tables.get(second.getSourceTables().get(1)), Condition.getAlwaysTrueCondition());
                 } else {
-                    first = join(tables.get(second.getSourceTables()[0]), first, Condition.getAlwaysTrueCondition());
+                    first = join(tables.get(second.getSourceTables().get(0)), first, Condition.getAlwaysTrueCondition());
                 }
             } else if (first.getAttributeNames().size() > second.getAttributeNames().size()) {
-                int joinIndex = Arrays.asList(first.getSourceTables()).indexOf(second.getSourceTables()[0]);
+                int joinIndex = first.getSourceTables().indexOf(second.getSourceTables().get(0));
                 if (joinIndex == 0) {
-                    second = join(second, tables.get(first.getSourceTables()[1]), Condition.getAlwaysTrueCondition());
+                    second = join(second, tables.get(first.getSourceTables().get(1)), Condition.getAlwaysTrueCondition());
                 } else {
-                    second = join(tables.get(first.getSourceTables()[0]), second, Condition.getAlwaysTrueCondition());
+                    second = join(tables.get(first.getSourceTables().get(0)), second, Condition.getAlwaysTrueCondition());
                 }
             }
         } else {
-            String firstSource = first.getSourceTables()[0];
-            String secondSource = second.getSourceTables()[0];
+            String firstSource = first.getSourceTables().get(0);
+            String secondSource = second.getSourceTables().get(0);
             first = join(first, tables.get(secondSource), Condition.getAlwaysTrueCondition());
             second = join(tables.get(firstSource), second, Condition.getAlwaysTrueCondition());
         }
