@@ -139,17 +139,27 @@ public class DBManager implements DiskWritable {
             }
         }
         if (parameter.getQueryType() == QueryType.COUNT) {
+            String queryTargetString = "COUNT(";
+            if (parameter.getTargets().get(0).getTableName() != null) {
+                queryTargetString += parameter.getTargets().get(0).getTableName() + ".";
+            }
+            queryTargetString += parameter.getTargets().get(0).getAttribute() + ")";
             int answer = resultTable.getAllRecords().size();
             ArrayList<String> attributes = new ArrayList<>();
             ArrayList<DataType> types = new ArrayList<>();
             ArrayList<DataRecord> records = new ArrayList<>();
             DataRecord record = new DataRecord();
             record.append(answer);
-            attributes.add("COUNT");
+            attributes.add(queryTargetString);
             types.add(new DataType(DataTypeIdentifier.INT, -1));
             records.add(record);
             printTable(attributes, types, records);
         } else if (parameter.getQueryType() == QueryType.SUM) {
+            String queryTargetString = "SUM(";
+            if (parameter.getTargets().get(0).getTableName() != null) {
+                queryTargetString += parameter.getTargets().get(0).getTableName() + ".";
+            }
+            queryTargetString += parameter.getTargets().get(0).getAttribute() + ")";
             String target = parameter.getTargets().get(0).getTableName() + "." + parameter.getTargets().get(0).getAttribute();
             int index = resultTable.getAttributeNames().indexOf(target);
             ArrayList<DataRecord> allRecords = resultTable.getAllRecords();
@@ -162,7 +172,7 @@ public class DBManager implements DiskWritable {
             ArrayList<DataRecord> records = new ArrayList<>();
             DataRecord record = new DataRecord();
             record.append(answer);
-            attributes.add("SUM");
+            attributes.add(queryTargetString);
             types.add(new DataType(DataTypeIdentifier.INT, -1));
             records.add(record);
             printTable(attributes, types, records);
