@@ -610,30 +610,6 @@ public abstract class Table implements DiskWritable {
     }
 
     /**
-     * Get union (OR) of lists given.
-     * Set union.
-     *
-     * @param tables a list of tables.
-     * @return a table of result.
-     */
-    public static Table union(List<Table> tables) {
-        if (tables.isEmpty()) {
-            return new ArrayListTable();
-        }
-        Table table = new ArrayListTable("$result", tables.get(0).getAttributeNames(), tables.get(0).getAttributeTypes(), -1, -1);
-        HashSet<DataRecord> recordHashSet = new HashSet<>(tables.get(0).getAllRecords());
-        for (int i = 1; i < tables.size(); ++i) {
-            recordHashSet.addAll(tables.get(i).getAllRecords());
-        }
-        ArrayList<DataRecord> result = new ArrayList<>();
-        for (DataRecord record : recordHashSet) {
-            result.add(record);
-        }
-        table.insertAll(result);
-        return table;
-    }
-
-    /**
      * Get intersection (AND) of two lists.
      * Set intersection.
      *
@@ -670,25 +646,6 @@ public abstract class Table implements DiskWritable {
         } else {
             return join(first, second, Condition.getAlwaysTrueCondition());
         }
-    }
-
-    /**
-     * Get intersection (AND) of lists given.
-     * Set intersection.
-     *
-     * @param tables a list of tables.
-     * @return a table of result.
-     */
-    public static Table intersect(List<Table> tables, Map<String, Table> tableMap) {
-        if (tables.isEmpty()) {
-            return new ArrayListTable();
-        }
-        Table table = new ArrayListTable("$result", tables.get(0).getAttributeNames(), tables.get(0).getAttributeTypes(), -1, -1);
-        table.insertAll(tables.get(0).getAllRecords());
-        for (int i = 1; i < tables.size(); ++i) {
-            table = intersect(table, tables.get(i), tableMap);
-        }
-        return table;
     }
 
     @Override
