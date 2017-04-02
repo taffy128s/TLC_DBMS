@@ -202,6 +202,7 @@ public class SQLParser {
         }
         result.setTargets(targets);
         result.setTablenames(tableNameList);
+        result.setTableAliases(aliasMap);
         if (checkTokenIgnoreCase("where", false)) {
             nextToken(true);
             ArrayList<Condition> conditions = new ArrayList<>();
@@ -538,7 +539,7 @@ public class SQLParser {
             return input;
         } else if (splits.length == 2) {
             if (aliasMap.containsKey(splits[0])) {
-                return aliasMap.get(splits[0]) + "." + splits[1];
+                return splits[0] + "." + splits[1];
             } else {
                 if (tableNameList.contains(splits[0])) {
                     return input;
@@ -596,7 +597,17 @@ public class SQLParser {
             if (alias == null) {
                 return false;
             }
+            if (aliasMap.containsKey(alias)) {
+                printErrorMessage("Duplicated alias table name.");
+                return false;
+            }
             aliasMap.put(alias, tableName);
+        } else {
+            if (aliasMap.containsKey(tableName)) {
+                printErrorMessage("Duplicated table name.");
+                return false;
+            }
+            aliasMap.put(tableName, tableName);
         }
         return true;
     }
