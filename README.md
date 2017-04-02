@@ -41,7 +41,7 @@ table_references:
     table_name [AS table_alias] [, table_name [AS table_alias] ...]
     
 where_condition:
-    operand operator operand [{AND | OR} operand operator operand]
+    operand operator operand [{AND | OR} operand operator operand ...]
 
 operand:
     [prefix.]attr_name | constant
