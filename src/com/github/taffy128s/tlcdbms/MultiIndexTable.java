@@ -207,8 +207,20 @@ public class MultiIndexTable extends Table {
     @Override
     public Table generateAliasTable(String aliasName) {
         MultiIndexTable table = new MultiIndexTable(aliasName, mAttributeNames, mAttributeTypes, mIndices, mPrimaryKey, mKeyIndex);
-        table.mTables = this.mTables;
-        table.mFirstTable = this.mFirstTable;
+        table.mTables = new ArrayList<>();
+        for (int i = 0; i < mTables.size(); ++i) {
+            if (mTables.get(i) != null) {
+                table.mTables.add(mTables.get(i).generateAliasTable(aliasName));
+            } else {
+                table.mTables.add(null);
+            }
+        }
+        for (int i = 0; i < table.mTables.size(); ++i) {
+            if (table.mTables.get(i) != null) {
+                table.mFirstTable = table.mTables.get(i);
+                break;
+            }
+        }
         return table;
     }
 
