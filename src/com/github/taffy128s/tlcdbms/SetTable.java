@@ -122,6 +122,14 @@ public class SetTable extends Table {
     }
 
     @Override
+    public Table generateAliasTable(String aliasName) {
+        SetTable result = new SetTable(aliasName, mAttributeNames, mAttributeTypes, mPrimaryKey, mKeyIndex);
+        result.mTable = this.mTable;
+        result.mPrimaryTable = this.mPrimaryTable;
+        return result;
+    }
+
+    @Override
     public String getTableType() {
         return "SETTABLE";
     }

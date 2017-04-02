@@ -84,6 +84,11 @@ public class ArrayListTable extends Table {
     }
 
     @Override
+    public Table generateAliasTable(String aliasName) {
+        return this;
+    }
+
+    @Override
     public TableFieldType getFieldType(int index) {
         return TableFieldType.NORMAL;
     }

@@ -372,6 +372,14 @@ public class BPlusTreeTable extends Table {
     }
 
     @Override
+    public Table generateAliasTable(String aliasName) {
+        BPlusTreeTable table = new BPlusTreeTable(aliasName, mAttributeNames, mAttributeTypes, mPrimaryKey, mKeyIndex);
+        table.mTable = this.mTable;
+        table.mNullTable = this.mNullTable;
+        return table;
+    }
+
+    @Override
     public String getTableType() {
         return "BPLUSTREETABLE";
     }

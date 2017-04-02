@@ -249,6 +249,14 @@ public class HashTable extends Table {
     }
 
     @Override
+    public Table generateAliasTable(String aliasName) {
+        HashTable table = new HashTable(aliasName, mAttributeNames, mAttributeTypes, mPrimaryKey, mKeyIndex);
+        table.mTable = this.mTable;
+        table.mNullTable = this.mNullTable;
+        return table;
+    }
+
+    @Override
     public String getTableType() {
         return "HASHTABLE";
     }

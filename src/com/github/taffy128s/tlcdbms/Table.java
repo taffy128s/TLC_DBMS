@@ -514,6 +514,15 @@ public abstract class Table implements DiskWritable {
     }
 
     /**
+     * Generate a new table with all the same contents except tablename.
+     * Used to generate an alias table.
+     *
+     * @param aliasName alias name.
+     * @return an exactly the same table with alias name.
+     */
+    public abstract Table generateAliasTable(String aliasName);
+
+    /**
      * Generate an empty table to be used as return table.
      * Set its tablename to "$result", and add tablename prefix
      * to all of its attribute names if necessary.
