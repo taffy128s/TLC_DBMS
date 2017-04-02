@@ -163,6 +163,50 @@ public class Condition {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Condition condition = (Condition) o;
+
+        if (mLeftConstant != null ? !mLeftConstant.equals(condition.mLeftConstant) : condition.mLeftConstant != null) {
+            return false;
+        }
+        if (mLeftTableName != null ? !mLeftTableName.equals(condition.mLeftTableName) : condition.mLeftTableName != null) {
+            return false;
+        }
+        if (mLeftAttribute != null ? !mLeftAttribute.equals(condition.mLeftAttribute) : condition.mLeftAttribute != null) {
+            return false;
+        }
+        if (mRightConstant != null ? !mRightConstant.equals(condition.mRightConstant) : condition.mRightConstant != null) {
+            return false;
+        }
+        if (mRightTableName != null ? !mRightTableName.equals(condition.mRightTableName) : condition.mRightTableName != null) {
+            return false;
+        }
+        if (mRightAttribute != null ? !mRightAttribute.equals(condition.mRightAttribute) : condition.mRightAttribute != null) {
+            return false;
+        }
+        return mOperator == condition.mOperator;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mLeftConstant != null ? mLeftConstant.hashCode() : 0;
+        result = 31 * result + (mLeftTableName != null ? mLeftTableName.hashCode() : 0);
+        result = 31 * result + (mLeftAttribute != null ? mLeftAttribute.hashCode() : 0);
+        result = 31 * result + (mRightConstant != null ? mRightConstant.hashCode() : 0);
+        result = 31 * result + (mRightTableName != null ? mRightTableName.hashCode() : 0);
+        result = 31 * result + (mRightAttribute != null ? mRightAttribute.hashCode() : 0);
+        result = 31 * result + (mOperator != null ? mOperator.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(mLeftConstant).append(" ");

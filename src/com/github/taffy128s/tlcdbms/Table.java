@@ -594,9 +594,10 @@ public abstract class Table implements DiskWritable {
         int rightKeyIndex = secondTable.getAttributeNames().indexOf(condition.getRightAttribute());
         ArrayList<DataRecord> firstRecords = firstTable.getAllRecords();
         ArrayList<DataRecord> secondRecords = secondTable.getAllRecords();
+        boolean isConstantCondition = Condition.getAlwaysTrueCondition().equals(condition);
         for (DataRecord firstRecord : firstRecords) {
             for (DataRecord secondRecord : secondRecords) {
-                if (Condition.calculateCondition(condition, firstRecord, leftKeyIndex, secondRecord, rightKeyIndex)) {
+                if (isConstantCondition || Condition.calculateCondition(condition, firstRecord, leftKeyIndex, secondRecord, rightKeyIndex)) {
                     DataRecord newRecord = new DataRecord();
                     newRecord.appendAll(firstRecord.getAllFields());
                     newRecord.appendAll(secondRecord.getAllFields());
@@ -619,29 +620,7 @@ public abstract class Table implements DiskWritable {
      * @return a table of result.
      */
     public static Table union(Table first, Table second, Map<String, Table> tables) {
-        if (first.getAttributeNames().containsAll(second.getAttributeNames()) ||
-                second.getAttributeNames().containsAll(first.getAttributeNames())) {
-            if (first.getAttributeNames().size() < second.getAttributeNames().size()) {
-                int joinIndex = second.getSourceTables().indexOf(first.getSourceTables().get(0));
-                if (joinIndex == 0) {
-                    first = join(first, tables.get(second.getSourceTables().get(1)), Condition.getAlwaysTrueCondition());
-                } else {
-                    first = join(tables.get(second.getSourceTables().get(0)), first, Condition.getAlwaysTrueCondition());
-                }
-            } else if (first.getAttributeNames().size() > second.getAttributeNames().size()) {
-                int joinIndex = first.getSourceTables().indexOf(second.getSourceTables().get(0));
-                if (joinIndex == 0) {
-                    second = join(second, tables.get(first.getSourceTables().get(1)), Condition.getAlwaysTrueCondition());
-                } else {
-                    second = join(tables.get(first.getSourceTables().get(0)), second, Condition.getAlwaysTrueCondition());
-                }
-            }
-        } else {
-            String firstSource = first.getSourceTables().get(0);
-            String secondSource = second.getSourceTables().get(0);
-            first = join(first, tables.get(secondSource), Condition.getAlwaysTrueCondition());
-            second = join(tables.get(firstSource), second, Condition.getAlwaysTrueCondition());
-        }
+        preProcessTables(first, second, tables);
         Table table = new ArrayListTable("$result", first.getAttributeNames(), first.getAttributeTypes(), -1, -1);
         ArrayList<DataRecord> records = first.getAllRecords();
         ArrayList<DataRecord> another = second.getAllRecords();
@@ -683,28 +662,50 @@ public abstract class Table implements DiskWritable {
                 first = second;
                 second = temp;
             }
-            Table table = new ArrayListTable("$result", first.getAttributeNames(), first.getAttributeTypes(), -1, -1);
-            HashSet<DataRecord> recordHashSet = new HashSet<>(second.getAllRecords());
-            ArrayList<Integer> indices = new ArrayList<>();
-            for (String attr : second.getAttributeNames()) {
-                indices.add(first.getAttributeNames().indexOf(attr));
-            }
-            ArrayList<DataRecord> result = new ArrayList<>();
-            for (DataRecord record : first.getAllRecords()) {
-                DataRecord toCheck = new DataRecord();
-                for (int index : indices) {
-                    toCheck.append(record.get(index));
-                }
-                if (recordHashSet.contains(toCheck)) {
-                    result.add(record);
-                }
-            }
-            table.insertAll(result);
-            table.mSourceTables = new ArrayList<>();
-            table.mSourceTables.addAll(first.getSourceTables());
-            return table;
         } else {
-            return join(first, second, Condition.getAlwaysTrueCondition());
+            preProcessTables(first, second, tables);
+        }
+        Table table = new ArrayListTable("$result", first.getAttributeNames(), first.getAttributeTypes(), -1, -1);
+        HashSet<DataRecord> recordHashSet = new HashSet<>(second.getAllRecords());
+        ArrayList<Integer> indices = new ArrayList<>();
+        for (String attr : second.getAttributeNames()) {
+            indices.add(first.getAttributeNames().indexOf(attr));
+        }
+        ArrayList<DataRecord> result = new ArrayList<>();
+        for (DataRecord record : first.getAllRecords()) {
+            DataRecord toCheck = new DataRecord();
+            for (int index : indices) {
+                toCheck.append(record.get(index));
+            }
+            if (recordHashSet.contains(toCheck)) {
+                result.add(record);
+            }
+        }
+        table.insertAll(result);
+        table.mSourceTables = new ArrayList<>();
+        table.mSourceTables.addAll(first.getSourceTables());
+        return table;
+    }
+
+    /**
+     * Make two tables has same attributes by join tables which each one doesn't have.
+     *
+     * @param first first table.
+     * @param second second table.
+     * @param tables all tables.
+     */
+    private static void preProcessTables(Table first, Table second, Map<String, Table> tables) {
+        ArrayList<String> firstSources = new ArrayList<>(first.getSourceTables());
+        ArrayList<String> secondSources = new ArrayList<>(second.getSourceTables());
+        for (String source : secondSources) {
+            if (!firstSources.contains(source)) {
+                join(first, tables.get(source), Condition.getAlwaysTrueCondition());
+            }
+        }
+        for (String source : firstSources) {
+            if (!secondSources.contains(source)) {
+                join(second, tables.get(source), Condition.getAlwaysTrueCondition());
+            }
         }
     }
 
