@@ -210,7 +210,7 @@ public class SQLParser {
             boolean operandExpect = true;
             boolean emptyParenthesisBody = false;
             int parenthesisCounter = 0;
-            while (!isEnded(false)) {
+            do {
                 if (checkTokenIgnoreCase("ORDER", false) ||
                         checkTokenIgnoreCase("LIMIT", false)) {
                     break;
@@ -261,7 +261,7 @@ public class SQLParser {
                     Condition opCon = new Condition(null, null, null, null, null, null, toBinaryOperator(operator));
                     stack.push(opCon);
                 }
-            }
+            } while (!isEnded(false));
             if (parenthesisCounter != 0) {
                 System.out.println("Parenthesis mismatched in WHERE clause.");
                 return null;
@@ -376,7 +376,7 @@ public class SQLParser {
         operator = nextToken(true);
         rightOperand = nextToken(true);
         if (!isValidOp(operator)) {
-            System.out.println("Invalid operand: "
+            System.out.println("Invalid statement: "
                     + leftOperand + " " + operator + " " + rightOperand);
             return null;
         }
