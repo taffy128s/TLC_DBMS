@@ -5,6 +5,7 @@ import com.github.taffy128s.tlcdbms.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Stack;
 
 /**
  * SQL parser for this project.
@@ -201,59 +202,170 @@ public class SQLParser {
         }
         result.setTargets(targets);
         result.setTablenames(tableNameList);
-        if (!checkTokenIgnoreCase("where", false)) {
-            if (isEnded()) {
-                return result;
-            } else {
-                System.out.println("Expect keyword WHERE after table list.");
-                return null;
-            }
-        } else {
+        if (checkTokenIgnoreCase("where", false)) {
             nextToken(true);
-            Condition conLeft, conRight, opCon;
-            conLeft = getCondition(tableNameList, aliasMap);
-            if (conLeft == null) {
+            ArrayList<Condition> conditions = new ArrayList<>();
+            Stack<Condition> stack = new Stack<>();
+            boolean operandExpect = true;
+            boolean emptyParenthesisBody = false;
+            int parenthesisCounter = 0;
+            while (!isEnded(false)) {
+                if (checkTokenIgnoreCase("ORDER", false) ||
+                        checkTokenIgnoreCase("LIMIT", false)) {
+                    break;
+                }
+                if (checkTokenIgnoreCase("(", false)) {
+                    operandExpect = true;
+                    emptyParenthesisBody = true;
+                    nextToken(true);
+                    ++parenthesisCounter;
+                    stack.push(null);
+
+                } else if (checkTokenIgnoreCase(")", false)) {
+                    operandExpect = false;
+                    nextToken(true);
+                    --parenthesisCounter;
+                    if (parenthesisCounter < 0) {
+                        printErrorMessage("Missing corresponding left parenthesis '('.");
+                        return null;
+                    }
+                    if (emptyParenthesisBody) {
+                        printErrorMessage("Empty Body in this parenthesis pair.");
+                        return null;
+                    }
+                    while (stack.peek() != null) {
+                        conditions.add(stack.pop());
+                    }
+                    stack.pop();
+                    emptyParenthesisBody = false;
+                } else if (operandExpect) {
+                    operandExpect = false;
+                    emptyParenthesisBody = false;
+                    Condition operand = getCondition(tableNameList, aliasMap);
+                    if (operand == null) {
+                        return null;
+                    }
+                    conditions.add(operand);
+                } else {
+                    operandExpect = true;
+                    emptyParenthesisBody = false;
+                    String operator = nextToken(true);
+                    if (!operator.equalsIgnoreCase("and") && !operator.equalsIgnoreCase("or")) {
+                        printErrorMessage("Invalid operator. AND / OR expected.");
+                        return null;
+                    }
+                    while (stackNeedPop(operator, stack)) {
+                        conditions.add(stack.pop());
+                    }
+                    Condition opCon = new Condition(null, null, null, null, null, null, toBinaryOperator(operator));
+                    stack.push(opCon);
+                }
+            }
+            if (parenthesisCounter != 0) {
+                System.out.println("Parenthesis mismatched in WHERE clause.");
                 return null;
             }
-            String operand = nextToken(false);
-            if (!operand.equalsIgnoreCase("AND") && !operand.equalsIgnoreCase("OR")) {
-                if (isEnded()) {
-                    ArrayList<Condition> conditions = new ArrayList<>();
-                    conditions.add(conLeft);
-                    result.setConditions(conditions);
-                    return result;
+            while (!stack.empty()) {
+                conditions.add(stack.pop());
+            }
+            int counterOfOperator = 0;
+            int counterOfOperand = 0;
+            for (Condition condition : conditions) {
+                if (condition.getOperator() == BinaryOperator.AND || condition.getOperator() == BinaryOperator.OR) {
+                    ++counterOfOperator;
                 } else {
-                    System.out.println("Expect keyword AND/OR after statement.");
-                    return null;
+                    ++counterOfOperand;
                 }
+            }
+            if (counterOfOperand != 0 && counterOfOperator != 0 && counterOfOperand != counterOfOperator + 1) {
+                System.out.println("Invalid WHERE clauses. Check whether there are something missing.");
+                return null;
+            }
+            if (conditions.isEmpty()) {
+                result.setConditions(null);
             } else {
-                nextToken(true);
-                opCon = new Condition(null, null, null, null, null, null, toBinaryOperator(operand));
-                conRight = getCondition(tableNameList, aliasMap);
-                if (conRight == null) {
-                    return null;
-                }
-                if (!isEnded()) {
-                    System.out.println("Unexpected strings at end of line.");
-                    return null;
-                }
-                ArrayList<Condition> conditions = new ArrayList<>();
-                conditions.add(conLeft);
-                conditions.add(conRight);
-                conditions.add(opCon);
                 result.setConditions(conditions);
-                return result;
             }
         }
+        if (checkTokenIgnoreCase("ORDER", false)) {
+            nextToken(true);
+            if (!checkTokenIgnoreCase("BY", true)) {
+                printErrorMessage("Expect keyword BY after ORDER");
+            }
+            String orderTarget = getTargetNameWithPossibleDot();
+            if (orderTarget == null) {
+                return null;
+            }
+            if (orderTarget.contains("*")) {
+                printErrorMessage("Invalid order target. Cannot include '*'.");
+                return null;
+            }
+            ArrayList<String> attributeNames = new ArrayList<>();
+            attributeNames.add(orderTarget);
+            result.setAttributeNames(attributeNames);
+            result.setShowSortType(SortingType.ASCENDING);
+            if (checkTokenIgnoreCase("ASC", false)) {
+                nextToken(true);
+            } else if (checkTokenIgnoreCase("DESC", false)) {
+                nextToken(true);
+                result.setShowSortType(SortingType.DESCENDING);
+            }
+        }
+        if (checkTokenIgnoreCase("LIMIT", false)) {
+            nextToken(true);
+            String limitation = nextToken(true);
+            if (!DataChecker.isValidInteger(limitation)) {
+                printErrorMessage("Invalid limitation.");
+                return null;
+            }
+            int limit = Integer.parseInt(limitation);
+            if (limit <= 0) {
+                printErrorMessage("Invalid limitation.");
+                return null;
+            }
+            result.setShowRowLimitation(limit);
+        }
+        if (!isEnded()) {
+            System.out.println("Unexpected tokens at end of line");
+            return null;
+        }
+        return result;
     }
-    
+
+    private boolean stackNeedPop(String operator, Stack<Condition> stack) {
+        if (stack.isEmpty() || stack.peek() == null) {
+            return false;
+        }
+        String top;
+        if (stack.peek().getOperator() == BinaryOperator.AND) {
+            top = "AND";
+        } else {
+            top = "OR";
+        }
+        return operatorToNum(top) >= operatorToNum(operator);
+    }
+
+    private int operatorToNum(String operator) {
+        if (operator == null) {
+            return 0;
+        }
+        switch (operator) {
+            case "AND":
+                return 2;
+            case "OR":
+                return 1;
+            default:
+                return -1;
+        }
+    }
+
     /**
      * Get condition.
-     * 
+     *
      * @param tableNameList: list used for checking the presence of attributes.
      * @param aliasMap: map used for replacing the prefixes of attributes.
      * @return condition, null if failed.
-     * 
+     *
      * Expected condition format:
      * [valid attribute] [valid operator] [valid attribute]
      */
@@ -358,10 +470,10 @@ public class SQLParser {
             return null;
         }
     }
-    
+
     /**
      * Transform String operator to BinaryOperator.
-     * 
+     *
      * @param input: string to transform.
      * @return BinaryOperator.
      */
@@ -384,10 +496,10 @@ public class SQLParser {
             return BinaryOperator.OR;
         }
     }
-    
+
     /**
-     * Check if the given String is a comparison operator or not. 
-     * 
+     * Check if the given String is a comparison operator or not.
+     *
      * @param input: String to check.
      * @return true if it is a comparison operator, false if not.
      */
@@ -397,24 +509,24 @@ public class SQLParser {
         }
         return false;
     }
-    
+
     /**
      * Check if the given String is a valid operator or not.
-     * 
+     *
      * @param input: String to check.
      * @return true if it is valid, false if not.
      */
     private boolean isValidOp(String input) {
-        if (input.equals("<>") || input.equals("=") || input.equals(">") 
+        if (input.equals("<>") || input.equals("=") || input.equals(">")
                 || input.equals(">=") || input.equals("<") || input.equals("<=")) {
             return true;
         }
         return false;
     }
-    
+
     /**
      * Replace the prefix of input if it uses an alias.
-     * 
+     *
      * @param input: String to modify.
      * @param tableNameList: table list available now.
      * @param aliasMap: provide an alias-tableName mapping.
@@ -440,15 +552,15 @@ public class SQLParser {
             return null;
         }
     }
-    
+
     /**
      * Get an attribute name with a possible dot.
-     * 
+     *
      * @return a valid target name.
      */
     private String getTargetNameWithPossibleDot() {
         String name = nextToken(true);
-        if (!name.matches("[a-zA-Z_][0-9a-zA-Z_]*") 
+        if (!name.matches("[a-zA-Z_][0-9a-zA-Z_]*")
                 && !name.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")
                 && !name.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][*]")) {
             printErrorMessage("Invalid target name '" + name + "'.");
@@ -460,14 +572,14 @@ public class SQLParser {
             return name;
         }
     }
-    
+
     /**
      * Get table name and its alias, and add them into list and map.
-     * 
+     *
      * @param tableNameList: list to add into.
      * @param aliasMap: map to store the relations.
      * @return true if succeed, false if fail.
-     * 
+     *
      * Expected format:
      * [valid table name] [a|As|S] [valid alias]
      */
@@ -488,10 +600,10 @@ public class SQLParser {
         }
         return true;
     }
-    
+
     /**
      * Get alias.
-     * 
+     *
      * @return alias if succeed, null if fail.
      */
     private String getAliasName() {
@@ -506,7 +618,7 @@ public class SQLParser {
             return name;
         }
     }
-    
+
     /**
      * Parse CREATE.
      *
@@ -945,6 +1057,24 @@ public class SQLParser {
     private boolean isEnded() {
         String token = nextToken(true);
         return (token.equals(";") || token.equals("")) && nextToken(true).equals("");
+    }
+
+    /**
+     * Check whether there is still token not used.
+     * <br>** WILL INCREASE TOKEN INDEX **
+     * <p>
+     * Case 1 return true:<br>
+     *     {";"} // remaining only a semicolon
+     * <p>
+     * Case 2 return true:<br>
+     *     {} // already empty
+     *
+     * @param increase true to increase index of tokens, false if not.
+     * @return true if empty, false if not.
+     */
+    private boolean isEnded(boolean increase) {
+        String token = nextToken(increase);
+        return (token.equals(";") || token.equals(""));
     }
 
     /**

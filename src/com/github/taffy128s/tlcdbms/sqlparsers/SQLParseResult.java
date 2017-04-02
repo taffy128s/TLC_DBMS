@@ -24,7 +24,7 @@ public class SQLParseResult {
     private QueryType mQueryType;
     private ArrayList<Target> mTargets;
     private ArrayList<Condition> mConditions;
-    
+
     /**
      * Constructor. Initialize all members.
      */
@@ -38,7 +38,7 @@ public class SQLParseResult {
         mBlocks = null;
         mUpdateOrder = null;
         mPrimaryKeyIndex = -1;
-        mShowRowLimitation = 0;
+        mShowRowLimitation = -1;
         mCustomOrder = false;
         mShowFullInfo = false;
         mShowSortType = SortingType.NONE;
@@ -280,10 +280,10 @@ public class SQLParseResult {
     public SortingType getShowSortType() {
         return mShowSortType;
     }
-    
+
     /**
      * QueryType getter.
-     * 
+     *
      * @return query type.
      */
     public QueryType getQueryType() {
@@ -292,7 +292,7 @@ public class SQLParseResult {
 
     /**
      * QueryType setter.
-     * 
+     *
      * @param mQueryType query type to set.
      */
     public void setQueryType(QueryType mQueryType) {
@@ -301,7 +301,7 @@ public class SQLParseResult {
 
     /**
      * Targets getter.
-     * 
+     *
      * @return targets.
      */
     public ArrayList<Target> getTargets() {
@@ -310,7 +310,7 @@ public class SQLParseResult {
 
     /**
      * Targets setter.
-     * 
+     *
      * @param originTargets targets to deal with.
      */
     public void setTargets(ArrayList<String> originTargets) {
@@ -331,7 +331,7 @@ public class SQLParseResult {
 
     /**
      * Conditions getter.
-     * 
+     *
      * @return conditions.
      */
     public ArrayList<Condition> getConditions() {
@@ -340,7 +340,7 @@ public class SQLParseResult {
 
     /**
      * Conditions setter.
-     * 
+     *
      * @param mConditions conditions to set.
      */
     public void setConditions(ArrayList<Condition> mConditions) {
