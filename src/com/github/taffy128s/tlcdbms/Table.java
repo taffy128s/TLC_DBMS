@@ -620,7 +620,9 @@ public abstract class Table implements DiskWritable {
      * @return a table of result.
      */
     public static Table union(Table first, Table second, Map<String, Table> tables) {
-        preProcessTables(first, second, tables);
+        ArrayList<Table> joinResult = preProcessTables(first, second, tables);
+        first = joinResult.get(0);
+        second = joinResult.get(1);
         Table table = new ArrayListTable("$result", first.getAttributeNames(), first.getAttributeTypes(), -1, -1);
         ArrayList<DataRecord> records = first.getAllRecords();
         ArrayList<DataRecord> another = second.getAllRecords();
@@ -663,7 +665,9 @@ public abstract class Table implements DiskWritable {
                 second = temp;
             }
         } else {
-            preProcessTables(first, second, tables);
+            ArrayList<Table> joinResult = preProcessTables(first, second, tables);
+            first = joinResult.get(0);
+            second = joinResult.get(1);
         }
         Table table = new ArrayListTable("$result", first.getAttributeNames(), first.getAttributeTypes(), -1, -1);
         HashSet<DataRecord> recordHashSet = new HashSet<>(second.getAllRecords());
@@ -693,20 +697,25 @@ public abstract class Table implements DiskWritable {
      * @param first first table.
      * @param second second table.
      * @param tables all tables.
+     * @return a list of two table as result, in this order: first, second.
      */
-    private static void preProcessTables(Table first, Table second, Map<String, Table> tables) {
+    private static ArrayList<Table> preProcessTables(Table first, Table second, Map<String, Table> tables) {
+        ArrayList<Table> results = new ArrayList<>();
+        results.add(first);
+        results.add(second);
         ArrayList<String> firstSources = new ArrayList<>(first.getSourceTables());
         ArrayList<String> secondSources = new ArrayList<>(second.getSourceTables());
         for (String source : secondSources) {
             if (!firstSources.contains(source)) {
-                join(first, tables.get(source), Condition.getAlwaysTrueCondition());
+                results.set(0, join(results.get(0), tables.get(source), Condition.getAlwaysTrueCondition()));
             }
         }
         for (String source : firstSources) {
             if (!secondSources.contains(source)) {
-                join(second, tables.get(source), Condition.getAlwaysTrueCondition());
+                results.set(1, join(results.get(1), tables.get(source), Condition.getAlwaysTrueCondition()));
             }
         }
+        return results;
     }
 
     @Override
