@@ -588,6 +588,10 @@ public class DBManager implements DiskWritable {
                 }
             }
         } else {
+            if (!parameter.getTableAliases().containsKey(tablename)) {
+                System.out.println("Table '" + tablename + "' not exists.");
+                return false;
+            }
             if (mQueryTables.get(tablename).getAttributeNames().indexOf(attribute) == -1) {
                 System.out.println("Sort Attribute '" + attribute + "' not exists in table " + tablename);
                 return false;
