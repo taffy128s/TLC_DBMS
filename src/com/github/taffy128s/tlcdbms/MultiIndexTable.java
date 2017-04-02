@@ -205,6 +205,14 @@ public class MultiIndexTable extends Table {
     }
 
     @Override
+    public Table generateAliasTable(String aliasName) {
+        MultiIndexTable table = new MultiIndexTable(aliasName, mAttributeNames, mAttributeTypes, mIndices, mPrimaryKey, mKeyIndex);
+        table.mTables = this.mTables;
+        table.mFirstTable = this.mFirstTable;
+        return table;
+    }
+
+    @Override
     public String getTableType() {
         return "MULTIINDEXTABLE";
     }
