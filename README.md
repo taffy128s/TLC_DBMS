@@ -8,7 +8,7 @@ Clone the entire repository and add it into a new Java project. <br />
 Any computer with Java IDE and JDK 1.7 or higher installed. <br />
 
 ## Syntax
-Currently support CREATE, INSERT, SHOW, DESC, QUIT, EXIT commands.
+Currently support CREATE, INSERT, SELECT, DROP, SHOW, DESC, QUIT, EXIT commands.
 All keywords(like CREATE, INSERT) are case-insensitive.
 
 CREATE Syntax:
@@ -29,7 +29,7 @@ INSERT INTO table_name[(attr_name[, attr_name ...])] VALUES(data[, data...]);
 
 SELECT Syntax
 ```
-SELECT select_target FROM table_references [WHERE where_condition];
+SELECT select_target FROM table_references [WHERE where_condition] [ORDER BY sort_target [ASC | DESC]] [LIMIT limitation];
 
 select_target:
     * | target [, target ...]
@@ -45,6 +45,9 @@ where_condition:
 
 operand:
     [prefix.]attr_name | constant
+
+sort_target:
+    [prefix.]attr_name
 
 operator:
     > | >= | < | <= | <> | =
