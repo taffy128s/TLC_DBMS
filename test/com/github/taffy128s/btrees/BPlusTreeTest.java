@@ -31,18 +31,18 @@ public class BPlusTreeTest {
         BPlusTree<Integer, Integer> bt = new BPlusTree<>(100, 100);
         bt.put(5, 7);
         bt.put(5, 9);
-        System.out.println(bt.getKeys().size());
+        assertEquals(1, bt.getKeys().size());
     }
 
     @Test
     public void get() throws Exception {
         ArrayList<Integer> testcase = new ArrayList<>();
         Random random = new Random();
-        for (int i = 0; i < 2000000; ++i) {
-            testcase.add(random.nextInt() % 200000);
+        for (int i = 0; i < 20000; ++i) {
+            testcase.add(random.nextInt() % 2000);
         }
         for (int test : testcase) {
-            int datain = random.nextInt() % 10000;
+            int datain = random.nextInt() % 1000;
             if (!tree.containsKey(test)) {
                 tree.put(test, new ArrayList<>());
             }
@@ -52,7 +52,7 @@ public class BPlusTreeTest {
             tree.get(test).add(datain);
             trees.get(test).add(datain);
         }
-        for (int i = 0; i < 500000; ++i) {
+        for (int i = 0; i < 2000; ++i) {
             ArrayList<Integer> a = tree.get(i);
             ArrayList<Integer> b = trees.get(i);
             String sa;
@@ -74,31 +74,25 @@ public class BPlusTreeTest {
     @Test
     public void rangeQuery() throws Exception {
         BPlusTree<Integer, Integer> t = new BPlusTree<>(100, 1000);
-        System.out.println(t.getValues(5, 99));
         t.put(1, 2);
         t.put(6, 8);
         t.put(3, 6);
-        System.out.println(t.getValues(4, 6));
-        System.out.println(t.getValues(1, true, 3, true));
-        System.out.println(t.getValues(1, false, 3, true));
-        System.out.println(t.getValues(1, true, 3, false));
-        System.out.println(t.getValues(1, false, 3, false));
         BPlusTree<Integer, Integer> tt = new BPlusTree<>(7, 8);
         TreeMap<Integer, Integer> ts = new TreeMap<>();
         ArrayList<Integer> testcase = new ArrayList<>();
         ArrayList<Integer> dataIn = new ArrayList<>();
         Random random = new Random();
-        for (int i = 0; i < 1000000; ++i) {
+        for (int i = 0; i < 10000; ++i) {
             testcase.add(i);
             dataIn.add(i);
         }
         Collections.shuffle(testcase);
         Collections.shuffle(dataIn);
-        for (int i = 0; i < 700000; ++i) {
+        for (int i = 0; i < 7000; ++i) {
             tt.put(testcase.get(i), dataIn.get(i));
             ts.put(testcase.get(i), dataIn.get(i));
         }
-        for (int i = 5500; i < 675000; ++i) {
+        for (int i = 5500; i < 6700; ++i) {
             tt.put(testcase.get(i), dataIn.get(i - 7));
             ts.put(testcase.get(i), dataIn.get(i - 7));
         }
@@ -113,9 +107,9 @@ public class BPlusTreeTest {
             assertEquals(true, Collections.binarySearch(allKeys, key) >= 0);
             assertEquals(true, Collections.binarySearch(allValues, tt.get(key)) >= 0);
         }
-        for (int i = 0; i < 200; ++i) {
-            int from = random.nextInt() % 300000;
-            int to = random.nextInt() % 300000;
+        for (int i = 0; i < 10; ++i) {
+            int from = random.nextInt() % 30000;
+            int to = random.nextInt() % 30000;
             if (from < 0) {
                 from *= (-1);
             }
@@ -197,8 +191,6 @@ public class BPlusTreeTest {
             bt.put(keys.get(i), values.get(i));
             tm.put(keys.get(i), values.get(i));
         }
-        System.out.println(tm.size());
-        System.out.println(bt.getKeys().size());
         assertEquals(tm.size(), bt.size());
         assertEquals(tm.size(), bt.getKeys().size());
         for (int key : tm.keySet()) {
@@ -222,7 +214,6 @@ public class BPlusTreeTest {
             tm.put(testKeys.get(i), testValues.get(i));
         }
         ArrayList<Integer> keyAns = bt.getKeys(5000, 100000);
-        System.out.println(keyAns.size());
         HashSet<Integer> set = new HashSet<>();
         for (int k : keyAns) {
             if (set.contains(k)) {
@@ -233,9 +224,6 @@ public class BPlusTreeTest {
                 System.out.println("no: " + k);
             }
         }
-        System.out.println(bt.getKeys().size());
-        System.out.println(bt.getValues().size());
-        System.out.println(tm.size());
     }
 
     @Test
@@ -254,21 +242,10 @@ public class BPlusTreeTest {
             tm.put(testKeys.get(i), testValues.get(i));
         }
         ArrayList<Integer> keyAns = bt.getKeys(5000, 100000);
-        System.out.println(keyAns.size());
         HashSet<Integer> set = new HashSet<>();
         for (int k : keyAns) {
-            if (set.contains(k)) {
-                System.out.println("DUPLICATED: " + k);
-            }
             set.add(k);
-            if (!tm.subMap(5000, 100000).containsKey(k)) {
-                System.out.println("no: " + k);
-            }
         }
-        System.out.println(bt.size());
-        System.out.println(bt.getKeys().size());
-        System.out.println(bt.getValues().size());
-        System.out.println(tm.size());
     }
 
     @Test
@@ -283,7 +260,7 @@ public class BPlusTreeTest {
             }
             BPlusTree<Integer, Integer> bt = new BPlusTree<>(10, 1000);
             bt.construct(testKeys, testValues);
-            System.out.println(bt.size());
+            assertEquals(50000, bt.size());
         }
     }
 }

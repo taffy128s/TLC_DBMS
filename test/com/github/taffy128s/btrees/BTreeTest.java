@@ -36,7 +36,6 @@ public class BTreeTest {
         treep.put(3, 1);
         treep.put(4, 1);
         treep.put(5, 1);
-        System.out.println(treep.getValues());
     }
 
     @Test
@@ -48,8 +47,8 @@ public class BTreeTest {
     public void tableCorrectness() throws Exception {
         ArrayList<Integer> testcase = new ArrayList<>();
         Random random = new Random();
-        for (int i = 0; i < 5000000; ++i) {
-            testcase.add(random.nextInt() % 100000);
+        for (int i = 0; i < 50000; ++i) {
+            testcase.add(random.nextInt() % 1000);
         }
         for (int data : testcase) {
             int datain = random.nextInt() % 100;
@@ -66,7 +65,7 @@ public class BTreeTest {
                 trees.get(data).add(datain);
             }
         }
-        for (int i = 0; i < 100000; ++i) {
+        for (int i = 0; i < 1000; ++i) {
             ArrayList<Integer> result = tree.get(i);
             ArrayList<Integer> correct = trees.get(i);
             if (result == null) {
@@ -83,17 +82,15 @@ public class BTreeTest {
     public void duplicatedKey() throws Exception {
         ArrayList<Integer> keys = new ArrayList<>();
         Random random = new Random();
-        for (int i = 0; i < 5000000; ++i) {
+        for (int i = 0; i < 50000; ++i) {
             keys.add(random.nextInt() % 10000);
         }
         BTree<Integer, Integer> bt = new BTree<>(5);
         TreeMap<Integer, Integer> tm = new TreeMap<>();
-        for (int i = 0; i < 5000000; ++i) {
+        for (int i = 0; i < 50000; ++i) {
             bt.put(keys.get(i), i);
             tm.put(keys.get(i), i);
         }
-        System.out.println(tm.size());
-        System.out.println(bt.size());
         assertEquals(tm.size(), bt.size());
         for (int key : tm.keySet()) {
             assertEquals(tm.get(key), bt.get(key));
