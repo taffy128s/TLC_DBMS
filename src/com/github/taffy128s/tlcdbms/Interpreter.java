@@ -27,9 +27,9 @@ public class Interpreter {
      * Start reading command (block IO).
      */
     public void start() {
-        System.out.println("Welcome to TLC Database!  Commands ends with ';'.");
+        System.out.println("Welcome to TLC Database!  Command ends with ';'.");
         System.out.println();
-        System.out.println("For more details, please visit:");
+        System.out.println("For more information, please visit:");
         System.out.println("        https://github.com/taffy128s/TLC_DBMS");
         System.out.println();
         System.out.print(">> ");
