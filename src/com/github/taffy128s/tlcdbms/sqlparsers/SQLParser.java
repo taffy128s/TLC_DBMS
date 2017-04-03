@@ -2,6 +2,7 @@ package com.github.taffy128s.tlcdbms.sqlparsers;
 
 import com.github.taffy128s.tlcdbms.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -100,6 +101,8 @@ public class SQLParser {
             return parseShow();
         } else if (command.equalsIgnoreCase("desc")) {
             return parseDesc();
+        } else if (command.equalsIgnoreCase("load")) {
+            return parseLoad();
         } else if (command.equalsIgnoreCase("quit")) {
             return parseQuit();
         } else if (command.equalsIgnoreCase("exit")) {
@@ -987,6 +990,57 @@ public class SQLParser {
         }
         result.setCommandType(CommandType.DESC);
         result.setTablename(tablename);
+        return result;
+    }
+
+    /**
+     * Parse LOAD.
+     *
+     * @return parse result, null if failed.
+     */
+    private SQLParseResult parseLoad() {
+        SQLParseResult result = new SQLParseResult();
+        if (!checkTokenIgnoreCase("script", true)) {
+            printErrorMessage("Expect keyword SCRIPT after LOAD.");
+            return null;
+        }
+        if (checkTokenIgnoreCase("silent", false)) {
+            nextToken(true);
+            result.setShowFullInfo(false);
+        } else {
+            result.setShowFullInfo(true);
+        }
+        if (!checkTokenIgnoreCase("infile", true)) {
+            if (result.getShowFullInfo()) {
+                printErrorMessage("Expect keyword INFILE after SCRIPT.");
+            } else {
+                printErrorMessage("Expect keyword INFILE after SILENT.");
+            }
+            return null;
+        }
+        String filename = nextToken(true);
+        if (filename == null) {
+            printErrorMessage("A filename expected after keyword LOAD.");
+            return null;
+        }
+        if (filename.startsWith("'")) {
+            filename = filename.substring(1, filename.length() - 1);
+        }
+        if (!filename.matches("[ ._/a-zA-Z0-9]+")) {
+            printErrorMessage("Invalid file name.");
+            return null;
+        }
+        File file = new File(filename);
+        if (!file.exists()) {
+            printErrorMessage(filename + ": no such file or directory.");
+            return null;
+        }
+        if (!isEnded()) {
+            System.out.println("Unexpected tokens at end of line.");
+            return null;
+        }
+        result.setCommandType(CommandType.LOAD);
+        result.setFilename(filename);
         return result;
     }
 

@@ -8,7 +8,7 @@ Clone the entire repository and add it into a new Java project. <br />
 Any computer with Java IDE and JDK 1.7 or higher installed. <br />
 
 ## Syntax
-Currently support CREATE, INSERT, SELECT, DROP, SHOW, DESC, QUIT, EXIT commands.
+Currently support CREATE, INSERT, SELECT, DROP, SHOW, DESC, LOAD, QUIT, EXIT commands.
 All keywords(like CREATE, INSERT) are case-insensitive.
 
 CREATE Syntax:
@@ -70,6 +70,11 @@ SHOW TABLE [FULL] table_name [ORDER BY attr_name [ASC | DESC]] [LIMIT length];
 DESC Syntax
 ```
 DESC [FULL] table_name;
+```
+
+LOAD Syntax
+```
+LOAD SCRIPT [SILENT] INFILE script_filename;
 ```
 
 QUIT Syntax

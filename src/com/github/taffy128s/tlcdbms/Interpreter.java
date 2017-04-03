@@ -11,16 +11,16 @@ import java.io.Reader;
  * Interpreter, read command from stdin and pass it to DBManager.
  */
 public class Interpreter {
-    private SQLParser parser;
-    private DBManager manager;
+    protected SQLParser mParser;
+    protected DBManager mManager;
 
     /**
      * Initialize.
      */
     public Interpreter() {
-        parser = new SQLParser();
-        manager = new DBManager();
-        manager.restoreFromDisk(DBManager.FILENAME);
+        mParser = new SQLParser();
+        mManager = new DBManager();
+        mManager.restoreFromDisk(DBManager.FILENAME);
     }
 
     /**
@@ -69,11 +69,11 @@ public class Interpreter {
             }
         } catch (IOException e) {
             System.out.println("Goodbye...");
-            manager.writeToDisk(DBManager.FILENAME);
+            mManager.writeToDisk(DBManager.FILENAME);
             System.exit(0);
         }
         System.out.println("Goodbye...");
-        manager.writeToDisk(DBManager.FILENAME);
+        mManager.writeToDisk(DBManager.FILENAME);
         System.exit(0);
     }
 
@@ -83,7 +83,7 @@ public class Interpreter {
      * @param singleInstruction a command read from stdin.
      */
     protected void execute(String singleInstruction) {
-        SQLParseResult sqlParseResult = parser.parse(singleInstruction);
+        SQLParseResult sqlParseResult = mParser.parse(singleInstruction);
         if (sqlParseResult == null) {
             System.out.println();
             return;
@@ -91,31 +91,33 @@ public class Interpreter {
         if (sqlParseResult.getCommandType() == CommandType.QUIT ||
                 sqlParseResult.getCommandType() == CommandType.EXIT) {
             System.out.println("Goodbye...");
-            manager.writeToDisk(DBManager.FILENAME);
+            mManager.writeToDisk(DBManager.FILENAME);
             System.exit(0);
         }
         switch (sqlParseResult.getCommandType()) {
             case CREATE:
-                manager.create(sqlParseResult);
+                mManager.create(sqlParseResult);
                 break;
             case INSERT:
-                manager.insert(sqlParseResult);
+                mManager.insert(sqlParseResult);
                 break;
             case SELECT:
-                manager.select(sqlParseResult);
+                mManager.select(sqlParseResult);
                 break;
             case DROP:
-                manager.drop(sqlParseResult);
+                mManager.drop(sqlParseResult);
                 break;
             case SHOW_TABLE_LIST:
-                manager.showTableList(sqlParseResult);
+                mManager.showTableList(sqlParseResult);
                 break;
             case SHOW_TABLE_CONTENT:
-                manager.showTableContent(sqlParseResult);
+                mManager.showTableContent(sqlParseResult);
                 break;
             case DESC:
-                manager.desc(sqlParseResult);
+                mManager.desc(sqlParseResult);
                 break;
+            case LOAD:
+                mManager.load(sqlParseResult);
             default:
                 break;
         }

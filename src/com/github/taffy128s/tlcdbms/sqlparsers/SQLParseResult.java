@@ -26,6 +26,7 @@ public class SQLParseResult {
     private ArrayList<Target> mTargets;
     private ArrayList<Condition> mConditions;
     private HashMap<String, String> mTableAliases;
+    private String mFilename;
 
     /**
      * Constructor. Initialize all members.
@@ -366,6 +367,24 @@ public class SQLParseResult {
      */
     public void setTableAliases(HashMap<String, String> tableAliases) {
         mTableAliases = tableAliases;
+    }
+
+    /**
+     * Filename getter.
+     *
+     * @return a string of filename.
+     */
+    public String getFilename() {
+        return mFilename;
+    }
+
+    /**
+     * Filename setter.
+     *
+     * @param filename filename to set.
+     */
+    public void setFilename(String filename) {
+        mFilename = filename;
     }
 
     /**
