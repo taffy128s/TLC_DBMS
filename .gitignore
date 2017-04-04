@@ -60,6 +60,7 @@ local.properties
 # Gradle
 .gradle/
 gradle/
+build/
 
 # idea
 TLC_DBMS.iml
