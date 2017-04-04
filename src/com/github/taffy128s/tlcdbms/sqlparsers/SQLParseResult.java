@@ -410,7 +410,7 @@ public class SQLParseResult {
                 }
             }
             stringBuilder.append("\n");
-            stringBuilder.append("PRIMARY KEY INDEX " + mPrimaryKeyIndex + "\n");
+            stringBuilder.append("PRIMARY KEY INDEX ").append(mPrimaryKeyIndex).append("\n");
         } else if (mCommandType == CommandType.INSERT) {
             stringBuilder.append("INSERT\n");
             stringBuilder.append("Table ").append(mTablename).append("\n");

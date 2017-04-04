@@ -59,6 +59,7 @@ public class ArrayListTable extends Table {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType) {
         ArrayList<DataRecord> allRecords = getAllRecords();
         ArrayList<DataRecord> nullRecords = new ArrayList<>();

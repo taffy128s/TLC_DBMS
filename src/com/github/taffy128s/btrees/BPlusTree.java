@@ -587,6 +587,7 @@ public class BPlusTree<K, V> {
      * @param capacity tree data block capacity.
      *                 Need >= 3.
      */
+    @SuppressWarnings("unchecked")
     public BPlusTree(int order, int capacity) {
         if (order < 3) {
             order = 3;
@@ -642,6 +643,7 @@ public class BPlusTree<K, V> {
      * @param keys a list of keys (must sorted).
      * @param values a list of values.
      */
+    @SuppressWarnings("unchecked")
     public BPlusTree(int order, int capacity, ArrayList<K> keys, ArrayList<V> values) {
         if (order < 3) {
             order = 3;

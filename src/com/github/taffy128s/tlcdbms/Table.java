@@ -14,9 +14,7 @@ public abstract class Table implements DiskWritable {
     protected String mTablename;
     protected ArrayList<String> mAttributeNames;
     protected ArrayList<DataType> mAttributeTypes;
-    protected HashSet<Integer> mAutoPrimaryKeyTable;
     protected int mPrimaryKey;
-    protected int mAutoPrimaryKeyCounter;
 
     protected ArrayList<String> mSourceTables;
 
@@ -28,9 +26,7 @@ public abstract class Table implements DiskWritable {
         mTablename = "";
         mAttributeNames = new ArrayList<>();
         mAttributeTypes = new ArrayList<>();
-        mAutoPrimaryKeyTable = new HashSet<>();
         mPrimaryKey = -1;
-        mAutoPrimaryKeyCounter = 0;
         mSourceTables = new ArrayList<>();
     }
 
@@ -49,20 +45,6 @@ public abstract class Table implements DiskWritable {
         mAttributeTypes = attributeTypes;
         mPrimaryKey = primaryKey;
         mSourceTables.add(mTablename);
-    }
-
-    /**
-     * Set auto primary key value.
-     * Index = dataRecord.length() - 1, i.e. the last one.
-     *
-     * @param dataRecord data record to set.
-     */
-    protected void setAutoPrimaryKey(DataRecord dataRecord) {
-        while (mAutoPrimaryKeyTable.contains(mAutoPrimaryKeyCounter)) {
-            ++mAutoPrimaryKeyCounter;
-        }
-        mAutoPrimaryKeyTable.add(mAutoPrimaryKeyCounter);
-        dataRecord.set(dataRecord.length() - 1, mAutoPrimaryKeyCounter);
     }
 
     /**
@@ -349,6 +331,7 @@ public abstract class Table implements DiskWritable {
      * @param key key to get.
      * @return a table with all DataRecords as result.
      */
+    @SuppressWarnings("unchecked")
     public Table queryLess(int columnIndex, Object key) {
         Table table = generateEmptyResultTable();
         if (key == null) {
@@ -373,6 +356,7 @@ public abstract class Table implements DiskWritable {
      * @param key key to get.
      * @return a table with all DataRecords as result.
      */
+    @SuppressWarnings("unchecked")
     public Table queryLessEqual(int columnIndex, Object key) {
         Table table = generateEmptyResultTable();
         if (key == null) {
@@ -397,6 +381,7 @@ public abstract class Table implements DiskWritable {
      * @param key key to get.
      * @return a table with all DataRecords as result.
      */
+    @SuppressWarnings("unchecked")
     public Table queryGreater(int columnIndex, Object key) {
         Table table = generateEmptyResultTable();
         if (key == null) {
@@ -421,6 +406,7 @@ public abstract class Table implements DiskWritable {
      * @param key key to get.
      * @return a table with all DataRecords as result.
      */
+    @SuppressWarnings("unchecked")
     public Table queryGreaterEqual(int columnIndex, Object key) {
         Table table = generateEmptyResultTable();
         if (key == null) {
@@ -445,6 +431,7 @@ public abstract class Table implements DiskWritable {
      * @param toKey key to end. (upper bound).
      * @return a table with all DataRecords as result.
      */
+    @SuppressWarnings("unchecked")
     public Table queryRange(int columnIndex, Object fromKey, Object toKey) {
         Table table = generateEmptyResultTable();
         if (fromKey == null || toKey == null) {
@@ -476,6 +463,7 @@ public abstract class Table implements DiskWritable {
      * @param toInclusive whether toKey is inclusive or not.
      * @return a table with all DataRecords as result.
      */
+    @SuppressWarnings("unchecked")
     public Table queryRange(int columnIndex, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive) {
         Table table = generateEmptyResultTable();
         if (fromKey == null || toKey == null) {

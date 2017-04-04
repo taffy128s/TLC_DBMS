@@ -8,7 +8,7 @@ import java.util.ArrayList;
  * Ex. used to store ('John', 'Male', 20).
  * <b>Note that data can be null.</b>
  *
- * Use append(), update() to maintain data stored.
+ * Use append(), clear() to maintain data stored.
  */
 public class DataRecord implements DiskWritable, StringWritable {
     private ArrayList<Object> mDataList;
@@ -43,23 +43,6 @@ public class DataRecord implements DiskWritable, StringWritable {
      */
     public void appendAll(ArrayList<Object> data) {
         mDataList.addAll(data);
-    }
-
-    /**
-     * Update data with column index given.<br>
-     *
-     * For example,<br>
-     * <code>
-     *     dataRecord.update("John Sena");<br>
-     *     dataRecord.update("Female");<br>
-     *     dataRecord.update(21);<br>
-     * </code>
-     *
-     * @param index index to update.
-     * @param data new data to update.
-     */
-    public void update(int index, Object data) {
-        mDataList.set(index, data);
     }
 
     /**

@@ -326,6 +326,7 @@ public class BTree<K, V> {
      * @param order order of this tree.
      *              Need >= 3.
      */
+    @SuppressWarnings("unchecked")
     public BTree(int order) {
         if (order < 3) {
             order = 3;

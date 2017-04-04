@@ -172,6 +172,7 @@ public class MultiIndexTable extends Table {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType) {
         if (mTables.get(sortIndex) != null) {
             ArrayList<DataRecord> allRecords = mTables.get(sortIndex).getAllRecords(sortIndex, sortingType);

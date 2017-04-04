@@ -33,13 +33,6 @@ public class DataRecordTest {
     }
 
     @Test
-    public void update() throws Exception {
-        dataRecord.update(2, 22);
-        assertEquals(22, dataRecord.get(2));
-        dataRecord.update(2, 20);
-    }
-
-    @Test
     public void set() throws Exception {
         dataRecord.set(2, 22);
         assertEquals(22, dataRecord.get(2));

@@ -326,6 +326,7 @@ public class Condition {
      * @param operator operator.
      * @return a boolean as result.
      */
+    @SuppressWarnings("unchecked")
     public static boolean calculateResult(Object left, Object right, BinaryOperator operator) {
         if (left == null || right == null) {
             switch (operator) {

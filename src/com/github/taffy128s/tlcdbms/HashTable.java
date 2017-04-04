@@ -216,6 +216,7 @@ public class HashTable extends Table {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType) {
         if (sortIndex == mKeyIndex) {
             ArrayList<DataRecord> allRecords = getAllRecords();
