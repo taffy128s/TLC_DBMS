@@ -124,7 +124,7 @@ public class SQLParser {
         SQLParseResult result = new SQLParseResult();
         result.setCommandType(CommandType.SELECT);
         ArrayList<String> targets = new ArrayList<>();
-        if (checkTokenIgnoreCase("sum", false)) {
+        if (checkTokenIgnoreCase("sum", false) && checkNextNextTokenIgnoreCase("(")) {
             nextToken(true);
             if (!checkTokenIgnoreCase("(", true)) {
                 printErrorMessage("Missing left parenthesis.");
@@ -140,7 +140,7 @@ public class SQLParser {
             }
             result.setQueryType(QueryType.SUM);
             targets.add(attributeName);
-        } else if (checkTokenIgnoreCase("count", false)) {
+        } else if (checkTokenIgnoreCase("count", false) && checkNextNextTokenIgnoreCase("(")) {
             nextToken(true);
             if (!checkTokenIgnoreCase("(", true)) {
                 printErrorMessage("Missing left parenthesis");
@@ -1284,6 +1284,23 @@ public class SQLParser {
      */
     private boolean checkTokenIgnoreCase(String expected, boolean increase) {
         return nextToken(increase).equalsIgnoreCase(expected);
+    }
+
+    /**
+     * Check next next token with input string (case insensitive).
+     * Will not increase token index.
+     *
+     * @param expected expect string, string to be compared.
+     * @return true if matched, false if not.
+     */
+    private boolean checkNextNextTokenIgnoreCase(String expected) {
+        String nextNextToken;
+        if (mIndex + 2 >= 0 && mIndex + 2 < mTokens.size()) {
+            nextNextToken = mTokens.get(mIndex + 2);
+        } else {
+            nextNextToken = "";
+        }
+        return nextNextToken.equalsIgnoreCase(expected);
     }
 
     /**
