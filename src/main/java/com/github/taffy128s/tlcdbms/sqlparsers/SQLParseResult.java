@@ -15,7 +15,7 @@ public class SQLParseResult {
     private ArrayList<String> mAttributeNames;
     private ArrayList<DataType> mAttributeTypes;
     private ArrayList<TableStructure> mAttributeIndices;
-    private ArrayList<String> mBlocks;
+    private ArrayList<ArrayList<String>> mBlocks;
     private ArrayList<String> mUpdateOrder;
     private int mPrimaryKeyIndex;
     private int mShowRowLimitation;
@@ -164,7 +164,7 @@ public class SQLParseResult {
      *
      * @param blocks a list of data blocks.
      */
-    public void setBlocks(ArrayList<String> blocks) {
+    public void setBlocks(ArrayList<ArrayList<String>> blocks) {
         mBlocks = blocks;
     }
 
@@ -173,7 +173,7 @@ public class SQLParseResult {
      *
      * @return a list of data blocks.
      */
-    public ArrayList<String> getBlocks() {
+    public ArrayList<ArrayList<String>> getBlocks() {
         return mBlocks;
     }
 
@@ -415,8 +415,11 @@ public class SQLParseResult {
             stringBuilder.append("INSERT\n");
             stringBuilder.append("Table ").append(mTablename).append("\n");
             stringBuilder.append("Block content\n");
-            for (String block : mBlocks) {
-                stringBuilder.append(block).append(" ");
+            for (ArrayList<String> block : mBlocks) {
+                for (String data : block) {
+                    stringBuilder.append(data).append(" ");
+                }
+                stringBuilder.append("\n");
             }
             stringBuilder.append("\n");
             if (mCustomOrder) {

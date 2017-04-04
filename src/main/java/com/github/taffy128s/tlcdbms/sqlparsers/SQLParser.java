@@ -806,38 +806,49 @@ public class SQLParser {
             printErrorMessage("Expect keyword VALUES.");
             return null;
         }
-        if (!checkTokenIgnoreCase("(", true)) {
-            printErrorMessage("Left parenthesis '(' expected after table name.");
-            return null;
-        }
-        ArrayList<String> blocks = new ArrayList<>();
-        while (true) {
-            SQLBlock block = getBlock();
-            if (!block.isValid()) {
+        boolean hasComma = true;
+        ArrayList<ArrayList<String>> blocks = new ArrayList<>();
+        while (hasComma) {
+            ArrayList<String> innerBlocks = new ArrayList<>();
+            if (!checkTokenIgnoreCase("(", true)) {
+                printErrorMessage("Left parenthesis '(' expected.");
                 return null;
             }
-            blocks.add(block.getData());
-            if (!checkTokenIgnoreCase(",", false)) {
-                break;
+            while (true) {
+                SQLBlock block = getBlock();
+                if (!block.isValid()) {
+                    return null;
+                }
+                innerBlocks.add(block.getData());
+                if (!checkTokenIgnoreCase(",", false)) {
+                    break;
+                }
+                checkTokenIgnoreCase(",", true);
             }
-            checkTokenIgnoreCase(",", true);
-        }
-        if (!checkTokenIgnoreCase(")", true)) {
-            printErrorMessage("Right parenthesis ')' expected after attribute definition.");
-            return null;
+            if (!checkTokenIgnoreCase(")", true)) {
+                printErrorMessage("Right parenthesis ')' expected after attribute definition.");
+                return null;
+            }
+            if (innerBlocks.isEmpty()) {
+                printErrorMessage("Empty tuple to insert to table.", 2, mTokens.get(2).length());
+                return null;
+            }
+            if (updateOrder != null && innerBlocks.size() != updateOrder.size()) {
+                System.out.println("Data numbers not matched.");
+                System.out.println("Specified: " + updateOrder.size() + ".");
+                System.out.println("Given: " + innerBlocks.size() + ".");
+                return null;
+            }
+            blocks.add(innerBlocks);
+            if (checkTokenIgnoreCase(",", false)) {
+                nextToken(true);
+                hasComma = true;
+            } else {
+                hasComma = false;
+            }
         }
         if (!isEnded()) {
             System.out.println("Unexpected strings at end of line.");
-            return null;
-        }
-        if (blocks.isEmpty()) {
-            printErrorMessage("Empty tuple to insert to table.", 2, mTokens.get(2).length());
-            return null;
-        }
-        if (updateOrder != null && blocks.size() != updateOrder.size()) {
-            System.out.println("Data numbers not matched.");
-            System.out.println("Specified: " + updateOrder.size() + ".");
-            System.out.println("Given: " + blocks.size() + ".");
             return null;
         }
         result.setBlocks(blocks);

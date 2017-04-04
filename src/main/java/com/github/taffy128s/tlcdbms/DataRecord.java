@@ -125,6 +125,7 @@ public class DataRecord implements DiskWritable, StringWritable {
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("(");
         for (Object item : mDataList) {
             stringBuilder.append(item);
             stringBuilder.append(", ");
@@ -133,7 +134,7 @@ public class DataRecord implements DiskWritable, StringWritable {
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
-        stringBuilder.append("\n");
+        stringBuilder.append(")");
         return stringBuilder.toString();
     }
 
