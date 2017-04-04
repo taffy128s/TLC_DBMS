@@ -57,11 +57,20 @@ local.properties
 # Java Runnable File (JAR)
 *.jar
 
+# Gradle
+.gradle/
+gradle/
+
+# idea
 TLC_DBMS.iml
 .idea/
 lib/
 out/
 src/META-INF/
+
+# macos
 .DS_STORE
+
+# eclipse EUML
 .euml2
 .umlproject
