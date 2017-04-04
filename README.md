@@ -1,11 +1,33 @@
-# TLC_DBMS <br />
+# TLC_DBMS
 A mini database management system for CS4710 in National Tsing Hua University. <br />
 
-## Getting Started <br />
-Clone the entire repository and add it into a new Java project. <br />
+## Getting Started
+This project uses [Gradle](https://gradle.org/) build system.
 
-### Prerequisites <br />
-Any computer with Java IDE and JDK 1.7 or higher installed. <br />
+Simply clone this repository and use gradle to build/run.
+For more information, see below.
+
+### Prerequisites
+JDK 1.8 or higher installed. <br />
+
+### Build
+In project root directory, type `./gradlew build`. All files generated will be in `./build/` directory.
+
+In Windows, use `gradlew.bat` instead of `./gradlew`.
+
+### Run
+In project root directory, type `./gradlew installDist`, an executable script will be placed in
+`./build/install/TLC_DBMS/bin` called `TLC_DBMS`, `TLC_DBMS.bat`.
+
+In Windows, use `gradlew.bat` instead of `./gradlew`.
+
+### Import to IDEs
+For Eclipse, you can import this project directly, or use `./gradlew eclipse` to generate files needed by eclipse.
+
+For IntelliJ IDEA, you can import this project directly, or use `./gradlew idea` to generate files needed by IDEA.
+
+### More information
+Simply type `./gradlew tasks`.
 
 ## Syntax
 Currently support CREATE, INSERT, SELECT, DROP, SHOW, DESC, LOAD, QUIT, EXIT commands.
@@ -87,31 +109,18 @@ EXIT Syntax
 exit;
 ```
 
-## Running the tests <br />
-Tests can be done through three ways: <br />
-(1) Create a text file filled with SQL commands, and pass the file name to the exported jar by argument. <br />
-(2) Add testcases like the format in any file under directory "test". Then, execute them using JUnit Test. <br />
-(3) Straightforwardly run SQL commands in the console. <br />
-
-### Testing example <br />
-In the file "SQLParserTest.java", we have "Create table f();". <br />
-Just like any SQL language, we should reject this command because a table without columns is not allowed. <br />
-
-## Deployment <br />
-Export a jar executable in any Java IDE, and run it on any machine that supports Java Runtime Environment. <br />
-
-## Built With <br />
+## Built With
 [Eclipse](https://www.eclipse.org/downloads/) - The most widely used Java IDE. <br />
 [IntelliJ](https://www.jetbrains.com/idea/download/#section=windows) - Developed by JetBrains. <br />
 
-## Authors <br />
+## Authors
 Tsai Tzung-yu <br />
 Cheng Yu-min <br />
 Chen Tz-yu <br />
 
-## Acknowledgments <br />
+## Acknowledgments
 The name "TLC" comes from the names of authors. <br />
 T->Taffy->Cheng Yu-min <br />
-L->Little Bird->Tsai Tzung-yu <br />
+L->LittleBird->Tsai Tzung-yu <br />
 C->Chen->Chen Tz-yu <br />
 Not from "triple-level cell". <br />
