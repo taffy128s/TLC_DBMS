@@ -51,7 +51,7 @@ INSERT INTO table_name[(attr_name[, attr_name ...])] VALUES(data[, data...]);
 
 SELECT Syntax
 ```
-SELECT select_target FROM table_references [WHERE where_condition] [ORDER BY sort_target [ASC | DESC]] [LIMIT limitation];
+SELECT select_target FROM table_references [WHERE where_condition] [ORDER BY sort_target[, sort_target ...] [ASC | DESC]] [LIMIT limitation];
 
 select_target:
     * | target [, target ...]
@@ -86,7 +86,7 @@ SHOW Syntax
 ```
 SHOW TABLES;
 or
-SHOW TABLE [FULL] table_name [ORDER BY attr_name [ASC | DESC]] [LIMIT length];
+SHOW TABLE [FULL] table_name [ORDER BY attr_name[, attr_name ...] [ASC | DESC]] [LIMIT length];
 ```
 
 DESC Syntax
