@@ -75,3 +75,6 @@ src/META-INF/
 # eclipse EUML
 .euml2
 .umlproject
+
+# program generated file
+dbtlc/
