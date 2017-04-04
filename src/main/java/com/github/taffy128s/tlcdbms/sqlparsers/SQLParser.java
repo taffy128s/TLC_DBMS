@@ -296,16 +296,28 @@ public class SQLParser {
             if (!checkTokenIgnoreCase("BY", true)) {
                 printErrorMessage("Expect keyword BY after ORDER");
             }
+            ArrayList<String> attributeNames = new ArrayList<>();
             String orderTarget = getTargetNameWithPossibleDot();
             if (orderTarget == null) {
                 return null;
             }
             if (orderTarget.contains("*")) {
-                printErrorMessage("Invalid order target. Cannot include '*'.");
+                printErrorMessage("Invalid order target. Cannot contain '*'.");
                 return null;
             }
-            ArrayList<String> attributeNames = new ArrayList<>();
             attributeNames.add(orderTarget);
+            while (checkTokenIgnoreCase(",", false)) {
+                nextToken(true);
+                orderTarget = getTargetNameWithPossibleDot();
+                if (orderTarget == null) {
+                    return null;
+                }
+                if (orderTarget.contains("*")) {
+                    printErrorMessage("Invalid order target. Cannot contain '*'.");
+                    return null;
+                }
+                attributeNames.add(orderTarget);
+            }
             result.setAttributeNames(attributeNames);
             result.setShowSortType(SortingType.ASCENDING);
             if (checkTokenIgnoreCase("ASC", false)) {
@@ -918,6 +930,14 @@ public class SQLParser {
                     return null;
                 }
                 attributeNames.add(attributeName);
+                while (checkTokenIgnoreCase(",", false)) {
+                    nextToken(true);
+                    attributeName = getAttributeName();
+                    if (attributeName == null) {
+                        return null;
+                    }
+                    attributeNames.add(attributeName);
+                }
                 if (checkTokenIgnoreCase("asc", false)) {
                     checkTokenIgnoreCase("asc", true);
                     result.setShowSortType(SortingType.ASCENDING);

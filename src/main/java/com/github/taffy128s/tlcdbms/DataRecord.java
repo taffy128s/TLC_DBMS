@@ -217,4 +217,27 @@ public class DataRecord implements DiskWritable, StringWritable {
         }
         return true;
     }
+
+    public static int compare(DataRecord a, DataRecord b, ArrayList<Integer> indices) {
+        for (int index : indices) {
+            int cmp = compare(a.get(index), b.get(index));
+            if (cmp != 0) {
+                return cmp;
+            }
+        }
+        return 0;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static int compare(Object a, Object b) {
+        if (a == null && b == null) {
+            return 0;
+        } else if (a != null && b == null) {
+            return 1;
+        } else if (a == null) {
+            return -1;
+        } else {
+            return ((Comparable) a).compareTo(b);
+        }
+    }
 }

@@ -548,9 +548,29 @@ public abstract class Table implements DiskWritable {
      * Sorted by column index given in parameter.
      *
      * @param sortIndex column (field) index to sort.
+     * @param sortingType ascending or descending.
      * @return an array list of all records.
      */
     public abstract ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType);
+
+    /**
+     * Get all records in the table.
+     * Sorted by column indices given in parameter.
+     *
+     * @param sortIndices column (field) indices to sort.
+     * @param sortingType ascending or descending.
+     * @return an array list of all records.
+     */
+    public ArrayList<DataRecord> getAllRecords(ArrayList<Integer> sortIndices, SortingType sortingType) {
+        if (sortIndices.size() == 1) {
+            return getAllRecords(sortIndices.get(0), sortingType);
+        } else {
+            ArrayList<DataRecord> allRecords = getAllRecords();
+            final int coefficient = (sortingType == SortingType.ASCENDING) ? 1 : -1;
+            allRecords.sort((o1, o2) -> coefficient * DataRecord.compare(o1, o2, sortIndices));
+            return allRecords;
+        }
+    }
 
     /**
      * Join two table given in parameter. Condition in parameter should be set correctly,

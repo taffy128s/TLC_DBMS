@@ -167,11 +167,25 @@ public class DBManager implements DiskWritable {
         }
         if (parameter.getQueryType() == QueryType.COUNT) {
             String queryTargetString = "COUNT(";
+            String target = "";
             if (parameter.getTargets().get(0).getTableName() != null) {
                 queryTargetString += parameter.getTargets().get(0).getTableName() + ".";
+                target += parameter.getTargets().get(0).getTableName() + ".";
             }
             queryTargetString += parameter.getTargets().get(0).getAttribute() + ")";
-            int answer = resultTable.getAllRecords().size();
+            target += parameter.getTargets().get(0).getAttribute();
+            int answer = 0;
+            if (target.equalsIgnoreCase("*")) {
+                answer = resultTable.getAllRecords().size();
+            } else {
+                int index = resultTable.getAttributeNames().indexOf(target);
+                ArrayList<DataRecord> allRecords = resultTable.getAllRecords();
+                for (DataRecord record : allRecords) {
+                    if (record.get(index) != null) {
+                        ++answer;
+                    }
+                }
+            }
             ArrayList<String> attributes = new ArrayList<>();
             ArrayList<DataType> types = new ArrayList<>();
             ArrayList<DataRecord> records = new ArrayList<>();
@@ -192,7 +206,9 @@ public class DBManager implements DiskWritable {
             ArrayList<DataRecord> allRecords = resultTable.getAllRecords();
             int answer = 0;
             for (DataRecord record : allRecords) {
-                answer += (Integer) record.get(index);
+                if (record.get(index) != null) {
+                    answer += (Integer) record.get(index);
+                }
             }
             ArrayList<String> attributes = new ArrayList<>();
             ArrayList<DataType> types = new ArrayList<>();
@@ -205,11 +221,14 @@ public class DBManager implements DiskWritable {
             printTable(attributes, types, records);
         } else {
             ArrayList<Integer> targetIndices = new ArrayList<>();
+            ArrayList<Integer> sortIndices = new ArrayList<>();
             ArrayList<DataRecord> allRecords;
             if (parameter.getAttributeNames() != null) {
-                String target = parameter.getAttributeNames().get(0);
-                int sortIndex = resultTable.getAttributeNames().indexOf(target);
-                allRecords = resultTable.getAllRecords(sortIndex, parameter.getShowSortType());
+                for (String target : parameter.getAttributeNames()) {
+                    int sortIndex = resultTable.getAttributeNames().indexOf(target);
+                    sortIndices.add(sortIndex);
+                }
+                allRecords = resultTable.getAllRecords(sortIndices, parameter.getShowSortType());
             } else {
                 allRecords = resultTable.getAllRecords();
             }
@@ -334,13 +353,16 @@ public class DBManager implements DiskWritable {
         ArrayList<DataType> attributeTypes = mTables.get(tablename).getAttributeTypes();
         ArrayList<DataRecord> allRecords;
         if (parameter.getAttributeNames() != null) {
-            String sortAttributeName = parameter.getAttributeNames().get(0);
-            final int sortIndex = attributeNames.indexOf(sortAttributeName);
-            if (sortIndex == -1) {
-                System.out.println("Attribute " + sortAttributeName + " not exists in table " + tablename);
-                return;
+            ArrayList<Integer> sortIndices = new ArrayList<>();
+            for (String sortAttributeName : parameter.getAttributeNames()) {
+                final int sortIndex = attributeNames.indexOf(sortAttributeName);
+                if (sortIndex == -1) {
+                    System.out.println("Attribute " + sortAttributeName + " not exists in table " + tablename);
+                    return;
+                }
+                sortIndices.add(sortIndex);
             }
-            allRecords = mTables.get(tablename).getAllRecords(sortIndex, parameter.getShowSortType());
+            allRecords = mTables.get(tablename).getAllRecords(sortIndices, parameter.getShowSortType());
         } else {
             allRecords = mTables.get(tablename).getAllRecords();
         }
@@ -597,40 +619,42 @@ public class DBManager implements DiskWritable {
         if (parameter.getAttributeNames() == null) {
             return true;
         }
-        String target = parameter.getAttributeNames().get(0);
-        String[] split = target.split("\\.");
-        String tablename = null;
-        String attribute;
-        if (split.length == 1) {
-            attribute = split[0];
-        } else {
-            tablename = split[0];
-            attribute = split[1];
-        }
-        if (tablename == null) {
-            int found = -1;
-            for (String table : parameter.getTableAliases().keySet()) {
-                int index = mQueryTables.get(table).getAttributeNames().indexOf(attribute);
-                if (index != -1 && found != -1) {
-                    System.out.println("Sort attribute '" + target + "' is ambiguous.");
+        for (int i = 0; i < parameter.getAttributeNames().size(); ++i) {
+            String target = parameter.getAttributeNames().get(i);
+            String[] split = target.split("\\.");
+            String tablename = null;
+            String attribute;
+            if (split.length == 1) {
+                attribute = split[0];
+            } else {
+                tablename = split[0];
+                attribute = split[1];
+            }
+            if (tablename == null) {
+                int found = -1;
+                for (String table : parameter.getTableAliases().keySet()) {
+                    int index = mQueryTables.get(table).getAttributeNames().indexOf(attribute);
+                    if (index != -1 && found != -1) {
+                        System.out.println("Sort attribute '" + target + "' is ambiguous.");
+                        return false;
+                    }
+                    if (index != -1) {
+                        found = index;
+                        tablename = table;
+                    }
+                }
+            } else {
+                if (!parameter.getTableAliases().containsKey(tablename)) {
+                    System.out.println("Table '" + tablename + "' not exists.");
                     return false;
                 }
-                if (index != -1) {
-                    found = index;
-                    tablename = table;
+                if (mQueryTables.get(tablename).getAttributeNames().indexOf(attribute) == -1) {
+                    System.out.println("Sort Attribute '" + attribute + "' not exists in table " + tablename);
+                    return false;
                 }
             }
-        } else {
-            if (!parameter.getTableAliases().containsKey(tablename)) {
-                System.out.println("Table '" + tablename + "' not exists.");
-                return false;
-            }
-            if (mQueryTables.get(tablename).getAttributeNames().indexOf(attribute) == -1) {
-                System.out.println("Sort Attribute '" + attribute + "' not exists in table " + tablename);
-                return false;
-            }
+            parameter.getAttributeNames().set(i, tablename + "." + attribute);
         }
-        parameter.getAttributeNames().set(0, tablename + "." + attribute);
         return true;
     }
 
