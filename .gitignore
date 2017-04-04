@@ -59,7 +59,6 @@ local.properties
 
 # Gradle
 .gradle/
-gradle/
 build/
 
 # idea
