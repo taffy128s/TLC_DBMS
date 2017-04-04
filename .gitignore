@@ -54,15 +54,12 @@ local.properties
 .scala_dependencies
 .worksheet
 
-# Java Runnable File (JAR)
-*.jar
-
 # Gradle
 .gradle/
 build/
 
 # idea
-TLC_DBMS.iml
+*.iml
 .idea/
 lib/
 out/
