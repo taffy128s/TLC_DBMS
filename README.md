@@ -16,7 +16,7 @@ In project root directory, type `./gradlew build`. All files generated will be i
 In Windows, use `gradlew.bat` instead of `./gradlew`.
 
 ### Run
-In project root directory, type `./gradlew installDist`, an executable script will be placed in
+In project root directory, type `./gradlew installDist`. The executable scripts will be placed in
 `./build/install/TLC_DBMS/bin` called `TLC_DBMS`, `TLC_DBMS.bat`.
 
 In Windows, use `gradlew.bat` instead of `./gradlew`.
