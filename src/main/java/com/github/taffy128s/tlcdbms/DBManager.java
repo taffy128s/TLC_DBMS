@@ -393,7 +393,7 @@ public class DBManager implements DiskWritable {
             int startIndex = Math.min(parameter.getShowRowLimitation(), allRecords.size());
             allRecords.subList(startIndex, allRecords.size()).clear();
         }
-        printTable(attributeNames, attributeTypes, allRecords, !parameter.getShowFullInfo());
+        printTable(attributeNames, attributeTypes, allRecords);
     }
 
     /**
@@ -741,28 +741,15 @@ public class DBManager implements DiskWritable {
     }
 
     /**
-     * Print a table (output related).
-     * Hide any attribute related to AUTO_PRIMARY_KEY.
+     * Print a table (output related function).
      *
      * @param attribute attribute names.
      * @param type attribute types.
      * @param records data to print.
      */
     private void printTable(ArrayList<String> attribute, ArrayList<DataType> type, ArrayList<DataRecord> records) {
-        printTable(attribute, type, records, true);
-    }
-
-    /**
-     * Print a table (output related).
-     *
-     * @param attribute attribute names.
-     * @param type attribute types.
-     * @param records data to print.
-     * @param hideAutoPrimaryKey true to hide auto generated primary key, false otherwise
-     */
-    private void printTable(ArrayList<String> attribute, ArrayList<DataType> type, ArrayList<DataRecord> records, boolean hideAutoPrimaryKey) {
         if (records.isEmpty()) {
-            System.out.println(" (empty set.)");
+            System.out.println("Empty set.");
             return;
         }
         ArrayList<Integer> columnMaxLength = new ArrayList<>();
@@ -777,7 +764,11 @@ public class DBManager implements DiskWritable {
         }
         String attrOutput = "";
         for (int i = 0; i < attribute.size(); ++i) {
-            attrOutput += " | ";
+            if (i > 0) {
+                attrOutput += " | ";
+            } else {
+                attrOutput += "| ";
+            }
             attrOutput += attribute.get(i);
             for (int j = 0; j < columnMaxLength.get(i) - attribute.get(i).length() - 1; ++j) {
                 attrOutput += " ";
@@ -790,7 +781,11 @@ public class DBManager implements DiskWritable {
         for (DataRecord record : records) {
             ArrayList<Object> blocks = record.getAllFieldsForOutput();
             for (int i = 0; i < blocks.size(); ++i) {
-                System.out.print(" |");
+                if (i > 0) {
+                    System.out.print(" |");
+                } else {
+                    System.out.print("|");
+                }
                 if (type.get(i).getType() == DataTypeIdentifier.INT) {
                     for (int j = 0; j < columnMaxLength.get(i) - blocks.get(i).toString().length(); ++j) {
                         System.out.print(" ");
@@ -810,9 +805,9 @@ public class DBManager implements DiskWritable {
         }
         printSeparateLine(attrOutput);
         if (records.size() == 1) {
-            System.out.println(" (" + records.size() + " row in set.)");
+            System.out.println(records.size() + " row in set.");
         } else {
-            System.out.println(" (" + records.size() + " rows in set.)");
+            System.out.println(records.size() + " rows in set.");
         }
     }
 
@@ -823,9 +818,7 @@ public class DBManager implements DiskWritable {
      */
     private void printSeparateLine(String attrOutput) {
         for (int i = 0; i < attrOutput.length(); ++i) {
-            if (i < 1) {
-                System.out.print(" ");
-            } else if (attrOutput.charAt(i) == '|') {
+            if (attrOutput.charAt(i) == '|') {
                 System.out.print("+");
             } else {
                 System.out.print("-");

@@ -83,6 +83,7 @@ public class Interpreter {
      * @param singleInstruction a command read from stdin.
      */
     protected void execute(String singleInstruction) {
+        long startTime = System.currentTimeMillis();
         SQLParseResult sqlParseResult = mParser.parse(singleInstruction);
         if (sqlParseResult == null) {
             System.out.println();
@@ -121,6 +122,9 @@ public class Interpreter {
             default:
                 break;
         }
+        long endTime = System.currentTimeMillis();
+        float deltaTime = ((float) (endTime - startTime)) / 1000;
+        System.out.printf("(%.3f seconds.)\n", deltaTime);
         System.out.println();
     }
 
