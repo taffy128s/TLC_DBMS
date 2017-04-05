@@ -551,7 +551,14 @@ public abstract class Table implements DiskWritable {
      * @param sortingType ascending or descending.
      * @return an array list of all records.
      */
-    public abstract ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType);
+    public ArrayList<DataRecord> getAllRecords(int sortIndex, SortingType sortingType) {
+        ArrayList<DataRecord> allRecords = getAllRecords();
+        ArrayList<Integer> sortIndices = new ArrayList<>();
+        sortIndices.add(sortIndex);
+        final int coefficient = (sortingType == SortingType.ASCENDING) ? 1 : -1;
+        allRecords.sort((o1, o2) -> coefficient * DataRecord.compare(o1, o2, sortIndices));
+        return allRecords;
+    }
 
     /**
      * Get all records in the table.

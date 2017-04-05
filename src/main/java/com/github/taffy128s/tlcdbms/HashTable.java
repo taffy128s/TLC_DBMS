@@ -225,27 +225,7 @@ public class HashTable extends Table {
             }
             return allRecords;
         } else {
-            ArrayList<DataRecord> allRecords = getAllRecords();
-            ArrayList<DataRecord> nullRecords = new ArrayList<>();
-            ArrayList<DataRecord> notNullRecords = new ArrayList<>();
-            for (DataRecord record : allRecords) {
-                if (record.get(sortIndex) == null) {
-                    nullRecords.add(record);
-                } else {
-                    notNullRecords.add(record);
-                }
-            }
-            final int coefficient = (sortingType == SortingType.ASCENDING) ? 1 : -1;
-            notNullRecords.sort((o1, o2) -> coefficient * ((Comparable) o1.get(sortIndex)).compareTo(o2.get(sortIndex)));
-            allRecords.clear();
-            if (coefficient == 1) {
-                allRecords.addAll(nullRecords);
-                allRecords.addAll(notNullRecords);
-            } else {
-                allRecords.addAll(notNullRecords);
-                allRecords.addAll(nullRecords);
-            }
-            return allRecords;
+            return super.getAllRecords(sortIndex, sortingType);
         }
     }
 
