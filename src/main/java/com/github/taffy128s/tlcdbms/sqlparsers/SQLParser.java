@@ -388,6 +388,16 @@ public class SQLParser {
     private Condition getCondition(ArrayList<String> tableNameList, HashMap<String, String> aliasMap) {
         String leftOperand, rightOperand, operator;
         leftOperand = nextToken(true);
+        String temp = nextToken(false);
+        if (mTokenEnded || temp.equals("AND") || temp.equals("OR")) {
+            if (DataChecker.isValidInteger(leftOperand)) {
+                Condition retCon = new Condition(leftOperand, null, null, "0", null, null, BinaryOperator.NOT_EQUAL);
+                return retCon;
+            } else {
+                System.out.println("Invalid statement: " + leftOperand);
+                return null;
+            }
+        }
         operator = nextToken(true);
         rightOperand = nextToken(true);
         if (!isValidOp(operator)) {
