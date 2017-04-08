@@ -389,7 +389,8 @@ public class SQLParser {
         String leftOperand, rightOperand, operator;
         leftOperand = nextToken(true);
         String temp = nextToken(false);
-        if (mTokenEnded || temp.equals("AND") || temp.equals("OR")) {
+        if (mTokenEnded || temp.equalsIgnoreCase("AND") || temp.equalsIgnoreCase("OR")
+                || temp.equalsIgnoreCase("ORDER") || temp.equalsIgnoreCase("LIMIT")) {
             if (DataChecker.isValidInteger(leftOperand)) {
                 Condition retCon = new Condition(leftOperand, null, null, "0", null, null, BinaryOperator.NOT_EQUAL);
                 return retCon;
