@@ -715,6 +715,11 @@ public class DBManager implements DiskWritable {
                         }
                         target.setTableName(tableName);
                         found = true;
+                        int index = mQueryTables.get(tableName).getAttributeNames().indexOf(target.getAttribute());
+                        if (parameter.getQueryType() == QueryType.SUM && mQueryTables.get(tableName).getAttributeTypes().get(index).getType() != DataTypeIdentifier.INT) {
+                            System.out.println("Aggregation function SUM() cannot be applied to type VARCHAR.");
+                            return false;
+                        }
                     }
                 }
             }
