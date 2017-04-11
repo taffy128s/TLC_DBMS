@@ -4,6 +4,7 @@ import com.github.taffy128s.tlcdbms.sqlparsers.SQLParser;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 
 public class FileInterpreter extends Interpreter {
 
@@ -79,7 +80,7 @@ public class FileInterpreter extends Interpreter {
             } else if (!singleIns.equals("")) {
                 System.out.println("Missing semicolon in the end, file: " + mFilename);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.println(mFilename + ": read file error.");
             System.exit(0);
         }

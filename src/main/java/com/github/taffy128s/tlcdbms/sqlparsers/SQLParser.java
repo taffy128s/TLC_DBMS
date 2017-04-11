@@ -124,67 +124,77 @@ public class SQLParser {
         SQLParseResult result = new SQLParseResult();
         result.setCommandType(CommandType.SELECT);
         ArrayList<String> targets = new ArrayList<>();
-        if (checkTokenIgnoreCase("sum", false) && checkNextNextTokenIgnoreCase("(")) {
-            nextToken(true);
-            if (!checkTokenIgnoreCase("(", true)) {
-                printErrorMessage("Missing left parenthesis.");
-                return null;
-            }
-            String attributeName = getTargetNameWithPossibleDot();
-            if (attributeName == null) {
-                return null;
-            }
-            if (attributeName.contains("*")) {
-                printErrorMessage("Invalid usage of '*' in function SUM().");
-                return null;
-            }
-            if (!checkTokenIgnoreCase(")", true)) {
-                printErrorMessage("Missing right parenthesis.");
-                return null;
-            }
-            result.setQueryType(QueryType.SUM);
-            targets.add(attributeName);
-        } else if (checkTokenIgnoreCase("count", false) && checkNextNextTokenIgnoreCase("(")) {
-            nextToken(true);
-            if (!checkTokenIgnoreCase("(", true)) {
-                printErrorMessage("Missing left parenthesis");
-                return null;
-            }
-            String attributeName;
-            if (checkTokenIgnoreCase("*", false)) {
+        ArrayList<QueryType> queryTypes = new ArrayList<>();
+        boolean containsQueryAll = false;
+        while (true) {
+            if (checkTokenIgnoreCase("sum", false) && checkNextNextTokenIgnoreCase("(")) {
                 nextToken(true);
-                attributeName = "*";
-            } else {
-                attributeName = getTargetNameWithPossibleDot();
+                if (!checkTokenIgnoreCase("(", true)) {
+                    printErrorMessage("Missing left parenthesis.");
+                    return null;
+                }
+                String attributeName = getTargetNameWithPossibleDot();
                 if (attributeName == null) {
                     return null;
                 }
-            }
-            if (!checkTokenIgnoreCase(")", true)) {
-                printErrorMessage("Missing right parenthesis");
-                return null;
-            }
-            result.setQueryType(QueryType.COUNT);
-            targets.add(attributeName);
-        } else if (checkTokenIgnoreCase("*", false)) {
-            nextToken(true);
-            result.setQueryType(QueryType.NORMAL);
-            targets.add("*");
-        } else {
-            String attrName = getTargetNameWithPossibleDot();
-            if (attrName == null) {
-                return null;
-            }
-            targets.add(attrName);
-            while (checkTokenIgnoreCase(",", false)) {
+                if (attributeName.contains("*")) {
+                    printErrorMessage("Invalid usage of '*' in SUM().");
+                    return null;
+                }
+                if (!checkTokenIgnoreCase(")", true)) {
+                    printErrorMessage("Missing right parenthesis.");
+                    return null;
+                }
+                targets.add(attributeName);
+                queryTypes.add(QueryType.SUM);
+            } else if (checkTokenIgnoreCase("count", false) && checkNextNextTokenIgnoreCase("(")) {
                 nextToken(true);
-                attrName = getTargetNameWithPossibleDot();
+                if (!checkTokenIgnoreCase("(", true)) {
+                    printErrorMessage("Missing left parenthesis");
+                    return null;
+                }
+                String attributeName;
+                if (checkTokenIgnoreCase("*", false)) {
+                    nextToken(true);
+                    attributeName = "*";
+                } else {
+                    attributeName = getTargetNameWithPossibleDot();
+                    if (attributeName == null) {
+                        return null;
+                    }
+                    if (attributeName.contains("*")) {
+                        printErrorMessage("Invalid usage of '*' in COUNT().");
+                        return null;
+                    }
+                }
+                if (!checkTokenIgnoreCase(")", true)) {
+                    printErrorMessage("Missing right parenthesis");
+                    return null;
+                }
+                targets.add(attributeName);
+                queryTypes.add(QueryType.COUNT);
+            } else if (checkTokenIgnoreCase("*", false)) {
+                nextToken(true);
+                containsQueryAll = true;
+                targets.add("*");
+                queryTypes.add(QueryType.NORMAL);
+            } else {
+                String attrName = getTargetNameWithPossibleDot();
                 if (attrName == null) {
                     return null;
                 }
                 targets.add(attrName);
+                queryTypes.add(QueryType.NORMAL);
             }
-            result.setQueryType(QueryType.NORMAL);
+            if (checkTokenIgnoreCase(",", false)) {
+                nextToken(true);
+            } else {
+                break;
+            }
+        }
+        if (containsQueryAll && targets.size() != 1) {
+            System.out.println("Invalid query target. Cannot query * with other targets at the same time.");
+            return null;
         }
         if (!checkTokenIgnoreCase("from", true)) {
             printErrorMessage("Expect keyword FROM after query type.");
@@ -208,6 +218,7 @@ public class SQLParser {
             }
         }
         result.setTargets(targets);
+        result.setQueryTypes(queryTypes);
         result.setTablenames(tableNameList);
         result.setTableAliases(aliasMap);
         if (checkTokenIgnoreCase("where", false)) {
@@ -294,6 +305,36 @@ public class SQLParser {
             } else {
                 result.setConditions(conditions);
             }
+        }
+        if (checkTokenIgnoreCase("GROUP", false)) {
+            nextToken(true);
+            if (!checkTokenIgnoreCase("BY", true)) {
+                printErrorMessage("Expect keyword BY after GROUP.");
+                return null;
+            }
+            ArrayList<String> groupTargets = new ArrayList<>();
+            String groupTarget = getTargetNameWithPossibleDot();
+            if (groupTarget == null) {
+                return null;
+            }
+            if (groupTarget.contains("*")) {
+                printErrorMessage("Invalid group target. Cannot contain '*'.");
+                return null;
+            }
+            groupTargets.add(groupTarget);
+            while (checkTokenIgnoreCase(",", false)) {
+                nextToken(true);
+                groupTarget = getTargetNameWithPossibleDot();
+                if (groupTarget == null) {
+                    return null;
+                }
+                if (groupTarget.contains("*")) {
+                    printErrorMessage("Invalid group target. Cannot contain '*'.");
+                    return null;
+                }
+                groupTargets.add(groupTarget);
+            }
+            result.setGroupTargets(groupTargets);
         }
         if (checkTokenIgnoreCase("ORDER", false)) {
             nextToken(true);

@@ -22,9 +22,10 @@ public class SQLParseResult {
     private boolean mCustomOrder;
     private boolean mShowFullInfo;
     private ArrayList<SortingType> mShowSortTypes;
-    private QueryType mQueryType;
+    private ArrayList<QueryType> mQueryTypes;
     private ArrayList<Target> mTargets;
     private ArrayList<Condition> mConditions;
+    private ArrayList<String> mGroupTargets;
     private HashMap<String, String> mTableAliases;
     private String mFilename;
 
@@ -45,9 +46,10 @@ public class SQLParseResult {
         mCustomOrder = false;
         mShowFullInfo = false;
         mShowSortTypes = new ArrayList<>();
-        mQueryType = QueryType.NORMAL;
+        mQueryTypes = null;
         mTargets = null;
         mConditions = null;
+        mGroupTargets = null;
         mTableAliases = null;
     }
 
@@ -286,21 +288,21 @@ public class SQLParseResult {
     }
 
     /**
-     * QueryType getter.
+     * QueryTypes getter.
      *
-     * @return query type.
+     * @return query types.
      */
-    public QueryType getQueryType() {
-        return mQueryType;
+    public ArrayList<QueryType> getQueryTypes() {
+        return mQueryTypes;
     }
 
     /**
-     * QueryType setter.
+     * QueryTypes setter.
      *
-     * @param mQueryType query type to set.
+     * @param queryTypes query types to set.
      */
-    public void setQueryType(QueryType mQueryType) {
-        this.mQueryType = mQueryType;
+    public void setQueryTypes(ArrayList<QueryType> queryTypes) {
+        mQueryTypes = queryTypes;
     }
 
     /**
@@ -349,6 +351,24 @@ public class SQLParseResult {
      */
     public void setConditions(ArrayList<Condition> mConditions) {
         this.mConditions = mConditions;
+    }
+
+    /**
+     * GroupTargets getter.
+     *
+     * @return group targets.
+     */
+    public ArrayList<String> getGroupTargets() {
+        return mGroupTargets;
+    }
+
+    /**
+     * GroupTargets setter.
+     *
+     * @param originTargets group targets to set.
+     */
+    public void setGroupTargets(ArrayList<String> originTargets) {
+        mGroupTargets = originTargets;
     }
 
     /**
@@ -432,13 +452,7 @@ public class SQLParseResult {
         } else if (mCommandType == CommandType.SELECT) {
             stringBuilder.append("SELECT\n");
             stringBuilder.append("Query type: ");
-            if (mQueryType == QueryType.COUNT) {
-                stringBuilder.append("COUNT").append("\n");
-            } else if (mQueryType == QueryType.SUM) {
-                stringBuilder.append("SUM").append("\n");
-            } else if (mQueryType == QueryType.NORMAL) {
-                stringBuilder.append("NORMAL").append("\n");
-            }
+            stringBuilder.append(mQueryTypes).append("\n");
             stringBuilder.append("Targets:\n");
             for (Target target : mTargets) {
                 stringBuilder.append("  ").append(target).append("\n");

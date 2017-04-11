@@ -157,7 +157,13 @@ public class DBManager implements DiskWritable {
         if (!setTargetsParameters(parameter)) {
             return;
         }
+        if (!setGroupTarget(parameter)) {
+            return;
+        }
         if (!setSortingTarget(parameter)) {
+            return;
+        }
+        if (!checkGroupBy(parameter)) {
             return;
         }
         Stack<Table> selectedTables = new Stack<>();
@@ -194,122 +200,133 @@ public class DBManager implements DiskWritable {
                 resultTable = Table.join(resultTable, mQueryTables.get(tablename), Condition.getAlwaysTrueCondition());
             }
         }
-        if (parameter.getQueryType() == QueryType.COUNT) {
-            String queryTargetString = "COUNT(";
-            String target = "";
-            if (parameter.getTargets().get(0).getTableName() != null) {
-                queryTargetString += parameter.getTargets().get(0).getTableName() + ".";
-                target += parameter.getTargets().get(0).getTableName() + ".";
-            }
-            queryTargetString += parameter.getTargets().get(0).getAttribute() + ")";
-            target += parameter.getTargets().get(0).getAttribute();
-            int answer = 0;
-            if (target.equalsIgnoreCase("*")) {
-                answer = resultTable.getAllRecords().size();
-            } else if (parameter.getTargets().get(0).getTableName() != null && parameter.getTargets().get(0).getAttribute().equals("*")) {
-                for (String attrName : resultTable.getAttributeNames()) {
-                    if (!attrName.startsWith(parameter.getTargets().get(0).getTableName() + ".")) {
-                        System.out.println("Invalid usage of '*' in function COUNT().");
-                        return;
-                    }
-                }
-                answer = resultTable.getAllRecords().size();
-            } else {
-                int index = resultTable.getAttributeNames().indexOf(target);
-                ArrayList<DataRecord> allRecords = resultTable.getAllRecords();
-                for (DataRecord record : allRecords) {
-                    if (record.get(index) != null) {
-                        ++answer;
-                    }
-                }
-            }
-            ArrayList<String> attributes = new ArrayList<>();
-            ArrayList<DataType> types = new ArrayList<>();
-            ArrayList<DataRecord> records = new ArrayList<>();
-            DataRecord record = new DataRecord();
-            record.append(answer);
-            attributes.add(queryTargetString);
-            types.add(new DataType(DataTypeIdentifier.INT, -1));
-            records.add(record);
-            printTable(attributes, types, records);
-        } else if (parameter.getQueryType() == QueryType.SUM) {
-            String queryTargetString = "SUM(";
-            if (parameter.getTargets().get(0).getTableName() != null) {
-                queryTargetString += parameter.getTargets().get(0).getTableName() + ".";
-            }
-            queryTargetString += parameter.getTargets().get(0).getAttribute() + ")";
-            String target = parameter.getTargets().get(0).getTableName() + "." + parameter.getTargets().get(0).getAttribute();
-            int index = resultTable.getAttributeNames().indexOf(target);
-            ArrayList<DataRecord> allRecords = resultTable.getAllRecords();
-            int answer = 0;
-            for (DataRecord record : allRecords) {
-                if (record.get(index) != null) {
-                    answer += (Integer) record.get(index);
-                }
-            }
-            ArrayList<String> attributes = new ArrayList<>();
-            ArrayList<DataType> types = new ArrayList<>();
-            ArrayList<DataRecord> records = new ArrayList<>();
-            DataRecord record = new DataRecord();
-            record.append(answer);
-            attributes.add(queryTargetString);
-            types.add(new DataType(DataTypeIdentifier.INT, -1));
-            records.add(record);
-            printTable(attributes, types, records);
-        } else {
-            ArrayList<Integer> targetIndices = new ArrayList<>();
+        ArrayList<DataRecord> allRecords;
+        if (parameter.getAttributeNames() != null) {
             ArrayList<Integer> sortIndices = new ArrayList<>();
-            ArrayList<DataRecord> allRecords;
-            if (parameter.getAttributeNames() != null) {
-                for (String target : parameter.getAttributeNames()) {
-                    int sortIndex = resultTable.getAttributeNames().indexOf(target);
-                    sortIndices.add(sortIndex);
-                }
-                allRecords = resultTable.getAllRecords(sortIndices, parameter.getShowSortTypes());
-            } else {
-                allRecords = resultTable.getAllRecords();
+            for (String target : parameter.getAttributeNames()) {
+                int sortIndex = resultTable.getAttributeNames().indexOf(target);
+                sortIndices.add(sortIndex);
             }
-            if (parameter.getShowRowLimitation() != -1) {
-                int startIndex = Math.min(parameter.getShowRowLimitation(), allRecords.size());
-                allRecords.subList(startIndex, allRecords.size()).clear();
+            allRecords = resultTable.getAllRecords(sortIndices, parameter.getShowSortTypes());
+        } else {
+            allRecords = resultTable.getAllRecords();
+        }
+        ArrayList<String> targetAttributeNames = new ArrayList<>();
+        ArrayList<DataType> targetAttributeTypes = new ArrayList<>();
+        ArrayList<Integer> targetIndices = new ArrayList<>();
+        ArrayList<QueryType> targetQueryTypes = new ArrayList<>();
+        for (int i = 0; i < parameter.getTargets().size(); ++i) {
+            Target target = parameter.getTargets().get(i);
+            String targetAttributeName = "";
+            if (target.getTableName() != null) {
+                targetAttributeName += target.getTableName() + ".";
             }
-            for (int i = 0; i < parameter.getTargets().size(); ++i) {
-                Target target = parameter.getTargets().get(i);
-                if (target.getAttribute().equals("*")) {
-                    if (target.getTableName() == null) {
-                        printTable(resultTable.getAttributeNames(), resultTable.getAttributeTypes(), allRecords);
-                        return;
-                    } else {
-                        String tablename = target.getTableName();
-                        for (int j = 0; j < resultTable.getAttributeNames().size(); ++j) {
-                            if (resultTable.getAttributeNames().get(j).startsWith(tablename)) {
-                                targetIndices.add(j);
-                            }
-                        }
+            if (!target.getAttribute().equals("*")) {
+                targetAttributeName += target.getAttribute();
+            }
+            if (target.getTableName() == null && target.getAttribute().equals("*")) {
+                if (parameter.getQueryTypes().get(i) == QueryType.NORMAL) {
+                    for (int j = 0; j < resultTable.getAttributeNames().size(); ++j) {
+                        targetAttributeNames.add(resultTable.getAttributeNames().get(j));
+                        targetAttributeTypes.add(resultTable.getAttributeTypes().get(j));
+                        targetIndices.add(j);
+                        targetQueryTypes.add(QueryType.NORMAL);
                     }
                 } else {
-                    String tablename = target.getTableName();
-                    String attrName = target.getAttribute();
-                    String targetAttr = tablename + "." + attrName;
-                    targetIndices.add(resultTable.getAttributeNames().indexOf(targetAttr));
+                    targetAttributeNames.add("count(*)");
+                    targetAttributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
+                    targetIndices.add(-1);
+                    targetQueryTypes.add(parameter.getQueryTypes().get(i));
                 }
-            }
-            ArrayList<String> attributes = new ArrayList<>();
-            ArrayList<DataType> types = new ArrayList<>();
-            ArrayList<DataRecord> records = new ArrayList<>();
-            for (int index : targetIndices) {
-                attributes.add(resultTable.getAttributeNames().get(index));
-                types.add(resultTable.getAttributeTypes().get(index));
-            }
-            for (DataRecord record : allRecords) {
-                DataRecord newRecord = new DataRecord();
-                for (int index : targetIndices) {
-                    newRecord.append(record.get(index));
+            } else if (target.getTableName() != null && target.getAttribute().equals("*")) {
+                for (int j = 0; j < resultTable.getAttributeNames().size(); ++j) {
+                    if (resultTable.getAttributeNames().get(j).startsWith(targetAttributeName)) {
+                        targetAttributeNames.add(resultTable.getAttributeNames().get(j));
+                        targetAttributeTypes.add(resultTable.getAttributeTypes().get(j));
+                        targetIndices.add(j);
+                        targetQueryTypes.add(QueryType.NORMAL);
+                    }
                 }
-                records.add(newRecord);
+            } else {
+                int index = resultTable.getAttributeNames().indexOf(targetAttributeName);
+                if (parameter.getQueryTypes().get(i) == QueryType.NORMAL) {
+                    targetAttributeNames.add(targetAttributeName);
+                    targetAttributeTypes.add(resultTable.getAttributeTypes().get(index));
+                } else if (parameter.getQueryTypes().get(i) == QueryType.COUNT) {
+                    targetAttributeNames.add("count(" + targetAttributeName + ")");
+                    targetAttributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
+                } else {
+                    targetAttributeNames.add("sum(" + targetAttributeName + ")");
+                    targetAttributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
+                }
+                targetIndices.add(index);
+                targetQueryTypes.add(parameter.getQueryTypes().get(i));
             }
-            printTable(attributes,types, records);
         }
+        ArrayList<DataRecord> finalResult = new ArrayList<>();
+        for (DataRecord record : allRecords) {
+            DataRecord result = new DataRecord();
+            for (int i = 0; i < targetIndices.size(); ++i) {
+                int index = targetIndices.get(i);
+                QueryType type = targetQueryTypes.get(i);
+                if (type != QueryType.NORMAL) {
+                    result.append(0);
+                } else {
+                    result.append(record.get(index));
+                }
+            }
+            finalResult.add(result);
+        }
+        boolean targetHasFunction = false;
+        for (QueryType queryType : targetQueryTypes) {
+            if (queryType != QueryType.NORMAL) {
+                targetHasFunction = true;
+            }
+        }
+        if (targetHasFunction || parameter.getGroupTargets() != null) {
+            ArrayList<Integer> groupIndices = new ArrayList<>();
+            ArrayList<Integer> functionIndices = new ArrayList<>();
+            for (int i = 0; i < targetQueryTypes.size(); ++i) {
+                if (targetQueryTypes.get(i) == QueryType.NORMAL) {
+                    groupIndices.add(i);
+                } else {
+                    functionIndices.add(i);
+                }
+            }
+            HashMap<DataRecord, DataRecord> groupMap = new HashMap<>();
+            ArrayList<DataRecord> groupedRecords = new ArrayList<>();
+            for (int i = 0; i < finalResult.size(); ++i) {
+                DataRecord record = finalResult.get(i);
+                DataRecord origin = allRecords.get(i);
+                DataRecord key = new DataRecord();
+                for (int index : groupIndices) {
+                    key.append(record.get(index));
+                }
+                if (!groupMap.containsKey(key)) {
+                    groupMap.put(key, record);
+                    groupedRecords.add(record);
+                }
+                for (int index : functionIndices) {
+                    if (targetQueryTypes.get(index) == QueryType.COUNT) {
+                        int targetIndex = targetIndices.get(index);
+                        if (targetIndex == -1 || origin.get(targetIndex) != null) {
+                            Integer counter = (Integer) groupMap.get(key).get(index);
+                            counter = counter + 1;
+                            groupMap.get(key).set(index, counter);
+                        }
+                    } else {
+                        int targetIndex = targetIndices.get(index);
+                        if (origin.get(targetIndex) != null) {
+                            Integer adder = (Integer) groupMap.get(key).get(index);
+                            adder = adder + (Integer) origin.get(targetIndex);
+                            groupMap.get(key).set(index, adder);
+                        }
+                    }
+                }
+            }
+            finalResult = groupedRecords;
+        }
+        printTable(targetAttributeNames, targetAttributeTypes, finalResult);
     }
 
     /**
@@ -653,6 +670,55 @@ public class DBManager implements DiskWritable {
     }
 
     /**
+     * Fill grouping target parameter.
+     *
+     * @param parameter parse result generated by parser.
+     * @return true if succeed, false if failed.
+     */
+    private boolean setGroupTarget(SQLParseResult parameter) {
+        if (parameter.getGroupTargets() == null) {
+            return true;
+        }
+        for (int i = 0; i < parameter.getGroupTargets().size(); ++i) {
+            String target = parameter.getGroupTargets().get(i);
+            String[] split = target.split("\\.");
+            String tablename = null;
+            String attribute;
+            if (split.length == 1) {
+                attribute = split[0];
+            } else {
+                tablename = split[0];
+                attribute = split[1];
+            }
+            if (tablename == null) {
+                int found = -1;
+                for (String table : parameter.getTableAliases().keySet()) {
+                    int index = mQueryTables.get(table).getAttributeNames().indexOf(attribute);
+                    if (index != -1 && found != -1) {
+                        System.out.println("Group attribute '" + target + "' is ambiguous.");
+                        return false;
+                    }
+                    if (index != -1) {
+                        found = index;
+                        tablename = table;
+                    }
+                }
+            } else {
+                if (!parameter.getTableAliases().containsKey(tablename)) {
+                    System.out.println("Table '" + tablename + "' not exists.");
+                    return false;
+                }
+                if (mQueryTables.get(tablename).getAttributeNames().indexOf(attribute) == -1) {
+                    System.out.println("Group Attribute '" + attribute + "' not exists in table " + tablename);
+                    return false;
+                }
+            }
+            parameter.getGroupTargets().set(i, tablename + "." + attribute);
+        }
+        return true;
+    }
+
+    /**
      * Fill sorting target parameter.
      *
      * @param parameter parse result generated by parser.
@@ -710,7 +776,9 @@ public class DBManager implements DiskWritable {
     private boolean setTargetsParameters(SQLParseResult parameter) {
         boolean selectAll = false;
         boolean selectPart = false;
+        int scanIndex = -1;
         for (Target target : parameter.getTargets()) {
+            ++scanIndex;
             if (target.getTableName() == null) {
                 boolean found = false;
                 if (target.getAttribute().equals("*")) {
@@ -730,7 +798,7 @@ public class DBManager implements DiskWritable {
                         target.setTableName(tableName);
                         found = true;
                         int index = mQueryTables.get(tableName).getAttributeNames().indexOf(target.getAttribute());
-                        if (parameter.getQueryType() == QueryType.SUM && mQueryTables.get(tableName).getAttributeTypes().get(index).getType() != DataTypeIdentifier.INT) {
+                        if (parameter.getQueryTypes().get(scanIndex) == QueryType.SUM && mQueryTables.get(tableName).getAttributeTypes().get(index).getType() != DataTypeIdentifier.INT) {
                             System.out.println("Aggregation function SUM() cannot be applied to type VARCHAR.");
                             return false;
                         }
@@ -752,6 +820,48 @@ public class DBManager implements DiskWritable {
                 }
                 if (!mQueryTables.get(target.getTableName()).getAttributeNames().contains(target.getAttribute())) {
                     System.out.println("Attribute '" + target.getAttribute() + "' of Table " + target.getTableName() + " doesn't exist.");
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Check whether group by has correct value set.
+     *
+     * @param parameter parse result from parser.
+     * @return true if valid, false if invalid.
+     */
+    private boolean checkGroupBy(SQLParseResult parameter) {
+        boolean hasFunction = false;
+        for (QueryType type : parameter.getQueryTypes()) {
+            if (type != QueryType.NORMAL) {
+                hasFunction = true;
+            }
+        }
+        if (!hasFunction && parameter.getGroupTargets() == null) {
+            return true;
+        }
+        HashSet<String> groups = new HashSet<>();
+        if (parameter.getGroupTargets() != null) {
+            for (String target : parameter.getGroupTargets()) {
+                if (groups.contains(target)) {
+                    System.out.println("Duplicated group target " + target);
+                    return false;
+                }
+                groups.add(target);
+            }
+        }
+        for (int i = 0; i < parameter.getTargets().size(); ++i) {
+            if (parameter.getQueryTypes().get(i) == QueryType.NORMAL) {
+                Target target = parameter.getTargets().get(i);
+                if (target.getTableName() == null && target.getAttribute().equals("*")) {
+                    continue;
+                }
+                String attributeFullName = target.getTableName() + "." + target.getAttribute();
+                if (!groups.contains(attributeFullName)) {
+                    System.out.println("Target " + attributeFullName + " should be in group by clause.");
                     return false;
                 }
             }
