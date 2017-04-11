@@ -294,7 +294,7 @@ public class SQLParser {
         if (checkTokenIgnoreCase("ORDER", false)) {
             nextToken(true);
             if (!checkTokenIgnoreCase("BY", true)) {
-                printErrorMessage("Expect keyword BY after ORDER");
+                printErrorMessage("Expect keyword BY after ORDER.");
                 return null;
             }
             ArrayList<String> attributeNames = new ArrayList<>();
