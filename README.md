@@ -51,7 +51,7 @@ INSERT INTO table_name[(attr_name[, attr_name ...])] VALUES(data[, data...]);
 
 SELECT Syntax
 ```
-SELECT select_target FROM table_references [WHERE where_condition] [ORDER BY sort_target [ASC | DESC] [, sort_target [ASC | DESC] ...]] [LIMIT limitation];
+SELECT select_target FROM table_references [WHERE where_condition] [GROUP BY target[, target...]] [ORDER BY sort_target [ASC | DESC] [, sort_target [ASC | DESC] ...]] [LIMIT limitation];
 
 select_target:
     * | target [, target ...]
