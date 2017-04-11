@@ -230,7 +230,7 @@ public class DBManager implements DiskWritable {
                         targetAttributeNames.add(resultTable.getAttributeNames().get(j));
                         targetAttributeTypes.add(resultTable.getAttributeTypes().get(j));
                         targetIndices.add(j);
-                        targetQueryTypes.add(QueryType.NORMAL);
+                        targetQueryTypes.add(parameter.getQueryTypes().get(i));
                     }
                 } else {
                     targetAttributeNames.add("count(*)");
@@ -244,7 +244,7 @@ public class DBManager implements DiskWritable {
                         targetAttributeNames.add(resultTable.getAttributeNames().get(j));
                         targetAttributeTypes.add(resultTable.getAttributeTypes().get(j));
                         targetIndices.add(j);
-                        targetQueryTypes.add(QueryType.NORMAL);
+                        targetQueryTypes.add(parameter.getQueryTypes().get(i));
                     }
                 }
             } else {
@@ -286,10 +286,13 @@ public class DBManager implements DiskWritable {
         if (targetHasFunction || parameter.getGroupTargets() != null) {
             ArrayList<Integer> groupIndices = new ArrayList<>();
             ArrayList<Integer> functionIndices = new ArrayList<>();
+            if (parameter.getGroupTargets() != null) {
+                for (String groupTarget : parameter.getGroupTargets()) {
+                    groupIndices.add(resultTable.getAttributeNames().indexOf(groupTarget));
+                }
+            }
             for (int i = 0; i < targetQueryTypes.size(); ++i) {
-                if (targetQueryTypes.get(i) == QueryType.NORMAL) {
-                    groupIndices.add(i);
-                } else {
+                if (targetQueryTypes.get(i) != QueryType.NORMAL) {
                     functionIndices.add(i);
                 }
             }
@@ -300,7 +303,7 @@ public class DBManager implements DiskWritable {
                 DataRecord origin = allRecords.get(i);
                 DataRecord key = new DataRecord();
                 for (int index : groupIndices) {
-                    key.append(record.get(index));
+                    key.append(origin.get(index));
                 }
                 if (!groupMap.containsKey(key)) {
                     groupMap.put(key, record);
