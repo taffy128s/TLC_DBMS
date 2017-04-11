@@ -51,7 +51,7 @@ INSERT INTO table_name[(attr_name[, attr_name ...])] VALUES(data[, data...]);
 
 SELECT Syntax
 ```
-SELECT select_target FROM table_references [WHERE where_condition] [ORDER BY sort_target[, sort_target ...] [ASC | DESC]] [LIMIT limitation];
+SELECT select_target FROM table_references [WHERE where_condition] [ORDER BY sort_target [ASC | DESC] [, sort_target [ASC | DESC] ...]] [LIMIT limitation];
 
 select_target:
     * | target [, target ...]
@@ -68,11 +68,11 @@ where_condition:
 operand:
     [prefix.]attr_name | constant
 
-sort_target:
-    [prefix.]attr_name
-
 operator:
     > | >= | < | <= | <> | =
+    
+sort_target:
+    [prefix.]attr_name
 ```
 
 DROP Syntax
@@ -86,7 +86,7 @@ SHOW Syntax
 ```
 SHOW TABLES;
 or
-SHOW TABLE [FULL] table_name [ORDER BY attr_name[, attr_name ...] [ASC | DESC]] [LIMIT length];
+SHOW TABLE [FULL] table_name [ORDER BY attr_name [ASC | DESC] [, attr_name [ASC | DESC] ...]] [LIMIT length];
 ```
 
 DESC Syntax
@@ -101,12 +101,12 @@ LOAD SCRIPT [SILENT] INFILE script_filename;
 
 QUIT Syntax
 ```
-quit;
+QUIT;
 ```
 
 EXIT Syntax
 ```
-exit;
+EXIT;
 ```
 
 ## Built With
