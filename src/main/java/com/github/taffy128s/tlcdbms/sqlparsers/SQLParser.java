@@ -297,6 +297,7 @@ public class SQLParser {
                 printErrorMessage("Expect keyword BY after ORDER");
             }
             ArrayList<String> attributeNames = new ArrayList<>();
+            ArrayList<SortingType> sortingTypes = new ArrayList<>();
             String orderTarget = getTargetNameWithPossibleDot();
             if (orderTarget == null) {
                 return null;
@@ -306,6 +307,15 @@ public class SQLParser {
                 return null;
             }
             attributeNames.add(orderTarget);
+            if (checkTokenIgnoreCase("ASC", false)) {
+                nextToken(true);
+                sortingTypes.add(SortingType.ASCENDING);
+            } else if (checkTokenIgnoreCase("DESC", false)) {
+                nextToken(true);
+                sortingTypes.add(SortingType.DESCENDING);
+            } else {
+                sortingTypes.add(SortingType.ASCENDING);
+            }
             while (checkTokenIgnoreCase(",", false)) {
                 nextToken(true);
                 orderTarget = getTargetNameWithPossibleDot();
@@ -317,15 +327,18 @@ public class SQLParser {
                     return null;
                 }
                 attributeNames.add(orderTarget);
+                if (checkTokenIgnoreCase("ASC", false)) {
+                    nextToken(true);
+                    sortingTypes.add(SortingType.ASCENDING);
+                } else if (checkTokenIgnoreCase("DESC", false)) {
+                    nextToken(true);
+                    sortingTypes.add(SortingType.DESCENDING);
+                } else {
+                    sortingTypes.add(SortingType.ASCENDING);
+                }
             }
             result.setAttributeNames(attributeNames);
-            result.setShowSortType(SortingType.ASCENDING);
-            if (checkTokenIgnoreCase("ASC", false)) {
-                nextToken(true);
-            } else if (checkTokenIgnoreCase("DESC", false)) {
-                nextToken(true);
-                result.setShowSortType(SortingType.DESCENDING);
-            }
+            result.setShowSortTypes(sortingTypes);
         }
         if (checkTokenIgnoreCase("LIMIT", false)) {
             nextToken(true);
@@ -940,36 +953,47 @@ public class SQLParser {
             if (tablename == null) {
                 return null;
             }
-            ArrayList<String> attributeNames = new ArrayList<>();
             if (checkTokenIgnoreCase("order", false)) {
                 checkTokenIgnoreCase("order", true);
                 if (!checkTokenIgnoreCase("by", true)) {
                     printErrorMessage("Expect keyword BY after ORDER.");
                     return null;
                 }
+                ArrayList<String> attributeNames = new ArrayList<>();
+                ArrayList<SortingType> sortingTypes = new ArrayList<>();
                 String attributeName = getAttributeName();
                 if (attributeName == null) {
                     return null;
                 }
                 attributeNames.add(attributeName);
+                if (checkTokenIgnoreCase("asc", false)) {
+                    checkTokenIgnoreCase("asc", true);
+                    sortingTypes.add(SortingType.ASCENDING);
+                } else if (checkTokenIgnoreCase("desc", false)) {
+                    checkTokenIgnoreCase("desc", true);
+                    sortingTypes.add(SortingType.DESCENDING);
+                } else {
+                    sortingTypes.add(SortingType.ASCENDING);
+                }
                 while (checkTokenIgnoreCase(",", false)) {
                     nextToken(true);
                     attributeName = getAttributeName();
                     if (attributeName == null) {
                         return null;
                     }
+                    if (checkTokenIgnoreCase("asc", false)) {
+                        checkTokenIgnoreCase("asc", true);
+                        sortingTypes.add(SortingType.ASCENDING);
+                    } else if (checkTokenIgnoreCase("desc", false)) {
+                        checkTokenIgnoreCase("desc", true);
+                        sortingTypes.add(SortingType.DESCENDING);
+                    } else {
+                        sortingTypes.add(SortingType.ASCENDING);
+                    }
                     attributeNames.add(attributeName);
                 }
-                if (checkTokenIgnoreCase("asc", false)) {
-                    checkTokenIgnoreCase("asc", true);
-                    result.setShowSortType(SortingType.ASCENDING);
-                } else if (checkTokenIgnoreCase("desc", false)) {
-                    checkTokenIgnoreCase("desc", true);
-                    result.setShowSortType(SortingType.DESCENDING);
-                } else {
-                    result.setShowSortType(SortingType.ASCENDING);
-                }
                 result.setAttributeNames(attributeNames);
+                result.setShowSortTypes(sortingTypes);
             }
             int limitation = -1;
             if (checkTokenIgnoreCase("limit", false)) {

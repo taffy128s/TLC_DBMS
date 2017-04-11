@@ -257,7 +257,7 @@ public class DBManager implements DiskWritable {
                     int sortIndex = resultTable.getAttributeNames().indexOf(target);
                     sortIndices.add(sortIndex);
                 }
-                allRecords = resultTable.getAllRecords(sortIndices, parameter.getShowSortType());
+                allRecords = resultTable.getAllRecords(sortIndices, parameter.getShowSortTypes());
             } else {
                 allRecords = resultTable.getAllRecords();
             }
@@ -391,7 +391,7 @@ public class DBManager implements DiskWritable {
                 }
                 sortIndices.add(sortIndex);
             }
-            allRecords = mTables.get(tablename).getAllRecords(sortIndices, parameter.getShowSortType());
+            allRecords = mTables.get(tablename).getAllRecords(sortIndices, parameter.getShowSortTypes());
         } else {
             allRecords = mTables.get(tablename).getAllRecords();
         }

@@ -229,6 +229,22 @@ public class DataRecord implements DiskWritable, StringWritable {
         return 0;
     }
 
+    public static int compare(DataRecord a, DataRecord b, ArrayList<Integer> indices, ArrayList<SortingType> sortingTypes) {
+        int counter = 0;
+        for (int index : indices) {
+            int cmp = compare(a.get(index), b.get(index));
+            if (cmp != 0) {
+                if (sortingTypes.get(counter) == SortingType.ASCENDING) {
+                    return cmp;
+                } else {
+                    return (-1) * cmp;
+                }
+            }
+            ++counter;
+        }
+        return 0;
+    }
+
     @SuppressWarnings("unchecked")
     private static int compare(Object a, Object b) {
         if (a == null && b == null) {

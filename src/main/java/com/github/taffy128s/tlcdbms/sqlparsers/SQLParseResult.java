@@ -21,7 +21,7 @@ public class SQLParseResult {
     private int mShowRowLimitation;
     private boolean mCustomOrder;
     private boolean mShowFullInfo;
-    private SortingType mShowSortType;
+    private ArrayList<SortingType> mShowSortTypes;
     private QueryType mQueryType;
     private ArrayList<Target> mTargets;
     private ArrayList<Condition> mConditions;
@@ -44,7 +44,7 @@ public class SQLParseResult {
         mShowRowLimitation = -1;
         mCustomOrder = false;
         mShowFullInfo = false;
-        mShowSortType = SortingType.NONE;
+        mShowSortTypes = new ArrayList<>();
         mQueryType = QueryType.NORMAL;
         mTargets = null;
         mConditions = null;
@@ -268,21 +268,21 @@ public class SQLParseResult {
     }
 
     /**
-     * ShowSortType setter.
+     * ShowSortTypes setter.
      *
-     * @param sortType type to set.
+     * @param sortTypes type to set.
      */
-    public void setShowSortType(SortingType sortType) {
-        mShowSortType = sortType;
+    public void setShowSortTypes(ArrayList<SortingType> sortTypes) {
+        mShowSortTypes = sortTypes;
     }
 
     /**
-     * ShowSortType getter.
+     * ShowSortTypes getter.
      *
      * @return sorting type.
      */
-    public SortingType getShowSortType() {
-        return mShowSortType;
+    public ArrayList<SortingType> getShowSortTypes() {
+        return mShowSortTypes;
     }
 
     /**

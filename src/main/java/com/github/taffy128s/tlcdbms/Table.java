@@ -580,6 +580,25 @@ public abstract class Table implements DiskWritable {
     }
 
     /**
+     * Get all records in the table.
+     * Sorted by column indices given in parameter.
+     * Note that the size of sortIndices should equals to the size of sortingTypes.
+     *
+     * @param sortIndices column (field) indices to sort.
+     * @param sortingTypes a list of ascending or descending for each column index.
+     * @return an array list of all records.
+     */
+    public ArrayList<DataRecord> getAllRecords(ArrayList<Integer> sortIndices, ArrayList<SortingType> sortingTypes) {
+        if (sortIndices.size() == 1) {
+            return getAllRecords(sortIndices.get(0), sortingTypes.get(0));
+        } else {
+            ArrayList<DataRecord> allRecords = getAllRecords();
+            allRecords.sort((o1, o2) -> DataRecord.compare(o1, o2, sortIndices, sortingTypes));
+            return allRecords;
+        }
+    }
+
+    /**
      * Join two table given in parameter. Condition in parameter should be set correctly,
      * that is, left value and right value should not be null, and tablename of them should
      * be equals to firstTable and secondTable, respectively. Wrong condition will get an
