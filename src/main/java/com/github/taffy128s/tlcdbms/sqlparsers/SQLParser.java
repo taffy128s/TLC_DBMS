@@ -134,6 +134,10 @@ public class SQLParser {
             if (attributeName == null) {
                 return null;
             }
+            if (attributeName.contains("*")) {
+                printErrorMessage("Invalid usage of '*' in function SUM().");
+                return null;
+            }
             if (!checkTokenIgnoreCase(")", true)) {
                 printErrorMessage("Missing right parenthesis.");
                 return null;

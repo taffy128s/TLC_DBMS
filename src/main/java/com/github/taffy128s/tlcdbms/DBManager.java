@@ -206,6 +206,14 @@ public class DBManager implements DiskWritable {
             int answer = 0;
             if (target.equalsIgnoreCase("*")) {
                 answer = resultTable.getAllRecords().size();
+            } else if (parameter.getTargets().get(0).getTableName() != null && parameter.getTargets().get(0).getAttribute().equals("*")) {
+                for (String attrName : resultTable.getAttributeNames()) {
+                    if (!attrName.startsWith(parameter.getTargets().get(0).getTableName() + ".")) {
+                        System.out.println("Invalid usage of '*' in function COUNT().");
+                        return;
+                    }
+                }
+                answer = resultTable.getAllRecords().size();
             } else {
                 int index = resultTable.getAttributeNames().indexOf(target);
                 ArrayList<DataRecord> allRecords = resultTable.getAllRecords();
