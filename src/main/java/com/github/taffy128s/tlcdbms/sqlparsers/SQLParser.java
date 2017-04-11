@@ -229,7 +229,8 @@ public class SQLParser {
             boolean emptyParenthesisBody = false;
             int parenthesisCounter = 0;
             do {
-                if (checkTokenIgnoreCase("ORDER", false) ||
+                if (checkTokenIgnoreCase("GROUP", false) ||
+                        checkTokenIgnoreCase("ORDER", false) ||
                         checkTokenIgnoreCase("LIMIT", false)) {
                     break;
                 }

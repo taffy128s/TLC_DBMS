@@ -284,6 +284,9 @@ public class DBManager implements DiskWritable {
             }
         }
         if (targetHasFunction || parameter.getGroupTargets() != null) {
+            if (!postCheckGroupBy(targetAttributeNames, targetQueryTypes, parameter.getGroupTargets())) {
+                return;
+            }
             ArrayList<Integer> groupIndices = new ArrayList<>();
             ArrayList<Integer> functionIndices = new ArrayList<>();
             if (parameter.getGroupTargets() != null) {
@@ -865,6 +868,30 @@ public class DBManager implements DiskWritable {
                 String attributeFullName = target.getTableName() + "." + target.getAttribute();
                 if (!groups.contains(attributeFullName)) {
                     System.out.println("Target " + attributeFullName + " should be in group by clause.");
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Check whether group by has correct value set.
+     *
+     * @param targetNames final target names.
+     * @param queryTypes query type of each target name.
+     * @param groupTargets group target names.
+     * @return true if valid, false if invalid.
+     */
+    private boolean postCheckGroupBy(ArrayList<String> targetNames, ArrayList<QueryType> queryTypes, ArrayList<String> groupTargets) {
+        HashSet<String> groupSet = new HashSet<>();
+        for (String target : groupTargets) {
+            groupSet.add(target);
+        }
+        for (int i = 0; i < targetNames.size(); ++i) {
+            if (queryTypes.get(i) == QueryType.NORMAL) {
+                if (!groupSet.contains(targetNames.get(i))) {
+                    System.out.println("Target " + targetNames.get(i) + " should be in group by clause.");
                     return false;
                 }
             }
