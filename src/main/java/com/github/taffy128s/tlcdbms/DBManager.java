@@ -332,6 +332,10 @@ public class DBManager implements DiskWritable {
             }
             finalResult = groupedRecords;
         }
+        if (parameter.getShowRowLimitation() != -1) {
+            int limitation = Math.min(parameter.getShowRowLimitation(), finalResult.size());
+            finalResult.subList(limitation, finalResult.size()).clear();
+        }
         printTable(targetAttributeNames, targetAttributeTypes, finalResult);
     }
 
@@ -885,8 +889,10 @@ public class DBManager implements DiskWritable {
      */
     private boolean postCheckGroupBy(ArrayList<String> targetNames, ArrayList<QueryType> queryTypes, ArrayList<String> groupTargets) {
         HashSet<String> groupSet = new HashSet<>();
-        for (String target : groupTargets) {
-            groupSet.add(target);
+        if (groupTargets != null) {
+            for (String target : groupTargets) {
+                groupSet.add(target);
+            }
         }
         for (int i = 0; i < targetNames.size(); ++i) {
             if (queryTypes.get(i) == QueryType.NORMAL) {
