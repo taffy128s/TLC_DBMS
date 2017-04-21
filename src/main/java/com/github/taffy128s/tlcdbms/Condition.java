@@ -297,7 +297,7 @@ public class Condition {
      * @param condition condition to calculate.
      * @param left a data record as left value, cannot be null.
      * @param leftIndex left index of leftAttribute in condition, -1 if not exists.
-     * @param right a data record as right value, cannnot be null.
+     * @param right a data record as right value, cannot be null.
      * @param rightIndex right index of rightAttribute in condition, -1 if not exists.
      * @return a boolean as result.
      */

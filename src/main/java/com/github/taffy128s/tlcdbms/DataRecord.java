@@ -219,6 +219,19 @@ public class DataRecord implements DiskWritable, StringWritable {
         return true;
     }
 
+    public static DataRecord generateKeyRecord(DataRecord first, int leftKey, int rightKey) {
+        DataRecord keyRecord = new DataRecord();
+        for (int i = 0; i < rightKey - 1; ++i) {
+            keyRecord.append(null);
+        }
+        keyRecord.append(first.get(leftKey));
+        return keyRecord;
+    }
+
+    public static int compare(DataRecord a, DataRecord b, int index) {
+        return compare(a.get(index), b.get(index));
+    }
+
     public static int compare(DataRecord a, DataRecord b, ArrayList<Integer> indices) {
         for (int index : indices) {
             int cmp = compare(a.get(index), b.get(index));

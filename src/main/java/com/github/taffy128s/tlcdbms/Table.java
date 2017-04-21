@@ -1,8 +1,6 @@
 package com.github.taffy128s.tlcdbms;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Database Table.
@@ -635,12 +633,32 @@ public abstract class Table implements DiskWritable {
         Table table = new ArrayListTable("$result", newAttrNames, newAttrTypes, -1, -1);
         int leftKeyIndex = firstTable.getAttributeNames().indexOf(condition.getLeftAttribute());
         int rightKeyIndex = secondTable.getAttributeNames().indexOf(condition.getRightAttribute());
-        ArrayList<DataRecord> firstRecords = firstTable.getAllRecords();
-        ArrayList<DataRecord> secondRecords = secondTable.getAllRecords();
-        boolean isConstantCondition = Condition.getAlwaysTrueCondition().equals(condition);
-        for (DataRecord firstRecord : firstRecords) {
-            for (DataRecord secondRecord : secondRecords) {
-                if (isConstantCondition || Condition.calculateCondition(condition, firstRecord, leftKeyIndex, secondRecord, rightKeyIndex)) {
+        if (Condition.getAlwaysTrueCondition().equals(condition)) {
+            ArrayList<DataRecord> firstRecords = firstTable.getAllRecords();
+            ArrayList<DataRecord> secondRecords = secondTable.getAllRecords();
+            for (DataRecord firstRecord : firstRecords) {
+                for (DataRecord secondRecord : secondRecords) {
+                    DataRecord newRecord = new DataRecord();
+                    newRecord.appendAll(firstRecord.getAllFields());
+                    newRecord.appendAll(secondRecord.getAllFields());
+                    table.insert(newRecord);
+                }
+            }
+        } else {
+            ArrayList<DataRecord> firstRecords = firstTable.getAllRecords(leftKeyIndex, SortingType.ASCENDING);
+            Object lastKey = null;
+            Table lastSubTable = null;
+            for (DataRecord firstRecord : firstRecords) {
+                Object key = firstRecord.get(leftKeyIndex);
+                ArrayList<DataRecord> subRecords;
+                if (key != null && key.equals(lastKey)) {
+                    subRecords = lastSubTable.getAllRecords();
+                } else {
+                    lastKey = key;
+                    lastSubTable = secondTable.query(rightKeyIndex, key, condition.getOperator());
+                    subRecords = lastSubTable.getAllRecords();
+                }
+                for (DataRecord secondRecord : subRecords) {
                     DataRecord newRecord = new DataRecord();
                     newRecord.appendAll(firstRecord.getAllFields());
                     newRecord.appendAll(secondRecord.getAllFields());
