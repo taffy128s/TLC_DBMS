@@ -40,11 +40,11 @@ public class HashTable extends Table {
         super(tablename, attributeNames, attributeTypes, primaryKey);
         mTable = new HashMap<>();
         mNullTable = new ArrayList<>();
-        mIndexDataType = attributeTypes.get(0).getType();
         if (keyIndex == -1) {
             keyIndex = (primaryKey == -1) ? 0 : primaryKey;
         }
         mKeyIndex = keyIndex;
+        mIndexDataType = attributeTypes.get(mKeyIndex).getType();
     }
 
     /**

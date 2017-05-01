@@ -40,11 +40,11 @@ public class BPlusTreeTable extends Table {
         super(tablename, attributeNames, attributeTypes, primaryKey);
         mTable = new BPlusTree<>(100, 1000);
         mNullTable = new ArrayList<>();
-        mIndexDataType = attributeTypes.get(0).getType();
         if (keyIndex == -1) {
             keyIndex = (primaryKey == -1) ? 0 : primaryKey;
         }
         mKeyIndex = keyIndex;
+        mIndexDataType = attributeTypes.get(mKeyIndex).getType();
     }
 
     /**
