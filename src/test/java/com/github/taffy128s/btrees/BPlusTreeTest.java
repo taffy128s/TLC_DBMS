@@ -38,7 +38,7 @@ public class BPlusTreeTest {
     public void get() throws Exception {
         ArrayList<Integer> testcase = new ArrayList<>();
         Random random = new Random();
-        for (int i = 0; i < 20000; ++i) {
+        for (int i = 0; i < 200000; ++i) {
             testcase.add(random.nextInt() % 2000);
         }
         for (int test : testcase) {
@@ -52,7 +52,7 @@ public class BPlusTreeTest {
             tree.get(test).add(datain);
             trees.get(test).add(datain);
         }
-        for (int i = 0; i < 2000; ++i) {
+        for (int i = 0; i < 5000; ++i) {
             ArrayList<Integer> a = tree.get(i);
             ArrayList<Integer> b = trees.get(i);
             String sa;
@@ -82,17 +82,17 @@ public class BPlusTreeTest {
         ArrayList<Integer> testcase = new ArrayList<>();
         ArrayList<Integer> dataIn = new ArrayList<>();
         Random random = new Random();
-        for (int i = 0; i < 10000; ++i) {
+        for (int i = 0; i < 1000000; ++i) {
             testcase.add(i);
             dataIn.add(i);
         }
         Collections.shuffle(testcase);
         Collections.shuffle(dataIn);
-        for (int i = 0; i < 7000; ++i) {
+        for (int i = 0; i < 35000; ++i) {
             tt.put(testcase.get(i), dataIn.get(i));
             ts.put(testcase.get(i), dataIn.get(i));
         }
-        for (int i = 5500; i < 6700; ++i) {
+        for (int i = 5500; i < 7700; ++i) {
             tt.put(testcase.get(i), dataIn.get(i - 7));
             ts.put(testcase.get(i), dataIn.get(i - 7));
         }
@@ -107,7 +107,7 @@ public class BPlusTreeTest {
             assertEquals(true, Collections.binarySearch(allKeys, key) >= 0);
             assertEquals(true, Collections.binarySearch(allValues, tt.get(key)) >= 0);
         }
-        for (int i = 0; i < 10; ++i) {
+        for (int i = 0; i < 30; ++i) {
             int from = random.nextInt() % 30000;
             int to = random.nextInt() % 30000;
             if (from < 0) {

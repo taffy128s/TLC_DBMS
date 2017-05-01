@@ -963,9 +963,15 @@ public class BPlusTree<K, V> {
                 return ans;
             }
             int startIndex = 0;
-            int endIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
-            if (endIndex < 0) {
-                endIndex = (-1) * endIndex - 1;
+            int endIndex;
+            K lastKey = treeData.getKeys().get(treeData.getKeys().size() - 1);
+            if (mComparator.compare(lastKey, key) < 0) {
+                endIndex = treeData.getKeys().size();
+            } else {
+                endIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
+                if (endIndex < 0) {
+                    endIndex = (-1) * endIndex - 1;
+                }
             }
             ans.addAll(treeData.getKeys().subList(startIndex, endIndex));
             treeData = treeData.getNext();
@@ -987,9 +993,15 @@ public class BPlusTree<K, V> {
                 return ans;
             }
             int startIndex = 0;
-            int endIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
-            if (endIndex < 0) {
-                endIndex = (-1) * endIndex - 1;
+            int endIndex;
+            K lastKey = treeData.getKeys().get(treeData.getKeys().size() - 1);
+            if (mComparator.compare(lastKey, key) < 0) {
+                endIndex = treeData.getKeys().size();
+            } else {
+                endIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
+                if (endIndex < 0) {
+                    endIndex = (-1) * endIndex - 1;
+                }
             }
             ans.addAll(treeData.getValues().subList(startIndex, endIndex));
             treeData = treeData.getNext();
@@ -1011,11 +1023,17 @@ public class BPlusTree<K, V> {
                 return ans;
             }
             int startIndex = 0;
-            int endIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
-            if (endIndex < 0) {
-                endIndex = (-1) * endIndex - 1;
+            int endIndex;
+            K lastKey = treeData.getKeys().get(treeData.getKeys().size() - 1);
+            if (mComparator.compare(lastKey, key) <= 0) {
+                endIndex = treeData.getKeys().size();
             } else {
-                ++endIndex;
+                endIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
+                if (endIndex < 0) {
+                    endIndex = (-1) * endIndex - 1;
+                } else {
+                    ++endIndex;
+                }
             }
             ans.addAll(treeData.getKeys().subList(startIndex, endIndex));
             treeData = treeData.getNext();
@@ -1037,11 +1055,17 @@ public class BPlusTree<K, V> {
                 return ans;
             }
             int startIndex = 0;
-            int endIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
-            if (endIndex < 0) {
-                endIndex = (-1) * endIndex - 1;
+            int endIndex;
+            K lastKey = treeData.getKeys().get(treeData.getKeys().size() - 1);
+            if (mComparator.compare(lastKey, key) <= 0) {
+                endIndex = treeData.getKeys().size();
             } else {
-                ++endIndex;
+                endIndex = Collections.binarySearch(treeData.getKeys(), key, mComparator);
+                if (endIndex < 0) {
+                    endIndex = (-1) * endIndex - 1;
+                } else {
+                    ++endIndex;
+                }
             }
             ans.addAll(treeData.getValues().subList(startIndex, endIndex));
             treeData = treeData.getNext();
