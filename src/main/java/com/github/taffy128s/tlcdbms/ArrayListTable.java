@@ -70,7 +70,7 @@ public class ArrayListTable extends Table {
 
     @Override
     public String getTableType() {
-        return "ARRAYLISTTABLE";
+        return "ARRAYLIST";
     }
 
     @Override

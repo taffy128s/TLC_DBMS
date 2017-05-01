@@ -128,7 +128,7 @@ public abstract class Table implements DiskWritable {
 
     /**
      * Get table type,
-     * such as "SETTABLE", "TREETABLE".
+     * such as "HASH", "MULTI".
      *
      * @return a string of table type.
      */

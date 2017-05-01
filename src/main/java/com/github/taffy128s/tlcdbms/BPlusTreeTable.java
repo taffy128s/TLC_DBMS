@@ -362,7 +362,7 @@ public class BPlusTreeTable extends Table {
 
     @Override
     public String getTableType() {
-        return "BPLUSTREETABLE";
+        return "BPLUSTREE";
     }
 
     @Override
@@ -389,7 +389,6 @@ public class BPlusTreeTable extends Table {
             writer.write(mPrimaryKey + "\n");
             writer.write(mKeyIndex + "\n");
             ArrayList<DataRecord> dataRecords = getAllRecords();
-            writer.write(dataRecords.size() + "\n");
             for (DataRecord record : dataRecords) {
                 writer.write(record.writeToString() + "\n");
             }
@@ -423,16 +422,11 @@ public class BPlusTreeTable extends Table {
             mPrimaryKey = Integer.parseInt(reader.readLine());
             mKeyIndex = Integer.parseInt(reader.readLine());
             mIndexDataType = mAttributeTypes.get(mKeyIndex).getType();
-            int recordSize = Integer.parseInt(reader.readLine());
             ArrayList<DataRecord> records = new ArrayList<>();
             while ((input = reader.readLine()) != null) {
                 DataRecord record = new DataRecord();
                 record.restoreFromString(input);
                 records.add(record);
-            }
-            if (records.size() != recordSize) {
-                reader.close();
-                return false;
             }
             insertAll(records);
             reader.close();

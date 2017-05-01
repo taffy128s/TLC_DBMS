@@ -207,7 +207,7 @@ public class MultiIndexTable extends Table {
 
     @Override
     public String getTableType() {
-        return "MULTIINDEXTABLE";
+        return "MULTI";
     }
 
     @Override
@@ -242,7 +242,6 @@ public class MultiIndexTable extends Table {
                 }
             }
             ArrayList<DataRecord> dataRecords = getAllRecords();
-            writer.write(dataRecords.size() + "\n");
             for (DataRecord record : dataRecords) {
                 writer.write(record.writeToString() + "\n");
             }
@@ -290,16 +289,11 @@ public class MultiIndexTable extends Table {
                     mTables.set(columnIndex, new HashTable(mTablename, mAttributeNames, mAttributeTypes, mPrimaryKey, columnIndex));
                 }
             }
-            int recordSize = Integer.parseInt(reader.readLine());
             ArrayList<DataRecord> records = new ArrayList<>();
             while ((input = reader.readLine()) != null) {
                 DataRecord record = new DataRecord();
                 record.restoreFromString(input);
                 records.add(record);
-            }
-            if (records.size() != recordSize) {
-                reader.close();
-                return false;
             }
             insertAll(records);
             for (Table table : mTables) {

@@ -56,12 +56,7 @@ public class DBManager implements DiskWritable {
             System.out.println("Table '" + tablename + "' already exists.");
             return;
         }
-        Table newTable;
-        if (attributeIndices == null) {
-            newTable = new SetTable(tablename, attributeNames, attributeTypes, primaryKey, -1);
-        } else {
-            newTable = new MultiIndexTable(tablename, attributeNames, attributeTypes, attributeIndices, primaryKey, -1);
-        }
+        Table newTable = new MultiIndexTable(tablename, attributeNames, attributeTypes, attributeIndices, primaryKey, -1);
         mTables.put(tablename, newTable);
         mTableModified.put(tablename, Boolean.TRUE);
         System.out.println("Query OK, table '" + tablename + "' created successfully.");
@@ -1034,12 +1029,7 @@ public class DBManager implements DiskWritable {
             String input;
             while ((input = reader.readLine()) != null) {
                 String[] tableAttr = input.split("\0");
-                if (tableAttr[1].equalsIgnoreCase("SETTABLE")) {
-                    Table setTable = new SetTable();
-                    setTable.restoreFromDisk("./" + DIRNAME + "/" + tableAttr[0] + ".tlctable");
-                    mTables.put(tableAttr[0], setTable);
-                    mTableModified.put(tableAttr[0], Boolean.FALSE);
-                } else if (tableAttr[1].equalsIgnoreCase("MULTIINDEXTABLE")) {
+                if (tableAttr[1].equalsIgnoreCase("MULTI")) {
                     Table multiIndexTable = new MultiIndexTable();
                     multiIndexTable.restoreFromDisk("./" + DIRNAME + "/" + tableAttr[0] + ".tlctable");
                     mTables.put(tableAttr[0], multiIndexTable);

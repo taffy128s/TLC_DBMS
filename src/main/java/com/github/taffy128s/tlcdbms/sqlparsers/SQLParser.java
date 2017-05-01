@@ -818,7 +818,7 @@ public class SQLParser {
             return null;
         }
         if (attributeIndices.isEmpty()) {
-            attributeIndices = null;
+            attributeIndices.add(new TableStructure(0, TableStructType.HASH));
         }
         result.setAttributeNames(attributeNames);
         result.setAttributeTypes(attributeTypes);
