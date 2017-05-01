@@ -12,6 +12,7 @@ import java.util.Collections;
 public class BPlusTreeTable extends Table {
     private BPlusTree<Object, ArrayList<DataRecord>> mTable;
     private ArrayList<DataRecord> mNullTable;
+    private ArrayList<DataRecord> mAllRecords;
     private DataTypeIdentifier mIndexDataType;
     private int mKeyIndex;
 
@@ -23,6 +24,7 @@ public class BPlusTreeTable extends Table {
         super();
         mTable = new BPlusTree<>(100, 1000);
         mNullTable = new ArrayList<>();
+        mAllRecords = new ArrayList<>();
         mIndexDataType = DataTypeIdentifier.INT;
         mKeyIndex = 0;
     }
@@ -40,6 +42,7 @@ public class BPlusTreeTable extends Table {
         super(tablename, attributeNames, attributeTypes, primaryKey);
         mTable = new BPlusTree<>(100, 1000);
         mNullTable = new ArrayList<>();
+        mAllRecords = new ArrayList<>();
         if (keyIndex == -1) {
             keyIndex = (primaryKey == -1) ? 0 : primaryKey;
         }
@@ -279,6 +282,7 @@ public class BPlusTreeTable extends Table {
     @Override
     public boolean insert(DataRecord dataRecord) {
         if (dataRecord.get(mKeyIndex) == null) {
+            mAllRecords.add(dataRecord);
             return insertNull(dataRecord);
         }
         if (!mTable.containsKey(dataRecord.get(mKeyIndex))) {
@@ -288,6 +292,7 @@ public class BPlusTreeTable extends Table {
         } else {
             mTable.get(dataRecord.get(mKeyIndex)).add(dataRecord);
         }
+        mAllRecords.add(dataRecord);
         return true;
     }
 
@@ -296,6 +301,7 @@ public class BPlusTreeTable extends Table {
         if (dataRecords.isEmpty()) {
             return true;
         }
+        mAllRecords.addAll(dataRecords);
         ArrayList<DataRecord> nullDataRecords = new ArrayList<>();
         ArrayList<DataRecord> notNullDataRecords = new ArrayList<>();
         for (DataRecord record : dataRecords) {
@@ -329,13 +335,7 @@ public class BPlusTreeTable extends Table {
 
     @Override
     public ArrayList<DataRecord> getAllRecords() {
-        ArrayList<ArrayList<DataRecord>> results = mTable.getValues();
-        ArrayList<DataRecord> allRecord = new ArrayList<>();
-        allRecord.addAll(getNullTableRecords());
-        for (ArrayList<DataRecord> records : results) {
-            allRecord.addAll(records);
-        }
-        return allRecord;
+        return mAllRecords;
     }
 
     @Override
@@ -357,6 +357,7 @@ public class BPlusTreeTable extends Table {
         BPlusTreeTable table = new BPlusTreeTable(aliasName, mAttributeNames, mAttributeTypes, mPrimaryKey, mKeyIndex);
         table.mTable = this.mTable;
         table.mNullTable = this.mNullTable;
+        table.mAllRecords = this.mAllRecords;
         return table;
     }
 

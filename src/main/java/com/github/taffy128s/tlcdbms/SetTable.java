@@ -14,6 +14,7 @@ import java.util.HashSet;
 public class SetTable extends Table {
     private HashSet<DataRecord> mTable;
     private HashSet<Object> mPrimaryTable;
+    private ArrayList<DataRecord> mAllRecords;
     private int mKeyIndex;
 
     /**
@@ -24,6 +25,7 @@ public class SetTable extends Table {
         super();
         mTable = new HashSet<>();
         mPrimaryTable = new HashSet<>();
+        mAllRecords = new ArrayList<>();
     }
 
     /**
@@ -39,6 +41,7 @@ public class SetTable extends Table {
         super(tablename, attributeNames, attributeTypes, primaryKey);
         mTable = new HashSet<>();
         mPrimaryTable = new HashSet<>();
+        mAllRecords = new ArrayList<>();
         if (keyIndex == -1) {
             keyIndex = (primaryKey == -1) ? 0 : primaryKey;
         }
@@ -61,6 +64,7 @@ public class SetTable extends Table {
     @Override
     public boolean insert(DataRecord dataRecord) {
         mTable.add(dataRecord);
+        mAllRecords.add(dataRecord);
         if (mPrimaryKey != -1) {
             mPrimaryTable.add(dataRecord.get(mPrimaryKey));
         }
@@ -74,6 +78,7 @@ public class SetTable extends Table {
             boolean status = insert(dataRecord);
             result = result && status;
         }
+        mAllRecords.addAll(dataRecords);
         return result;
     }
 
@@ -89,11 +94,7 @@ public class SetTable extends Table {
 
     @Override
     public ArrayList<DataRecord> getAllRecords() {
-        ArrayList<DataRecord> result = new ArrayList<>();
-        for (DataRecord records : mTable) {
-            result.add(records);
-        }
-        return result;
+        return mAllRecords;
     }
 
     @Override
@@ -101,6 +102,7 @@ public class SetTable extends Table {
         SetTable result = new SetTable(aliasName, mAttributeNames, mAttributeTypes, mPrimaryKey, mKeyIndex);
         result.mTable = this.mTable;
         result.mPrimaryTable = this.mPrimaryTable;
+        result.mAllRecords = this.mAllRecords;
         return result;
     }
 
