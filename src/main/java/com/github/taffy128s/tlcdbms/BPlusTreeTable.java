@@ -22,7 +22,7 @@ public class BPlusTreeTable extends Table {
      */
     public BPlusTreeTable() {
         super();
-        mTable = new BPlusTree<>(100, 1000);
+        mTable = new BPlusTree<>(100, 100);
         mNullTable = new ArrayList<>();
         mAllRecords = new ArrayList<>();
         mIndexDataType = DataTypeIdentifier.INT;
@@ -40,7 +40,7 @@ public class BPlusTreeTable extends Table {
      */
     public BPlusTreeTable(String tablename, ArrayList<String> attributeNames, ArrayList<DataType> attributeTypes, int primaryKey, int keyIndex) {
         super(tablename, attributeNames, attributeTypes, primaryKey);
-        mTable = new BPlusTree<>(100, 1000);
+        mTable = new BPlusTree<>(100, 100);
         mNullTable = new ArrayList<>();
         mAllRecords = new ArrayList<>();
         if (keyIndex == -1) {
