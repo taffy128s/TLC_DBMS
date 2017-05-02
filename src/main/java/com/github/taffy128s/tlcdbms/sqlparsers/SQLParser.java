@@ -29,7 +29,7 @@ public class SQLParser {
         /**
          * Initialize.
          *
-         * @param data data content, null-able.
+         * @param data  data content, null-able.
          * @param valid true if this block is valid, false otherwise.
          */
         SQLBlock(String data, boolean valid) {
@@ -90,11 +90,15 @@ public class SQLParser {
      */
     private SQLParseResult parseCommand() {
         String command = nextToken(true);
-        if (mTokens.size() == 0) return null;
+        if (mTokens.size() == 0) {
+            return null;
+        }
         if (command.equalsIgnoreCase("create")) {
             return parseCreate();
         } else if (command.equalsIgnoreCase("insert")) {
             return parseInsert();
+        } else if (command.equalsIgnoreCase("select")) {
+            return parseSelect();
         } else if (command.equalsIgnoreCase("drop")) {
             return parseDrop();
         } else if (command.equalsIgnoreCase("show")) {
@@ -107,12 +111,220 @@ public class SQLParser {
             return parseQuit();
         } else if (command.equalsIgnoreCase("exit")) {
             return parseExit();
-        } else if (command.equalsIgnoreCase("select")) {
-            return parseSelect();
         } else {
             printErrorMessage("Unexpected command '" + command + "'.");
             return null;
         }
+    }
+
+    /**
+     * Parse CREATE.
+     *
+     * @return parse result, null if failed.
+     */
+    private SQLParseResult parseCreate() {
+        SQLParseResult result = new SQLParseResult();
+        result.setCommandType(CommandType.CREATE);
+        if (!checkTokenIgnoreCase("table", true)) {
+            printErrorMessage("Expect keyword TABLE after CREATE.");
+            return null;
+        }
+        String tablename = getTableName();
+        if (tablename == null) {
+            return null;
+        }
+        result.setTablename(tablename);
+        if (!checkTokenIgnoreCase("(", true)) {
+            printErrorMessage("Left parenthesis '(' expected after table name.");
+            return null;
+        }
+        ArrayList<String> attributeNames = new ArrayList<>();
+        ArrayList<DataType> attributeTypes = new ArrayList<>();
+        ArrayList<TableStructure> attributeIndices = new ArrayList<>();
+        int index = 0;
+        boolean hasComma = false;
+        HashSet<String> attrNameSet = new HashSet<>();
+        while (true) {
+            if (nextToken(false).equalsIgnoreCase(")") && !hasComma) {
+                break;
+            }
+            String attributeName = getAttributeName();
+            if (attributeName == null) {
+                return null;
+            }
+            if (attrNameSet.contains(attributeName)) {
+                printErrorMessage("Duplicate attribute name.");
+                return null;
+            }
+            attrNameSet.add(attributeName);
+            attributeNames.add(attributeName);
+            String attributeType = getAttributeType();
+            if (attributeType == null) {
+                return null;
+            }
+            if (attributeType.startsWith("INT")) {
+                attributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
+            } else {
+                String[] elements = attributeType.split(" ");
+                int limit = Integer.parseInt(elements[1]);
+                attributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, limit));
+            }
+            if (attributeType.contains("PRIMARY")) {
+                if (result.getPrimaryKeyIndex() != -1) {
+                    printErrorMessage(
+                            "Multiple Primary Key.",
+                            mIndex - 1,
+                            11);
+                    return null;
+                } else {
+                    result.setPrimaryKeyIndex(index);
+                    attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
+                }
+            }
+            if (checkTokenIgnoreCase("key", false)) {
+                checkTokenIgnoreCase("key", true);
+                if (checkTokenIgnoreCase("bplustree", false)) {
+                    checkTokenIgnoreCase("bplustree", true);
+                    attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
+                } else if (checkTokenIgnoreCase("btree", false)) {
+                    checkTokenIgnoreCase("btree", true);
+                    attributeIndices.add(new TableStructure(index, TableStructType.BTREE));
+                } else if (checkTokenIgnoreCase("rbtree", false)) {
+                    checkTokenIgnoreCase("rbtree", true);
+                    attributeIndices.add(new TableStructure(index, TableStructType.RBTREE));
+                } else if (checkTokenIgnoreCase("hash", false)) {
+                    checkTokenIgnoreCase("hash", true);
+                    attributeIndices.add(new TableStructure(index, TableStructType.HASH));
+                } else {
+                    attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
+                }
+            }
+            if (!checkTokenIgnoreCase(",", false)) {
+                break;
+            }
+            checkTokenIgnoreCase(",", true);
+            hasComma = true;
+            ++index;
+        }
+        if (!checkTokenIgnoreCase(")", true)) {
+            printErrorMessage("Right parenthesis ')' expected after attribute definition.");
+            return null;
+        }
+        if (!isEnded()) {
+            System.out.println("Unexpected strings at end of line.");
+            return null;
+        }
+        if (attributeNames.isEmpty()) {
+            printErrorMessage("No attributes specified for this new table.", 2, mTokens.get(2).length());
+            return null;
+        }
+        if (attributeIndices.isEmpty()) {
+            attributeIndices.add(new TableStructure(0, TableStructType.HASH));
+        }
+        result.setAttributeNames(attributeNames);
+        result.setAttributeTypes(attributeTypes);
+        result.setAttributeIndices(attributeIndices);
+        return result;
+    }
+
+    /**
+     * Parse INSERT.
+     *
+     * @return parse result, null if failed.
+     */
+    private SQLParseResult parseInsert() {
+        SQLParseResult result = new SQLParseResult();
+        result.setCommandType(CommandType.INSERT);
+        if (!checkTokenIgnoreCase("into", true)) {
+            printErrorMessage("Expect keyword INTO after INSERT.");
+            return null;
+        }
+        String tablename = getTableName();
+        if (tablename == null) {
+            return null;
+        }
+        result.setTablename(tablename);
+        ArrayList<String> updateOrder = null;
+        HashSet<String> attrNameSet = new HashSet<>();
+        if (checkTokenIgnoreCase("(", false)) {
+            checkTokenIgnoreCase("(", true);
+            result.setCustomOrder(true);
+            updateOrder = new ArrayList<>();
+            while (true) {
+                String attrName = getAttributeName();
+                if (attrName == null) {
+                    return null;
+                }
+                if (attrNameSet.contains(attrName)) {
+                    printErrorMessage("Duplicate attribute name.");
+                    return null;
+                }
+                attrNameSet.add(attrName);
+                updateOrder.add(attrName);
+                if (!checkTokenIgnoreCase(",", false)) {
+                    break;
+                }
+                checkTokenIgnoreCase(",", true);
+            }
+            if (!checkTokenIgnoreCase(")", true)) {
+                printErrorMessage("Right parenthesis ')' expected after attribute definition.");
+                return null;
+            }
+            result.setUpdateOrder(updateOrder);
+        } else {
+            result.setCustomOrder(false);
+        }
+        if (!checkTokenIgnoreCase("values", true)) {
+            printErrorMessage("Expect keyword VALUES.");
+            return null;
+        }
+        boolean hasComma = true;
+        ArrayList<ArrayList<String>> blocks = new ArrayList<>();
+        while (hasComma) {
+            ArrayList<String> innerBlocks = new ArrayList<>();
+            if (!checkTokenIgnoreCase("(", true)) {
+                printErrorMessage("Left parenthesis '(' expected.");
+                return null;
+            }
+            while (true) {
+                SQLBlock block = getBlock();
+                if (!block.isValid()) {
+                    return null;
+                }
+                innerBlocks.add(block.getData());
+                if (!checkTokenIgnoreCase(",", false)) {
+                    break;
+                }
+                checkTokenIgnoreCase(",", true);
+            }
+            if (!checkTokenIgnoreCase(")", true)) {
+                printErrorMessage("Right parenthesis ')' expected after attribute definition.");
+                return null;
+            }
+            if (innerBlocks.isEmpty()) {
+                printErrorMessage("Empty tuple to insert to table.", 2, mTokens.get(2).length());
+                return null;
+            }
+            if (updateOrder != null && innerBlocks.size() != updateOrder.size()) {
+                System.out.println("Data numbers not matched.");
+                System.out.println("Specified: " + updateOrder.size() + ".");
+                System.out.println("Given: " + innerBlocks.size() + ".");
+                return null;
+            }
+            blocks.add(innerBlocks);
+            if (checkTokenIgnoreCase(",", false)) {
+                nextToken(true);
+                hasComma = true;
+            } else {
+                hasComma = false;
+            }
+        }
+        if (!isEnded()) {
+            System.out.println("Unexpected strings at end of line.");
+            return null;
+        }
+        result.setBlocks(blocks);
+        return result;
     }
 
     /**
@@ -405,524 +617,6 @@ public class SQLParser {
             System.out.println("Unexpected tokens at end of line");
             return null;
         }
-        return result;
-    }
-
-    private boolean stackNeedPop(String operator, Stack<Condition> stack) {
-        if (stack.isEmpty() || stack.peek() == null) {
-            return false;
-        }
-        String top;
-        if (stack.peek().getOperator() == BinaryOperator.AND) {
-            top = "AND";
-        } else {
-            top = "OR";
-        }
-        return operatorToNum(top) >= operatorToNum(operator);
-    }
-
-    private int operatorToNum(String operator) {
-        if (operator == null) {
-            return 0;
-        }
-        switch (operator) {
-            case "AND":
-                return 2;
-            case "OR":
-                return 1;
-            default:
-                return -1;
-        }
-    }
-
-    /**
-     * Get condition.
-     *
-     * @param tableNameList: list used for checking the presence of attributes.
-     * @param aliasMap: map used for replacing the prefixes of attributes.
-     * @return condition, null if failed.
-     *
-     * Expected condition format:
-     * [valid attribute] [valid operator] [valid attribute]
-     */
-    private Condition getCondition(ArrayList<String> tableNameList, HashMap<String, String> aliasMap) {
-        String leftOperand, rightOperand, operator;
-        leftOperand = nextToken(true);
-        String temp = nextToken(false);
-        if (mTokenEnded || temp.equalsIgnoreCase("AND") || temp.equalsIgnoreCase("OR")
-                || temp.equalsIgnoreCase("ORDER") || temp.equalsIgnoreCase("LIMIT")) {
-            if (DataChecker.isValidInteger(leftOperand)) {
-                Condition retCon = new Condition(leftOperand, null, null, "0", null, null, BinaryOperator.NOT_EQUAL);
-                return retCon;
-            } else {
-                System.out.println("Invalid statement: " + leftOperand);
-                return null;
-            }
-        }
-        operator = nextToken(true);
-        rightOperand = nextToken(true);
-        if (!isValidOp(operator)) {
-            System.out.println("Invalid statement: "
-                    + leftOperand + " " + operator + " " + rightOperand);
-            return null;
-        }
-        if (isCompareOp(operator)) {
-            if (DataChecker.isValidQuotedVarChar(leftOperand)
-                    || DataChecker.isValidQuotedVarChar(rightOperand)
-                    || DataChecker.isStringNull(leftOperand)
-                    || DataChecker.isStringNull(rightOperand)) {
-                System.out.println("Invalid statement: "
-                        + leftOperand + " " + operator + " " + rightOperand);
-                return null;
-            }
-        }
-        if (DataChecker.isValidInteger(leftOperand) || DataChecker.isValidQuotedVarChar(leftOperand) || DataChecker.isStringNull(leftOperand)) {
-            if (DataChecker.isValidInteger(rightOperand) || DataChecker.isValidQuotedVarChar(rightOperand) || DataChecker.isStringNull(rightOperand)) {
-                Condition retCon = new Condition(leftOperand, null, null, rightOperand, null, null, toBinaryOperator(operator));
-                return retCon;
-            } else if (rightOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*")
-                    || rightOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")) {
-                rightOperand = handlePrefixUsingMap(rightOperand, tableNameList, aliasMap);
-                if (rightOperand == null) {
-                    return null;
-                }
-                String[] splits = rightOperand.split("\\.");
-                Condition retCon;
-                if (splits.length == 1) {
-                    retCon = new Condition(leftOperand, null, null, null, null, rightOperand, toBinaryOperator(operator));
-                    return retCon;
-                } else {
-                    retCon = new Condition(leftOperand, null, null, null, splits[0], splits[1], toBinaryOperator(operator));
-                    return retCon;
-                }
-            } else {
-                System.out.println("Invalid statement: "
-                        + leftOperand + " " + operator + " " + rightOperand);
-                return null;
-            }
-        } else if (leftOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*")
-                || leftOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")) {
-            if (DataChecker.isValidInteger(rightOperand) || DataChecker.isValidQuotedVarChar(rightOperand) || DataChecker.isStringNull(rightOperand)) {
-                leftOperand = handlePrefixUsingMap(leftOperand, tableNameList, aliasMap);
-                if (leftOperand == null) {
-                    return null;
-                }
-                String[] splits = leftOperand.split("\\.");
-                Condition retCon;
-                if (splits.length == 1) {
-                    retCon = new Condition(null, null, leftOperand, rightOperand, null, null, toBinaryOperator(operator));
-                    return retCon;
-                } else {
-                    retCon = new Condition(null, splits[0], splits[1], rightOperand, null, null, toBinaryOperator(operator));
-                    return retCon;
-                }
-            } else if (rightOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*")
-                    || rightOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")) {
-                leftOperand = handlePrefixUsingMap(leftOperand, tableNameList, aliasMap);
-                if (leftOperand == null) {
-                    return null;
-                }
-                rightOperand = handlePrefixUsingMap(rightOperand, tableNameList, aliasMap);
-                if (rightOperand == null) {
-                    return null;
-                }
-                String[] splitsLeft = leftOperand.split("\\.");
-                String[] splitsRight = rightOperand.split("\\.");
-                Condition retCon;
-                if (splitsLeft.length == 1) {
-                    if (splitsRight.length == 1) {
-                        retCon = new Condition(null, null, leftOperand, null, null, rightOperand, toBinaryOperator(operator));
-                        return retCon;
-                    } else {
-                        retCon = new Condition(null, null, leftOperand, null, splitsRight[0], splitsRight[1], toBinaryOperator(operator));
-                        return retCon;
-                    }
-                } else {
-                    if (splitsRight.length == 1) {
-                        retCon = new Condition(null, splitsLeft[0], splitsLeft[1], null, null, rightOperand, toBinaryOperator(operator));
-                        return retCon;
-                    } else {
-                        retCon = new Condition(null, splitsLeft[0], splitsLeft[1], null, splitsRight[0], splitsRight[1], toBinaryOperator(operator));
-                        return retCon;
-                    }
-                }
-            } else {
-                System.out.println("Invalid statement: "
-                        + leftOperand + " " + operator + " " + rightOperand);
-                return null;
-            }
-        } else {
-            System.out.println("Invalid statement: "
-                    + leftOperand + " " + operator + " " + rightOperand);
-            return null;
-        }
-    }
-
-    /**
-     * Transform String operator to BinaryOperator.
-     *
-     * @param input: string to transform.
-     * @return BinaryOperator.
-     */
-    private BinaryOperator toBinaryOperator(String input) {
-        if (input.equalsIgnoreCase(">=")) {
-            return BinaryOperator.GREATER_EQUAL;
-        } else if (input.equalsIgnoreCase(">")) {
-            return BinaryOperator.GREATER_THAN;
-        } else if (input.equalsIgnoreCase("<")) {
-            return BinaryOperator.LESS_THAN;
-        } else if (input.equalsIgnoreCase("<=")) {
-            return BinaryOperator.LESS_EQUAL;
-        } else if (input.equalsIgnoreCase("<>")) {
-            return BinaryOperator.NOT_EQUAL;
-        } else if (input.equalsIgnoreCase("=")) {
-            return BinaryOperator.EQUAL;
-        } else if (input.equalsIgnoreCase("AND")) {
-            return BinaryOperator.AND;
-        } else {
-            return BinaryOperator.OR;
-        }
-    }
-
-    /**
-     * Check if the given String is a comparison operator or not.
-     *
-     * @param input: String to check.
-     * @return true if it is a comparison operator, false if not.
-     */
-    private boolean isCompareOp(String input) {
-        if (input.equals(">") || input.equals(">=") || input.equals("<") || input.equals("<=")) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Check if the given String is a valid operator or not.
-     *
-     * @param input: String to check.
-     * @return true if it is valid, false if not.
-     */
-    private boolean isValidOp(String input) {
-        if (input.equals("<>") || input.equals("=") || input.equals(">")
-                || input.equals(">=") || input.equals("<") || input.equals("<=")) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Replace the prefix of input if it uses an alias.
-     *
-     * @param input: String to modify.
-     * @param tableNameList: table list available now.
-     * @param aliasMap: provide an alias-tableName mapping.
-     * @return string modified.
-     */
-    private String handlePrefixUsingMap(String input, ArrayList<String> tableNameList, HashMap<String, String> aliasMap) {
-        String[] splits = input.split("\\.");
-        if (splits.length == 1) {
-            return input;
-        } else if (splits.length == 2) {
-            if (aliasMap.containsKey(splits[0])) {
-                return splits[0] + "." + splits[1];
-            } else {
-                if (tableNameList.contains(splits[0])) {
-                    return input;
-                } else {
-                    System.out.println("Prefix is not in table list: " + input);
-                    return null;
-                }
-            }
-        } else {
-            System.out.println("Multiple dots near: " + input);
-            return null;
-        }
-    }
-
-    /**
-     * Get an attribute name with a possible dot.
-     *
-     * @return a valid target name.
-     */
-    private String getTargetNameWithPossibleDot() {
-        String name = nextToken(true);
-        if (!name.matches("[a-zA-Z_][0-9a-zA-Z_]*")
-                && !name.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")
-                && !name.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][*]")) {
-            printErrorMessage("Invalid target name '" + name + "'.");
-            return null;
-        } else if (SQLKeyWords.isSQLKeyword(name)) {
-            printErrorMessage("Invalid target name '" + name + "'.");
-            return null;
-        } else {
-            return name;
-        }
-    }
-
-    /**
-     * Get table name and its alias, and add them into list and map.
-     *
-     * @param tableNameList: list to add into.
-     * @param aliasMap: map to store the relations.
-     * @return true if succeed, false if fail.
-     *
-     * Expected format:
-     * [valid table name] [a|As|S] [valid alias]
-     */
-    private boolean getTableNameAndAlias(ArrayList<String> tableNameList, HashMap<String, String> aliasMap) {
-        String tableName, alias;
-        tableName = getTableName();
-        if (tableName == null) {
-            return false;
-        }
-        tableNameList.add(tableName);
-        if (checkTokenIgnoreCase("as", false)) {
-            nextToken(true);
-            alias = getAliasName();
-            if (alias == null) {
-                return false;
-            }
-            if (aliasMap.containsKey(alias)) {
-                printErrorMessage("Duplicated alias table name.");
-                return false;
-            }
-            aliasMap.put(alias, tableName);
-        } else {
-            if (aliasMap.containsKey(tableName)) {
-                printErrorMessage("Duplicated table name.");
-                return false;
-            }
-            aliasMap.put(tableName, tableName);
-        }
-        return true;
-    }
-
-    /**
-     * Get alias.
-     *
-     * @return alias if succeed, null if fail.
-     */
-    private String getAliasName() {
-        String name = nextToken(true);
-        if (!name.matches("[a-zA-Z_][0-9a-zA-Z_]*")) {
-            printErrorMessage("Invalid alias '" + name + "'.");
-            return null;
-        } else if (SQLKeyWords.isSQLKeyword(name)) {
-            printErrorMessage("Invalid alias '" + name + "'.");
-            return null;
-        } else {
-            return name;
-        }
-    }
-
-    /**
-     * Parse CREATE.
-     *
-     * @return parse result, null if failed.
-     */
-    private SQLParseResult parseCreate() {
-        SQLParseResult result = new SQLParseResult();
-        result.setCommandType(CommandType.CREATE);
-        if (!checkTokenIgnoreCase("table", true)) {
-            printErrorMessage("Expect keyword TABLE after CREATE.");
-            return null;
-        }
-        String tablename = getTableName();
-        if (tablename == null) {
-            return null;
-        }
-        result.setTablename(tablename);
-        if (!checkTokenIgnoreCase("(", true)) {
-            printErrorMessage("Left parenthesis '(' expected after table name.");
-            return null;
-        }
-        ArrayList<String> attributeNames = new ArrayList<>();
-        ArrayList<DataType> attributeTypes = new ArrayList<>();
-        ArrayList<TableStructure> attributeIndices = new ArrayList<>();
-        int index = 0;
-        boolean hasComma = false;
-        HashSet<String> attrNameSet = new HashSet<>();
-        while (true) {
-            if (nextToken(false).equalsIgnoreCase(")") && !hasComma) {
-                break;
-            }
-            String attributeName = getAttributeName();
-            if (attributeName == null) {
-                return null;
-            }
-            if (attrNameSet.contains(attributeName)) {
-                printErrorMessage("Duplicate attribute name.");
-                return null;
-            }
-            attrNameSet.add(attributeName);
-            attributeNames.add(attributeName);
-            String attributeType = getAttributeType();
-            if (attributeType == null) {
-                return null;
-            }
-            if (attributeType.startsWith("INT")) {
-                attributeTypes.add(new DataType(DataTypeIdentifier.INT, -1));
-            } else {
-                String[] elements = attributeType.split(" ");
-                int limit = Integer.parseInt(elements[1]);
-                attributeTypes.add(new DataType(DataTypeIdentifier.VARCHAR, limit));
-            }
-            if (attributeType.contains("PRIMARY")) {
-                if (result.getPrimaryKeyIndex() != -1) {
-                    printErrorMessage(
-                            "Multiple Primary Key.",
-                            mIndex - 1,
-                            11);
-                    return null;
-                } else {
-                    result.setPrimaryKeyIndex(index);
-                    attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
-                }
-            }
-            if (checkTokenIgnoreCase("key", false)) {
-                checkTokenIgnoreCase("key", true);
-                if (checkTokenIgnoreCase("bplustree", false)) {
-                    checkTokenIgnoreCase("bplustree", true);
-                    attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
-                } else if (checkTokenIgnoreCase("btree", false)) {
-                    checkTokenIgnoreCase("btree", true);
-                    attributeIndices.add(new TableStructure(index, TableStructType.BTREE));
-                } else if (checkTokenIgnoreCase("rbtree", false)) {
-                    checkTokenIgnoreCase("rbtree", true);
-                    attributeIndices.add(new TableStructure(index, TableStructType.RBTREE));
-                } else if (checkTokenIgnoreCase("hash", false)) {
-                    checkTokenIgnoreCase("hash", true);
-                    attributeIndices.add(new TableStructure(index, TableStructType.HASH));
-                } else {
-                    attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
-                }
-            }
-            if (!checkTokenIgnoreCase(",", false)) {
-                break;
-            }
-            checkTokenIgnoreCase(",", true);
-            hasComma = true;
-            ++index;
-        }
-        if (!checkTokenIgnoreCase(")", true)) {
-            printErrorMessage("Right parenthesis ')' expected after attribute definition.");
-            return null;
-        }
-        if (!isEnded()) {
-            System.out.println("Unexpected strings at end of line.");
-            return null;
-        }
-        if (attributeNames.isEmpty()) {
-            printErrorMessage("No attributes specified for this new table.", 2, mTokens.get(2).length());
-            return null;
-        }
-        if (attributeIndices.isEmpty()) {
-            attributeIndices.add(new TableStructure(0, TableStructType.HASH));
-        }
-        result.setAttributeNames(attributeNames);
-        result.setAttributeTypes(attributeTypes);
-        result.setAttributeIndices(attributeIndices);
-        return result;
-    }
-
-    /**
-     * Parse INSERT.
-     *
-     * @return parse result, null if failed.
-     */
-    private SQLParseResult parseInsert() {
-        SQLParseResult result = new SQLParseResult();
-        result.setCommandType(CommandType.INSERT);
-        if (!checkTokenIgnoreCase("into", true)) {
-            printErrorMessage("Expect keyword INTO after INSERT.");
-            return null;
-        }
-        String tablename = getTableName();
-        if (tablename == null) {
-            return null;
-        }
-        result.setTablename(tablename);
-        ArrayList<String> updateOrder = null;
-        HashSet<String> attrNameSet = new HashSet<>();
-        if (checkTokenIgnoreCase("(", false)) {
-            checkTokenIgnoreCase("(", true);
-            result.setCustomOrder(true);
-            updateOrder = new ArrayList<>();
-            while (true) {
-                String attrName = getAttributeName();
-                if (attrName == null) {
-                    return null;
-                }
-                if (attrNameSet.contains(attrName)) {
-                    printErrorMessage("Duplicate attribute name.");
-                    return null;
-                }
-                attrNameSet.add(attrName);
-                updateOrder.add(attrName);
-                if (!checkTokenIgnoreCase(",", false)) {
-                    break;
-                }
-                checkTokenIgnoreCase(",", true);
-            }
-            if (!checkTokenIgnoreCase(")", true)) {
-                printErrorMessage("Right parenthesis ')' expected after attribute definition.");
-                return null;
-            }
-            result.setUpdateOrder(updateOrder);
-        } else {
-            result.setCustomOrder(false);
-        }
-        if (!checkTokenIgnoreCase("values", true)) {
-            printErrorMessage("Expect keyword VALUES.");
-            return null;
-        }
-        boolean hasComma = true;
-        ArrayList<ArrayList<String>> blocks = new ArrayList<>();
-        while (hasComma) {
-            ArrayList<String> innerBlocks = new ArrayList<>();
-            if (!checkTokenIgnoreCase("(", true)) {
-                printErrorMessage("Left parenthesis '(' expected.");
-                return null;
-            }
-            while (true) {
-                SQLBlock block = getBlock();
-                if (!block.isValid()) {
-                    return null;
-                }
-                innerBlocks.add(block.getData());
-                if (!checkTokenIgnoreCase(",", false)) {
-                    break;
-                }
-                checkTokenIgnoreCase(",", true);
-            }
-            if (!checkTokenIgnoreCase(")", true)) {
-                printErrorMessage("Right parenthesis ')' expected after attribute definition.");
-                return null;
-            }
-            if (innerBlocks.isEmpty()) {
-                printErrorMessage("Empty tuple to insert to table.", 2, mTokens.get(2).length());
-                return null;
-            }
-            if (updateOrder != null && innerBlocks.size() != updateOrder.size()) {
-                System.out.println("Data numbers not matched.");
-                System.out.println("Specified: " + updateOrder.size() + ".");
-                System.out.println("Given: " + innerBlocks.size() + ".");
-                return null;
-            }
-            blocks.add(innerBlocks);
-            if (checkTokenIgnoreCase(",", false)) {
-                nextToken(true);
-                hasComma = true;
-            } else {
-                hasComma = false;
-            }
-        }
-        if (!isEnded()) {
-            System.out.println("Unexpected strings at end of line.");
-            return null;
-        }
-        result.setBlocks(blocks);
         return result;
     }
 
@@ -1225,10 +919,10 @@ public class SQLParser {
      * <br>** WILL INCREASE TOKEN INDEX **
      * <p>
      * Case 1 return true:<br>
-     *     {";"} // remaining only a semicolon
+     * {";"} // remaining only a semicolon
      * <p>
      * Case 2 return true:<br>
-     *     {} // already empty
+     * {} // already empty
      *
      * @return true if empty, false if not.
      */
@@ -1242,10 +936,10 @@ public class SQLParser {
      * <br>** WILL INCREASE TOKEN INDEX **
      * <p>
      * Case 1 return true:<br>
-     *     {";"} // remaining only a semicolon
+     * {";"} // remaining only a semicolon
      * <p>
      * Case 2 return true:<br>
-     *     {} // already empty
+     * {} // already empty
      *
      * @param increase true to increase index of tokens, false if not.
      * @return true if empty, false if not.
@@ -1297,12 +991,12 @@ public class SQLParser {
      * Get attribute type from next token.
      * <br>** WILL INCREASE TOKEN INDEX **
      * <p>
-     *     Return examples:<br>
-     *     <code>null</code><br>
-     *     <code>"INT"</code><br>
-     *     <code>"INT PRIMARY"</code><br>
-     *     <code>"VARCHAR 20"</code><br>
-     *     <code>"VARCHAR 20 PRIMARY"</code><br>
+     * Return examples:<br>
+     * <code>null</code><br>
+     * <code>"INT"</code><br>
+     * <code>"INT PRIMARY"</code><br>
+     * <code>"VARCHAR 20"</code><br>
+     * <code>"VARCHAR 20 PRIMARY"</code><br>
      *
      * @return a string of attribute type, null if invalid.
      */
@@ -1365,6 +1059,314 @@ public class SQLParser {
         } else {
             printErrorMessage("Invalid data format.");
             return new SQLBlock(null, false);
+        }
+    }
+
+    private boolean stackNeedPop(String operator, Stack<Condition> stack) {
+        if (stack.isEmpty() || stack.peek() == null) {
+            return false;
+        }
+        String top;
+        if (stack.peek().getOperator() == BinaryOperator.AND) {
+            top = "AND";
+        } else {
+            top = "OR";
+        }
+        return operatorToNum(top) >= operatorToNum(operator);
+    }
+
+    private int operatorToNum(String operator) {
+        if (operator == null) {
+            return 0;
+        }
+        switch (operator) {
+            case "AND":
+                return 2;
+            case "OR":
+                return 1;
+            default:
+                return -1;
+        }
+    }
+
+    /**
+     * Get condition.
+     *
+     * @param tableNameList: list used for checking the presence of attributes.
+     * @param aliasMap:      map used for replacing the prefixes of attributes.
+     * @return condition, null if failed.
+     * <p>
+     * Expected condition format:
+     * [valid attribute] [valid operator] [valid attribute]
+     */
+    private Condition getCondition(ArrayList<String> tableNameList, HashMap<String, String> aliasMap) {
+        String leftOperand, rightOperand, operator;
+        leftOperand = nextToken(true);
+        String temp = nextToken(false);
+        if (mTokenEnded || temp.equalsIgnoreCase("AND") || temp.equalsIgnoreCase("OR")
+                || temp.equalsIgnoreCase("ORDER") || temp.equalsIgnoreCase("LIMIT")) {
+            if (DataChecker.isValidInteger(leftOperand)) {
+                Condition retCon = new Condition(leftOperand, null, null, "0", null, null, BinaryOperator.NOT_EQUAL);
+                return retCon;
+            } else {
+                System.out.println("Invalid statement: " + leftOperand);
+                return null;
+            }
+        }
+        operator = nextToken(true);
+        rightOperand = nextToken(true);
+        if (!isValidOp(operator)) {
+            System.out.println("Invalid statement: "
+                                       + leftOperand + " " + operator + " " + rightOperand);
+            return null;
+        }
+        if (isCompareOp(operator)) {
+            if (DataChecker.isValidQuotedVarChar(leftOperand)
+                    || DataChecker.isValidQuotedVarChar(rightOperand)
+                    || DataChecker.isStringNull(leftOperand)
+                    || DataChecker.isStringNull(rightOperand)) {
+                System.out.println("Invalid statement: "
+                       + leftOperand + " " + operator + " " + rightOperand);
+                return null;
+            }
+        }
+        if (DataChecker.isValidInteger(leftOperand) || DataChecker.isValidQuotedVarChar(leftOperand) || DataChecker.isStringNull(leftOperand)) {
+            if (DataChecker.isValidInteger(rightOperand) || DataChecker.isValidQuotedVarChar(rightOperand) || DataChecker.isStringNull(rightOperand)) {
+                Condition retCon = new Condition(leftOperand, null, null, rightOperand, null, null, toBinaryOperator(operator));
+                return retCon;
+            } else if (rightOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*")
+                       || rightOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")) {
+                rightOperand = handlePrefixUsingMap(rightOperand, tableNameList, aliasMap);
+                if (rightOperand == null) {
+                    return null;
+                }
+                String[] splits = rightOperand.split("\\.");
+                Condition retCon;
+                if (splits.length == 1) {
+                    retCon = new Condition(leftOperand, null, null, null, null, rightOperand, toBinaryOperator(operator));
+                    return retCon;
+                } else {
+                    retCon = new Condition(leftOperand, null, null, null, splits[0], splits[1], toBinaryOperator(operator));
+                    return retCon;
+                }
+            } else {
+                System.out.println("Invalid statement: "
+                       + leftOperand + " " + operator + " " + rightOperand);
+                return null;
+            }
+        } else if (leftOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*")
+                   || leftOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")) {
+            if (DataChecker.isValidInteger(rightOperand) || DataChecker.isValidQuotedVarChar(rightOperand) || DataChecker.isStringNull(rightOperand)) {
+                leftOperand = handlePrefixUsingMap(leftOperand, tableNameList, aliasMap);
+                if (leftOperand == null) {
+                    return null;
+                }
+                String[] splits = leftOperand.split("\\.");
+                Condition retCon;
+                if (splits.length == 1) {
+                    retCon = new Condition(null, null, leftOperand, rightOperand, null, null, toBinaryOperator(operator));
+                    return retCon;
+                } else {
+                    retCon = new Condition(null, splits[0], splits[1], rightOperand, null, null, toBinaryOperator(operator));
+                    return retCon;
+                }
+            } else if (rightOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*")
+                       || rightOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")) {
+                leftOperand = handlePrefixUsingMap(leftOperand, tableNameList, aliasMap);
+                if (leftOperand == null) {
+                    return null;
+                }
+                rightOperand = handlePrefixUsingMap(rightOperand, tableNameList, aliasMap);
+                if (rightOperand == null) {
+                    return null;
+                }
+                String[] splitsLeft = leftOperand.split("\\.");
+                String[] splitsRight = rightOperand.split("\\.");
+                Condition retCon;
+                if (splitsLeft.length == 1) {
+                    if (splitsRight.length == 1) {
+                        retCon = new Condition(null, null, leftOperand, null, null, rightOperand, toBinaryOperator(operator));
+                        return retCon;
+                    } else {
+                        retCon = new Condition(null, null, leftOperand, null, splitsRight[0], splitsRight[1], toBinaryOperator(operator));
+                        return retCon;
+                    }
+                } else {
+                    if (splitsRight.length == 1) {
+                        retCon = new Condition(null, splitsLeft[0], splitsLeft[1], null, null, rightOperand, toBinaryOperator(operator));
+                        return retCon;
+                    } else {
+                        retCon = new Condition(null, splitsLeft[0], splitsLeft[1], null, splitsRight[0], splitsRight[1], toBinaryOperator(operator));
+                        return retCon;
+                    }
+                }
+            } else {
+                System.out.println("Invalid statement: "
+                       + leftOperand + " " + operator + " " + rightOperand);
+                return null;
+            }
+        } else {
+            System.out.println("Invalid statement: "
+                   + leftOperand + " " + operator + " " + rightOperand);
+            return null;
+        }
+    }
+
+    /**
+     * Transform String operator to BinaryOperator.
+     *
+     * @param input: string to transform.
+     * @return BinaryOperator.
+     */
+    private BinaryOperator toBinaryOperator(String input) {
+        if (input.equalsIgnoreCase(">=")) {
+            return BinaryOperator.GREATER_EQUAL;
+        } else if (input.equalsIgnoreCase(">")) {
+            return BinaryOperator.GREATER_THAN;
+        } else if (input.equalsIgnoreCase("<")) {
+            return BinaryOperator.LESS_THAN;
+        } else if (input.equalsIgnoreCase("<=")) {
+            return BinaryOperator.LESS_EQUAL;
+        } else if (input.equalsIgnoreCase("<>")) {
+            return BinaryOperator.NOT_EQUAL;
+        } else if (input.equalsIgnoreCase("=")) {
+            return BinaryOperator.EQUAL;
+        } else if (input.equalsIgnoreCase("AND")) {
+            return BinaryOperator.AND;
+        } else {
+            return BinaryOperator.OR;
+        }
+    }
+
+    /**
+     * Check if the given String is a comparison operator or not.
+     *
+     * @param input: String to check.
+     * @return true if it is a comparison operator, false if not.
+     */
+    private boolean isCompareOp(String input) {
+        if (input.equals(">") || input.equals(">=") || input.equals("<") || input.equals("<=")) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check if the given String is a valid operator or not.
+     *
+     * @param input: String to check.
+     * @return true if it is valid, false if not.
+     */
+    private boolean isValidOp(String input) {
+        if (input.equals("<>") || input.equals("=") || input.equals(">")
+                    || input.equals(">=") || input.equals("<") || input.equals("<=")) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Replace the prefix of input if it uses an alias.
+     *
+     * @param input         String to modify.
+     * @param tableNameList table list available now.
+     * @param aliasMap      provide an alias-tableName mapping.
+     * @return string modified.
+     */
+    private String handlePrefixUsingMap(String input, ArrayList<String> tableNameList, HashMap<String, String> aliasMap) {
+        String[] splits = input.split("\\.");
+        if (splits.length == 1) {
+            return input;
+        } else if (splits.length == 2) {
+            if (aliasMap.containsKey(splits[0])) {
+                return splits[0] + "." + splits[1];
+            } else {
+                if (tableNameList.contains(splits[0])) {
+                    return input;
+                } else {
+                    System.out.println("Prefix is not in table list: " + input);
+                    return null;
+                }
+            }
+        } else {
+            System.out.println("Multiple dots near: " + input);
+            return null;
+        }
+    }
+
+    /**
+     * Get an attribute name with a possible dot.
+     *
+     * @return a valid target name.
+     */
+    private String getTargetNameWithPossibleDot() {
+        String name = nextToken(true);
+        if (!name.matches("[a-zA-Z_][0-9a-zA-Z_]*")
+                && !name.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][a-zA-Z_][0-9a-zA-Z_]*")
+                && !name.matches("[a-zA-Z_][0-9a-zA-Z_]*[.][*]")) {
+            printErrorMessage("Invalid target name '" + name + "'.");
+            return null;
+        } else if (SQLKeyWords.isSQLKeyword(name)) {
+            printErrorMessage("Invalid target name '" + name + "'.");
+            return null;
+        } else {
+            return name;
+        }
+    }
+
+    /**
+     * Get table name and its alias, and add them into list and map.
+     *
+     * @param tableNameList: list to add into.
+     * @param aliasMap:      map to store the relations.
+     * @return true if succeed, false if fail.
+     * <p>
+     * Expected format:
+     * [valid table name] [a|As|S] [valid alias]
+     */
+    private boolean getTableNameAndAlias(ArrayList<String> tableNameList, HashMap<String, String> aliasMap) {
+        String tableName, alias;
+        tableName = getTableName();
+        if (tableName == null) {
+            return false;
+        }
+        tableNameList.add(tableName);
+        if (checkTokenIgnoreCase("as", false)) {
+            nextToken(true);
+            alias = getAliasName();
+            if (alias == null) {
+                return false;
+            }
+            if (aliasMap.containsKey(alias)) {
+                printErrorMessage("Duplicated alias table name.");
+                return false;
+            }
+            aliasMap.put(alias, tableName);
+        } else {
+            if (aliasMap.containsKey(tableName)) {
+                printErrorMessage("Duplicated table name.");
+                return false;
+            }
+            aliasMap.put(tableName, tableName);
+        }
+        return true;
+    }
+
+    /**
+     * Get alias.
+     *
+     * @return alias if succeed, null if fail.
+     */
+    private String getAliasName() {
+        String name = nextToken(true);
+        if (!name.matches("[a-zA-Z_][0-9a-zA-Z_]*")) {
+            printErrorMessage("Invalid alias '" + name + "'.");
+            return null;
+        } else if (SQLKeyWords.isSQLKeyword(name)) {
+            printErrorMessage("Invalid alias '" + name + "'.");
+            return null;
+        } else {
+            return name;
         }
     }
 
@@ -1432,8 +1434,8 @@ public class SQLParser {
      * Print error message. Underline will be drawn under the index-th tokens
      * with length underlineLength specified from parameters.
      *
-     * @param message error message to show.
-     * @param index set token index for start position.
+     * @param message         error message to show.
+     * @param index           set token index for start position.
      * @param underlineLength underline length.
      */
     private void printErrorMessage(String message, int index, int underlineLength) {
@@ -1446,7 +1448,7 @@ public class SQLParser {
      * Draw underline ^~~~~~~~.
      *
      * @param startPosition start position.
-     * @param length length, note that length("^~~") == 3.
+     * @param length        length, note that length("^~~") == 3.
      */
     private void printUnderLine(int startPosition, int length) {
         for (int i = 0; i < startPosition; ++i) {
@@ -1496,16 +1498,24 @@ public class SQLParser {
                         if (mCommand.charAt(i + 1) == '>' || mCommand.charAt(i + 1) == '=') {
                             preProcessCommand += "\0<" + mCommand.charAt(i + 1) + "\0";
                             i++;
-                        } else preProcessCommand += "\0<\0";
-                    } else preProcessCommand += "\0<\0";
+                        } else {
+                            preProcessCommand += "\0<\0";
+                        }
+                    } else {
+                        preProcessCommand += "\0<\0";
+                    }
                     break;
                 case '>':
                     if (i + 1 < mCommand.length()) {
                         if (mCommand.charAt(i + 1) == '=') {
                             preProcessCommand += "\0>" + mCommand.charAt(i + 1) + "\0";
                             i++;
-                        } else preProcessCommand += "\0>\0";
-                    } else preProcessCommand += "\0>\0";
+                        } else {
+                            preProcessCommand += "\0>\0";
+                        }
+                    } else {
+                        preProcessCommand += "\0>\0";
+                    }
                     break;
                 case '=':
                     preProcessCommand += "\0=\0";
