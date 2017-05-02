@@ -211,7 +211,7 @@ public class SQLParser {
             return null;
         }
         if (!isEnded()) {
-            System.out.println("Unexpected strings at end of line.");
+            printErrorMessage("Unexpected tokens.");
             return null;
         }
         if (attributeNames.isEmpty()) {
@@ -320,7 +320,7 @@ public class SQLParser {
             }
         }
         if (!isEnded()) {
-            System.out.println("Unexpected strings at end of line.");
+            printErrorMessage("Unexpected tokens.");
             return null;
         }
         result.setBlocks(blocks);
@@ -614,7 +614,7 @@ public class SQLParser {
             result.setShowRowLimitation(limit);
         }
         if (!isEnded()) {
-            System.out.println("Unexpected tokens at end of line");
+            printErrorMessage("Unexpected tokens.");
             return null;
         }
         return result;
@@ -752,7 +752,7 @@ public class SQLParser {
                 }
             }
             if (!isEnded()) {
-                System.out.println("Unexpected strings at end of line.");
+                printErrorMessage("Unexpected tokens.");
                 return null;
             }
             result.setCommandType(CommandType.SHOW_TABLE_CONTENT);
@@ -762,7 +762,7 @@ public class SQLParser {
         } else if (checkTokenIgnoreCase("tables", false)) {
             checkTokenIgnoreCase("tables", true);
             if (!isEnded()) {
-                System.out.println("Unexpected strings at end of line.");
+                printErrorMessage("Unexpected tokens.");
                 return null;
             }
             SQLParseResult result = new SQLParseResult();
@@ -792,7 +792,7 @@ public class SQLParser {
             return null;
         }
         if (!isEnded()) {
-            System.out.println("Unexpected strings at end of line.");
+            printErrorMessage("Unexpected tokens.");
             return null;
         }
         result.setCommandType(CommandType.DESC);
@@ -843,7 +843,7 @@ public class SQLParser {
             return null;
         }
         if (!isEnded()) {
-            System.out.println("Unexpected tokens at end of line.");
+            printErrorMessage("Unexpected tokens.");
             return null;
         }
         result.setCommandType(CommandType.LOAD);
@@ -858,7 +858,7 @@ public class SQLParser {
      */
     private SQLParseResult parseQuit() {
         if (!isEnded()) {
-            System.out.println("Unexpected strings at end of line.");
+            printErrorMessage("Unexpected tokens.");
             return null;
         }
         SQLParseResult result = new SQLParseResult();
@@ -873,7 +873,7 @@ public class SQLParser {
      */
     private SQLParseResult parseExit() {
         if (!isEnded()) {
-            System.out.println("Unexpected strings at end of line.");
+            printErrorMessage("Unexpected tokens.");
             return null;
         }
         SQLParseResult result = new SQLParseResult();
@@ -1106,18 +1106,16 @@ public class SQLParser {
         if (mTokenEnded || temp.equalsIgnoreCase("AND") || temp.equalsIgnoreCase("OR")
                 || temp.equalsIgnoreCase("ORDER") || temp.equalsIgnoreCase("LIMIT")) {
             if (DataChecker.isValidInteger(leftOperand)) {
-                Condition retCon = new Condition(leftOperand, null, null, "0", null, null, BinaryOperator.NOT_EQUAL);
-                return retCon;
+                return new Condition(leftOperand, null, null, "0", null, null, BinaryOperator.NOT_EQUAL);
             } else {
-                System.out.println("Invalid statement: " + leftOperand);
+                printErrorMessage("Invalid statement: " + leftOperand);
                 return null;
             }
         }
         operator = nextToken(true);
         rightOperand = nextToken(true);
         if (!isValidOp(operator)) {
-            System.out.println("Invalid statement: "
-                                       + leftOperand + " " + operator + " " + rightOperand);
+            printErrorMessage("Invalid statement: " + leftOperand + " " + operator + " " + rightOperand);
             return null;
         }
         if (isCompareOp(operator)) {
@@ -1125,8 +1123,7 @@ public class SQLParser {
                     || DataChecker.isValidQuotedVarChar(rightOperand)
                     || DataChecker.isStringNull(leftOperand)
                     || DataChecker.isStringNull(rightOperand)) {
-                System.out.println("Invalid statement: "
-                       + leftOperand + " " + operator + " " + rightOperand);
+                printErrorMessage("Invalid statement: " + leftOperand + " " + operator + " " + rightOperand);
                 return null;
             }
         }
@@ -1150,8 +1147,7 @@ public class SQLParser {
                     return retCon;
                 }
             } else {
-                System.out.println("Invalid statement: "
-                       + leftOperand + " " + operator + " " + rightOperand);
+                printErrorMessage("Invalid statement: " + leftOperand + " " + operator + " " + rightOperand);
                 return null;
             }
         } else if (leftOperand.matches("[a-zA-Z_][0-9a-zA-Z_]*")
@@ -1201,13 +1197,11 @@ public class SQLParser {
                     }
                 }
             } else {
-                System.out.println("Invalid statement: "
-                       + leftOperand + " " + operator + " " + rightOperand);
+                printErrorMessage("Invalid statement: " + leftOperand + " " + operator + " " + rightOperand);
                 return null;
             }
         } else {
-            System.out.println("Invalid statement: "
-                   + leftOperand + " " + operator + " " + rightOperand);
+            printErrorMessage("Invalid statement: " + leftOperand + " " + operator + " " + rightOperand);
             return null;
         }
     }
@@ -1259,7 +1253,7 @@ public class SQLParser {
      */
     private boolean isValidOp(String input) {
         if (input.equals("<>") || input.equals("=") || input.equals(">")
-                    || input.equals(">=") || input.equals("<") || input.equals("<=")) {
+                || input.equals(">=") || input.equals("<") || input.equals("<=")) {
             return true;
         }
         return false;
@@ -1542,9 +1536,9 @@ public class SQLParser {
             mIsValid = false;
             return;
         }
-        String[] splited = preProcessCommand.split("\0");
+        String[] splitTokens = preProcessCommand.split("\0");
         int startLocation = 0;
-        for (String token : splited) {
+        for (String token : splitTokens) {
             if (token.length() > 0) {
                 startLocation = mCommand.indexOf(token, startLocation);
                 mTokens.add(token);
