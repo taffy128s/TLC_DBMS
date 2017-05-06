@@ -807,14 +807,9 @@ public abstract class Table implements DiskWritable {
             return true;
         }
         try {
-            File file = new File(filename);
-            if (!file.exists()) {
-                writeToDisk(filename);
-            } else {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true));
-                writer.write(record.writeToString() + "\n");
-                writer.close();
-            }
+            BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true));
+            writer.write(record.writeToString() + "\n");
+            writer.close();
             return true;
         } catch (IOException e) {
             e.printStackTrace();
