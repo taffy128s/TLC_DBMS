@@ -703,7 +703,7 @@ public class BPlusTree<K, V> {
             if (mLast.isFull()) {
                 K midKey = mLast.getMidKey();
                 BPlusTreeData newData = mLast.split();
-                insertTreeNode(mRoot, null, midKey, newData);
+                constructInsertTreeNode(mRoot, null, midKey, newData);
                 mLast = newData;
             }
         }
@@ -1294,9 +1294,7 @@ public class BPlusTree<K, V> {
             return;
         }
         int index = Collections.binarySearch(root.getKeys(), key, mComparator);
-        if (index >= 0) {
-            root.setValue(index, treeData);
-        } else {
+        if (index < 0) {
             insertTreeNode(root.getNext((-1) * index - 1), root, key, treeData);
             if (root.isFull()) {
                 K keyElement = root.getMidKey();
@@ -1309,6 +1307,29 @@ public class BPlusTree<K, V> {
                 } else {
                     parent.put(keyElement, null, q);
                 }
+            }
+        } else {
+            root.setValue(index, treeData);
+        }
+    }
+
+    private void constructInsertTreeNode(BPlusTreeNode root, BPlusTreeNode parent, K key, BPlusTreeData treeData) {
+        if (root == null) {
+            parent.put(key, treeData, null);
+            return;
+        }
+        int index = root.getKeys().size();
+        constructInsertTreeNode(root.getNext(index), root, key, treeData);
+        if (root.isFull()) {
+            K keyElement = root.getMidKey();
+            BPlusTreeNode q = root.split();
+            if (parent == null) {
+                parent = new BPlusTreeNode();
+                parent.setNext(0, root);
+                parent.put(keyElement, null, q);
+                mRoot = parent;
+            } else {
+                parent.put(keyElement, null, q);
             }
         }
     }
