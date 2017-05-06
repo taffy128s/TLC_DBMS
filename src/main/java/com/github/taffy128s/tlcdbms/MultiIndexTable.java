@@ -22,6 +22,7 @@ public class MultiIndexTable extends Table {
         super();
         mIndices = new ArrayList<>();
         mTables = new ArrayList<>();
+        mDiskModifiable = true;
     }
 
     /**
@@ -59,6 +60,7 @@ public class MultiIndexTable extends Table {
                 mFirstTable = table;
             }
         }
+        mDiskModifiable = true;
     }
 
     @Override
@@ -82,6 +84,7 @@ public class MultiIndexTable extends Table {
                 result &= table.insert(dataRecord);
             }
         }
+        appendToDisk(mFilename, dataRecord);
         return result;
     }
 
@@ -259,6 +262,8 @@ public class MultiIndexTable extends Table {
             BufferedReader reader = new BufferedReader(new FileReader(filename));
             String input;
             mTablename = reader.readLine();
+            mFilename = "./" + DBManager.DIRNAME + "/" + mTablename + ".tlctable";
+            mDiskModifiable = true;
             int attrSize = Integer.parseInt(reader.readLine());
             for (int i = 0; i < attrSize; ++i) {
                 input = reader.readLine();

@@ -59,6 +59,8 @@ public class DBManager implements DiskWritable {
         Table newTable = new MultiIndexTable(tablename, attributeNames, attributeTypes, attributeIndices, primaryKey, -1);
         mTables.put(tablename, newTable);
         mTableModified.put(tablename, Boolean.TRUE);
+        appendTableToTableList(FILENAME, tablename);
+        mTables.get(tablename).writeToDisk("./" + DIRNAME + "/" + tablename + ".tlctable");
         System.out.println("Query OK, table '" + tablename + "' created successfully.");
     }
 
@@ -496,6 +498,27 @@ public class DBManager implements DiskWritable {
         fileInterpreter.start();
         System.setOut(originStdout);
         System.out.println("Script file '" + parameter.getFilename() + "' loaded successfully.");
+    }
+
+    private boolean appendTableToTableList(String filename, String newTablename) {
+        File parentDirectory = new File(DIRNAME);
+        if (!parentDirectory.exists()) {
+            boolean result = parentDirectory.mkdir();
+            if (!result) {
+                System.err.println("./" + DIRNAME + "/: creation error.");
+                return false;
+            }
+        }
+        filename = "./" + DIRNAME + "/" + filename;
+        try {
+            FileWriter writer = new FileWriter(filename, true);
+            writer.write(newTablename + "\0");
+            writer.write(mTables.get(newTablename).getTableType() + "\n");
+            writer.close();
+        } catch (IOException e) {
+            System.err.println(filename + ": file I/O error.");
+        }
+        return false;
     }
 
     /**
@@ -1000,33 +1023,7 @@ public class DBManager implements DiskWritable {
 
     @Override
     public boolean writeToDisk(String filename) {
-        File parentDirectory = new File(DIRNAME);
-        if (!parentDirectory.exists()) {
-            boolean result = parentDirectory.mkdir();
-            if (!result) {
-                System.err.println("./" + DIRNAME + "/: creation error.");
-                return false;
-            }
-        }
-        filename = "./" + DIRNAME + "/" + filename;
-        try {
-            FileWriter writer = new FileWriter(filename);
-            ArrayList<String> tablenames = new ArrayList<>();
-            for (String tablename : mTables.keySet()) {
-                writer.write(tablename + "\0");
-                writer.write(mTables.get(tablename).getTableType() + "\n");
-                tablenames.add(tablename);
-            }
-            for (String tablename : tablenames) {
-                if (mTableModified.get(tablename).equals(Boolean.TRUE)) {
-                    mTables.get(tablename).writeToDisk("./" + DIRNAME + "/" + tablename + ".tlctable");
-                }
-            }
-            writer.close();
-        } catch (IOException e) {
-            System.err.println(filename + ": file I/O error.");
-        }
-        return false;
+        return true;
     }
 
     @Override

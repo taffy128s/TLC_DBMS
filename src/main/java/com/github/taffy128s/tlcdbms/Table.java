@@ -1,5 +1,9 @@
 package com.github.taffy128s.tlcdbms;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -16,6 +20,9 @@ public abstract class Table implements DiskWritable {
 
     protected ArrayList<String> mSourceTables;
 
+    protected String mFilename;
+    protected boolean mDiskModifiable;
+
     /**
      * Initialize a Table.
      * Note that this constructor should only be called when restoring from disk.
@@ -26,6 +33,8 @@ public abstract class Table implements DiskWritable {
         mAttributeTypes = new ArrayList<>();
         mPrimaryKey = -1;
         mSourceTables = new ArrayList<>();
+        mFilename = "";
+        mDiskModifiable = false;
     }
 
     /**
@@ -43,6 +52,8 @@ public abstract class Table implements DiskWritable {
         mAttributeTypes = attributeTypes;
         mPrimaryKey = primaryKey;
         mSourceTables.add(mTablename);
+        mFilename = "./" + DBManager.DIRNAME + "/" + mTablename + ".tlctable";
+        mDiskModifiable = false;
     }
 
     /**
@@ -782,6 +793,33 @@ public abstract class Table implements DiskWritable {
     @Override
     public String toString() {
         return ("Table " + mTablename) + "\n";
+    }
+
+    /**
+     * Append a new DataRecord to the end of the file.
+     *
+     * @param filename filename to append.
+     * @param record record to append.
+     * @return true if succeed, false if failed.
+     */
+    public boolean appendToDisk(String filename, DataRecord record) {
+        if (!mDiskModifiable) {
+            return true;
+        }
+        try {
+            File file = new File(filename);
+            if (!file.exists()) {
+                writeToDisk(filename);
+            } else {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true));
+                writer.write(record.writeToString() + "\n");
+                writer.close();
+            }
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     @Override

@@ -68,6 +68,7 @@ public class SetTable extends Table {
         if (mPrimaryKey != -1) {
             mPrimaryTable.add(dataRecord.get(mPrimaryKey));
         }
+        appendToDisk(mFilename, dataRecord);
         return true;
     }
 
@@ -160,6 +161,7 @@ public class SetTable extends Table {
             BufferedReader reader = new BufferedReader(new FileReader(filename));
             String input;
             mTablename = reader.readLine();
+            mFilename = "./" + DBManager.DIRNAME + "/" + mTablename + ".tlctable";
             int attrSize = Integer.parseInt(reader.readLine());
             for (int i = 0; i < attrSize; ++i) {
                 input = reader.readLine();

@@ -139,6 +139,7 @@ public class HashTable extends Table {
             mTable.get(dataRecord.get(mKeyIndex)).add(dataRecord);
         }
         mAllRecords.add(dataRecord);
+        appendToDisk(mFilename, dataRecord);
         return true;
     }
 
@@ -285,6 +286,7 @@ public class HashTable extends Table {
             BufferedReader reader = new BufferedReader(new FileReader(filename));
             String input;
             mTablename = reader.readLine();
+            mFilename = "./" + DBManager.DIRNAME + "/" + mTablename + ".tlctable";
             int attrSize = Integer.parseInt(reader.readLine());
             for (int i = 0; i < attrSize; ++i) {
                 input = reader.readLine();
