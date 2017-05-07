@@ -177,26 +177,35 @@ public class SQLParser {
                             11);
                     return null;
                 } else {
+                    if (checkTokenIgnoreCase("bplustree", false)) {
+                        checkTokenIgnoreCase("bplustree", true);
+                        attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
+                    } else if (checkTokenIgnoreCase("hash", false)) {
+                        checkTokenIgnoreCase("hash", true);
+                        attributeIndices.add(new TableStructure(index, TableStructType.HASH));
+                    } else {
+                        attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
+                    }
                     result.setPrimaryKeyIndex(index);
-                    attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
                 }
-            }
-            if (checkTokenIgnoreCase("key", false)) {
-                checkTokenIgnoreCase("key", true);
-                if (checkTokenIgnoreCase("bplustree", false)) {
-                    checkTokenIgnoreCase("bplustree", true);
-                    attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
-                } else if (checkTokenIgnoreCase("btree", false)) {
-                    checkTokenIgnoreCase("btree", true);
-                    attributeIndices.add(new TableStructure(index, TableStructType.BTREE));
-                } else if (checkTokenIgnoreCase("rbtree", false)) {
-                    checkTokenIgnoreCase("rbtree", true);
-                    attributeIndices.add(new TableStructure(index, TableStructType.RBTREE));
-                } else if (checkTokenIgnoreCase("hash", false)) {
-                    checkTokenIgnoreCase("hash", true);
-                    attributeIndices.add(new TableStructure(index, TableStructType.HASH));
-                } else {
-                    attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
+            } else {
+                if (checkTokenIgnoreCase("key", false)) {
+                    checkTokenIgnoreCase("key", true);
+                    if (checkTokenIgnoreCase("bplustree", false)) {
+                        checkTokenIgnoreCase("bplustree", true);
+                        attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
+                    } else if (checkTokenIgnoreCase("btree", false)) {
+                        checkTokenIgnoreCase("btree", true);
+                        attributeIndices.add(new TableStructure(index, TableStructType.BTREE));
+                    } else if (checkTokenIgnoreCase("rbtree", false)) {
+                        checkTokenIgnoreCase("rbtree", true);
+                        attributeIndices.add(new TableStructure(index, TableStructType.RBTREE));
+                    } else if (checkTokenIgnoreCase("hash", false)) {
+                        checkTokenIgnoreCase("hash", true);
+                        attributeIndices.add(new TableStructure(index, TableStructType.HASH));
+                    } else {
+                        attributeIndices.add(new TableStructure(index, TableStructType.BPLUSTREE));
+                    }
                 }
             }
             if (!checkTokenIgnoreCase(",", false)) {
