@@ -31,14 +31,12 @@ public class DBManager implements DiskWritable {
 
     private HashMap<String, Table> mTables;
     private HashMap<String, Table> mQueryTables;
-    private HashMap<String, Boolean> mTableModified;
 
     /**
      * Initialize.
      */
     public DBManager() {
         mTables = new HashMap<>();
-        mTableModified = new HashMap<>();
     }
 
     /**
@@ -58,7 +56,6 @@ public class DBManager implements DiskWritable {
         }
         Table newTable = new MultiIndexTable(tablename, attributeNames, attributeTypes, attributeIndices, primaryKey, -1);
         mTables.put(tablename, newTable);
-        mTableModified.put(tablename, Boolean.TRUE);
         appendTableToTableList(FILENAME, tablename);
         mTables.get(tablename).writeToDisk("./" + DIRNAME + "/" + tablename + ".tlctable");
         System.out.println("Query OK, table '" + tablename + "' created successfully.");
@@ -113,9 +110,6 @@ public class DBManager implements DiskWritable {
             System.out.print("Records: " + (succeed + failed) + "  ");
             System.out.print("Succeed: " + succeed + "  ");
             System.out.println("Failed: " + failed);
-        }
-        if (succeed > 0) {
-            mTableModified.put(tablename, Boolean.TRUE);
         }
     }
 
@@ -1041,7 +1035,6 @@ public class DBManager implements DiskWritable {
                     Table multiIndexTable = new MultiIndexTable();
                     multiIndexTable.restoreFromDisk("./" + DIRNAME + "/" + tableAttr[0] + ".tlctable");
                     mTables.put(tableAttr[0], multiIndexTable);
-                    mTableModified.put(tableAttr[0], Boolean.FALSE);
                 } else {
                     System.err.println("Unsupported table type " + tableAttr[1] + ".");
                 }
